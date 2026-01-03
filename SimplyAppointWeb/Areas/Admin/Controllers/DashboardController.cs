@@ -5,7 +5,7 @@ using SimplyAppoint.Models;
 namespace SimplyAppointWeb.Controllers
 {
     [Area("Admin")]
-    public class HomeController : Controller
+    public class DashboardController : Controller
     {
         public IActionResult Index()
         {

@@ -88,7 +88,7 @@
                             <label class="form-label">Customer</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="align-middle" data-feather="user"></i></span>
-                                <select id="saCustomer" class="form-select" required>
+                                <select class="form-select" required>
                                     <option value="" selected disabled>Select customer…</option>
                                     <option value="Anna K.">Anna K.</option>
                                     <option value="Marko P.">Marko P.</option>
@@ -100,7 +100,7 @@
 
                         <div class="col-md-4">
                             <label class="form-label">Status</label>
-                            <select id="saStatus" class="form-select">
+                            <select class="form-select">
                                 <option value="Confirmed" selected>Confirmed</option>
                                 <option value="Pending">Pending</option>
                                 <option value="Cancelled">Cancelled</option>
@@ -116,7 +116,7 @@
                             <label class="form-label">Service</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="align-middle" data-feather="briefcase"></i></span>
-                                <select id="saService" class="form-select" required>
+                                <select class="form-select" required>
                                     <option value="" selected disabled>Select service…</option>
                                     <option value="Haircut" data-duration="45" data-price="25">Haircut (45 min)</option>
                                     <option value="Beard Trim" data-duration="30" data-price="15">Beard Trim (30 min)</option>
@@ -129,7 +129,7 @@
                             <label class="form-label">Price</label>
                             <div class="input-group">
                                 <span class="input-group-text">€</span>
-                                <input id="saPrice" type="number" step="0.01" min="0" class="form-control" placeholder="0.00" />
+                                <input type="number" step="0.01" min="0" class="form-control" placeholder="0.00" />
                             </div>
                         </div>
                     </div>
@@ -139,7 +139,7 @@
                             <label class="form-label">Date</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="align-middle" data-feather="calendar"></i></span>
-                                <input id="saDate" type="date" class="form-control" value="@DateTime.Today.ToString("yyyy-MM-dd")" required />
+                                <input type="date" class="form-control" value="@DateTime.Today.ToString("yyyy-MM-dd")" required />
                             </div>
                         </div>
 
@@ -147,7 +147,7 @@
                             <label class="form-label">Start time</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="align-middle" data-feather="clock"></i></span>
-                                <input id="saTime" type="time" class="form-control" required />
+                                <input type="time" class="form-control" required />
                             </div>
                             <div class="form-text">Pick from Available Times on the right.</div>
                         </div>
@@ -156,7 +156,7 @@
                             <label class="form-label">Duration</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="align-middle" data-feather="hash"></i></span>
-                                <select id="saDuration" class="form-select">
+                                <select class="form-select">
                                     <option value="15">15 min</option>
                                     <option value="30">30 min</option>
                                     <option value="45" selected>45 min</option>
@@ -173,7 +173,7 @@
                     <div class="row">
                         <div class="col-12">
                             <label class="form-label">Notes (optional)</label>
-                            <textarea id="saNotes" class="form-control" rows="4" placeholder="e.g., customer preference, special request, internal note…"></textarea>
+                            <textarea class="form-control" rows="4" placeholder="e.g., customer preference, special request, internal note…"></textarea>
                         </div>
                     </div>
 
@@ -209,23 +209,23 @@
                     <div class="sa-summary-pill">
                         <div class="d-flex justify-content-between">
                             <span class="text-muted">Customer</span>
-                            <span class="fw-semibold" id="saSumCustomer">—</span>
+                            <span class="fw-semibold">—</span>
                         </div>
                         <div class="d-flex justify-content-between mt-2">
                             <span class="text-muted">Service</span>
-                            <span class="fw-semibold" id="saSumService">—</span>
+                            <span class="fw-semibold">—</span>
                         </div>
                         <div class="d-flex justify-content-between mt-2">
                             <span class="text-muted">When</span>
-                            <span class="fw-semibold" id="saSumWhen">—</span>
+                            <span class="fw-semibold">—</span>
                         </div>
                         <div class="d-flex justify-content-between mt-2">
                             <span class="text-muted">Duration</span>
-                            <span class="fw-semibold" id="saSumDuration">—</span>
+                            <span class="fw-semibold">—</span>
                         </div>
                         <div class="d-flex justify-content-between mt-2">
                             <span class="text-muted">Price</span>
-                            <span class="fw-semibold" id="saSumPrice">—</span>
+                            <span class="fw-semibold">—</span>
                         </div>
                     </div>
 
@@ -242,14 +242,14 @@
                 <div class="card-header">
                     <div class="d-flex justify-content-between align-items-center">
                         <h5 class="card-title mb-0">Available Times</h5>
-                        <span class="badge badge-success-light" id="saSlotsBadge">Today</span>
+                        <span class="badge badge-success-light">Today</span>
                     </div>
                 </div>
 
                 <div class="card-body pt-2">
                     <div class="text-muted small mb-2">Click a slot to fill Start time.</div>
 
-                    <div class="row g-2" id="saSlots">
+                    <div class="row g-2">
                         <div class="col-4"><div class="sa-chip" data-time="09:00">09:00</div></div>
                         <div class="col-4"><div class="sa-chip" data-time="09:30">09:30</div></div>
                         <div class="col-4"><div class="sa-chip sa-chip-disabled">10:00</div></div>
@@ -304,84 +304,3 @@
         </div>
     </div>
 </div>
-
-@section Scripts {
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            if (window.feather) window.feather.replace();
-
-            var customer = document.getElementById("saCustomer");
-            var service = document.getElementById("saService");
-            var date = document.getElementById("saDate");
-            var time = document.getElementById("saTime");
-            var duration = document.getElementById("saDuration");
-            var price = document.getElementById("saPrice");
-
-            var sumCustomer = document.getElementById("saSumCustomer");
-            var sumService = document.getElementById("saSumService");
-            var sumWhen = document.getElementById("saSumWhen");
-            var sumDuration = document.getElementById("saSumDuration");
-            var sumPrice = document.getElementById("saSumPrice");
-
-            function pad2(n) { return (n < 10 ? "0" : "") + n; }
-
-            function fmtDate(yyyyMmDd) {
-                if (!yyyyMmDd) return "—";
-                var d = new Date(yyyyMmDd + "T00:00:00");
-                var day = d.toLocaleDateString(undefined, { weekday: "short", day: "2-digit", month: "short" });
-                return day;
-            }
-
-            function refreshSummary() {
-                sumCustomer.textContent = customer.value || "—";
-                sumService.textContent = service.value || "—";
-
-                var when = "—";
-                if (date.value && time.value) {
-                    when = fmtDate(date.value) + " • " + time.value;
-                } else if (date.value) {
-                    when = fmtDate(date.value);
-                }
-                sumWhen.textContent = when;
-
-                sumDuration.textContent = (duration.value ? duration.value + " min" : "—");
-                sumPrice.textContent = (price.value ? ("€ " + Number(price.value).toFixed(2)) : "—");
-            }
-
-            // auto-set duration/price from service option metadata
-            service.addEventListener("change", function () {
-                var opt = service.options[service.selectedIndex];
-                var d = opt ? opt.getAttribute("data-duration") : "";
-                var p = opt ? opt.getAttribute("data-price") : "";
-
-                if (d) duration.value = d;
-                if (p && (!price.value || Number(price.value) === 0)) price.value = p;
-
-                refreshSummary();
-            });
-
-            [customer, date, time, duration, price].forEach(function (el) {
-                el.addEventListener("input", refreshSummary);
-                el.addEventListener("change", refreshSummary);
-            });
-
-            // slot chips
-            var chips = document.querySelectorAll("#saSlots .sa-chip");
-            chips.forEach(function (chip) {
-                if (chip.classList.contains("sa-chip-disabled")) return;
-
-                chip.addEventListener("click", function () {
-                    chips.forEach(function (c) { c.classList.remove("sa-chip-active"); });
-                    chip.classList.add("sa-chip-active");
-
-                    var t = chip.getAttribute("data-time");
-                    if (t) time.value = t;
-
-                    refreshSummary();
-                });
-            });
-
-            refreshSummary();
-        });
-    </script>
-}

@@ -71,7 +71,7 @@
             </div>
 
             <div class="card-body">
-                <form id="saEditForm" method="post" asp-area="Admin" asp-controller="Appointments" asp-action="Edit" asp-route-id="@apptId">
+                <form method="post" asp-area="Admin" asp-controller="Appointments" asp-action="Edit" asp-route-id="@apptId">
 
                     @* Scheduling *@
                     <div class="row">
@@ -149,7 +149,7 @@
                     <div class="row">
                         <div class="col-12 col-md-4 mb-3">
                             <label class="form-label">Status</label>
-                            <select id="saStatus" class="form-select" name="Status">
+                            <select class="form-select" name="Status">
                                 <option value="confirmed" selected="@(status == "confirmed")">Confirmed</option>
                                 <option value="pending" selected="@(status == "pending")">Pending</option>
                                 <option value="cancelled" selected="@(status == "cancelled")">Cancelled</option>
@@ -228,13 +228,13 @@
                 </div>
                 <div class="card-body">
                     <div class="d-grid gap-2">
-                        <button type="button" class="btn btn-outline-success" id="saConfirmBtn">
+                        <button type="button" class="btn btn-outline-success">
                             <i class="align-middle me-1" data-feather="check-circle"></i> Mark as Confirmed
                         </button>
-                        <button type="button" class="btn btn-outline-warning" id="saPendingBtn">
+                        <button type="button" class="btn btn-outline-warning">
                             <i class="align-middle me-1" data-feather="alert-triangle"></i> Mark as Pending
                         </button>
-                        <button type="button" class="btn btn-outline-danger" id="saCancelBtn">
+                        <button type="button" class="btn btn-outline-danger">
                             <i class="align-middle me-1" data-feather="x-circle"></i> Mark as Cancelled
                         </button>
                     </div>
@@ -242,11 +242,11 @@
                     <hr class="my-3" />
 
                     <div class="d-grid">
-                        <button type="button" class="btn btn-outline-light" id="saDeleteBtn">
+                        <button type="button" class="btn btn-outline-light">
                             <i class="align-middle me-1" data-feather="trash-2"></i> Delete (UI only)
                         </button>
                         <div class="text-muted small mt-2">
-                            Delete is UI-only for now. Later you can wire it to a POST action with confirmation.
+                            Delete is UI-only for now.
                         </div>
                     </div>
                 </div>
@@ -255,33 +255,3 @@
         </div>
     </div>
 </div>
-
-@section Scripts {
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-
-            // Feather icons
-            if (window.feather) window.feather.replace();
-
-            // Quick Actions -> just set status dropdown (no backend logic here)
-            var status = document.getElementById("saStatus");
-            var btnConfirm = document.getElementById("saConfirmBtn");
-            var btnPending = document.getElementById("saPendingBtn");
-            var btnCancel = document.getElementById("saCancelBtn");
-            var btnDelete = document.getElementById("saDeleteBtn");
-
-            function setStatus(value) {
-                if (!status) return;
-                status.value = value;
-            }
-
-            btnConfirm?.addEventListener("click", function () { setStatus("confirmed"); });
-            btnPending?.addEventListener("click", function () { setStatus("pending"); });
-            btnCancel?.addEventListener("click", function () { setStatus("cancelled"); });
-
-            btnDelete?.addEventListener("click", function () {
-                alert("Delete is UI-only right now. Wire this to a POST action later.");
-            });
-        });
-    </script>
-}
