@@ -1,0 +1,364 @@
+﻿@{
+    ViewData["Title"] = "Booking Rules";
+    Layout = "_AdminLayout";
+
+    // Dummy values (replace later with your model)
+    var minNotice = "2 hours";
+    var maxAdvance = "30 days";
+    var cancellation = "Up to 2h before";
+    var autoConfirm = false;
+    var allowOnline = true;
+    var allowReschedule = true;
+
+    var depositEnabled = false;
+    var depositType = "percent"; // percent / fixed
+    var depositValue = "20";
+
+    var noShowEnabled = false;
+    var noShowFee = "10";
+}
+
+<style>
+    /* small, scoped helpers only */
+    .sa-chip {
+        border: 1px solid rgba(255,255,255,.10);
+        background: rgba(255,255,255,.03);
+        border-radius: 999px;
+        padding: .45rem .75rem;
+        display: inline-flex;
+        align-items: center;
+        gap: .5rem;
+        color: rgba(255,255,255,.85);
+        font-weight: 700;
+        font-size: .9rem;
+        white-space: nowrap;
+    }
+
+    .sa-chip i { opacity: .85; }
+
+    .sa-card-note {
+        border: 1px dashed rgba(255,255,255,.14);
+        background: rgba(255,255,255,.02);
+        border-radius: 14px;
+        padding: .9rem 1rem;
+    }
+</style>
+
+<div class="row mb-2 mb-xl-3 align-items-center">
+    <div class="col-auto">
+        <h3 class="mb-0"><strong>Booking rules</strong></h3>
+    </div>
+
+    <div class="col-auto ms-auto text-end mt-n1">
+        <a asp-area="Admin" asp-controller="Settings" asp-action="Index" class="btn btn-light bg-white me-2">
+            <i class="align-middle me-1" data-feather="arrow-left"></i> Back to Settings
+        </a>
+        <button type="submit" form="saRulesForm" class="btn btn-primary">
+            <i class="align-middle me-1" data-feather="check"></i> Save changes
+        </button>
+    </div>
+</div>
+
+<div class="row g-3">
+    <!-- Main -->
+    <div class="col-12 col-lg-8 d-flex">
+        <div class="card flex-fill">
+            <div class="card-header">
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                    <div>
+                        <h5 class="card-title mb-0">Rules</h5>
+                        <div class="text-muted">Control how and when customers can book</div>
+                    </div>
+
+                    <div class="d-flex flex-wrap gap-2">
+                        <span class="sa-chip"><i class="align-middle" data-feather="clock"></i> Notice: @minNotice</span>
+                        <span class="sa-chip"><i class="align-middle" data-feather="calendar"></i> Advance: @maxAdvance</span>
+                        <span class="sa-chip"><i class="align-middle" data-feather="x-circle"></i> Cancel: @cancellation</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-body">
+                <form id="saRulesForm" asp-area="Admin" asp-controller="Settings" asp-action="BookingRules" method="post" novalidate>
+
+                    <!-- Booking window -->
+                    <div class="mb-4">
+                        <h6 class="text-muted mb-3">Booking window</h6>
+
+                        <div class="row">
+                            <div class="col-12 col-md-6 mb-3">
+                                <label class="form-label">Minimum notice</label>
+                                <select class="form-select">
+                                    <option selected>2 hours</option>
+                                    <option>No minimum</option>
+                                    <option>1 hour</option>
+                                    <option>6 hours</option>
+                                    <option>12 hours</option>
+                                    <option>24 hours</option>
+                                </select>
+                                <div class="form-text">How early a booking must be made.</div>
+                            </div>
+
+                            <div class="col-12 col-md-6 mb-3">
+                                <label class="form-label">Max booking in advance</label>
+                                <select class="form-select">
+                                    <option>7 days</option>
+                                    <option>14 days</option>
+                                    <option selected>30 days</option>
+                                    <option>60 days</option>
+                                    <option>90 days</option>
+                                </select>
+                                <div class="form-text">Limits how far ahead customers can book.</div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12 col-md-6 mb-0">
+                                <label class="form-label">Booking step (slot size)</label>
+                                <select class="form-select">
+                                    <option>10 min</option>
+                                    <option selected>15 min</option>
+                                    <option>20 min</option>
+                                    <option>30 min</option>
+                                </select>
+                                <div class="form-text">Controls which times appear in booking.</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="my-4" />
+
+                    <!-- Cancellation -->
+                    <div class="mb-4">
+                        <h6 class="text-muted mb-3">Cancellations & rescheduling</h6>
+
+                        <div class="row">
+                            <div class="col-12 col-md-6 mb-3">
+                                <label class="form-label">Cancellation policy</label>
+                                <select class="form-select">
+                                    <option selected>Up to 2h before</option>
+                                    <option>Up to 6h before</option>
+                                    <option>Up to 12h before</option>
+                                    <option>Up to 24h before</option>
+                                    <option>No cancellations</option>
+                                </select>
+                                <div class="form-text">After this window, cancellations are blocked (or require manual handling).</div>
+                            </div>
+
+                            <div class="col-12 col-md-6 mb-3">
+                                <label class="form-label">Rescheduling</label>
+                                <select class="form-select">
+                                    <option selected>Allowed</option>
+                                    <option>Not allowed</option>
+                                    <option>Allowed until 2h before</option>
+                                    <option>Allowed until 24h before</option>
+                                </select>
+                                <div class="form-text">Controls whether customers can change an existing booking.</div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12 col-md-6 mb-0">
+                                <label class="form-label">Late cancellation handling</label>
+                                <select class="form-select">
+                                    <option selected>Manual review</option>
+                                    <option>Allow but mark as “Late cancel”</option>
+                                    <option>Block completely</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="my-4" />
+
+                    <!-- Confirmations -->
+                    <div class="mb-4">
+                        <h6 class="text-muted mb-3">Confirmations</h6>
+
+                        <div class="row">
+                            <div class="col-12 col-md-6 mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" @(allowOnline ? "checked" : "")>
+                                    <label class="form-check-label">Allow online booking</label>
+                                </div>
+                                <div class="form-text">Turn off if you only book appointments manually.</div>
+                            </div>
+
+                            <div class="col-12 col-md-6 mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" @(autoConfirm ? "checked" : "")>
+                                    <label class="form-check-label">Auto-confirm bookings</label>
+                                </div>
+                                <div class="form-text">If off, new bookings default to “Pending”.</div>
+                            </div>
+
+                            <div class="col-12 col-md-6 mb-0">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" @(allowReschedule ? "checked" : "")>
+                                    <label class="form-check-label">Allow rescheduling</label>
+                                </div>
+                                <div class="form-text">If on, customers can move their appointment inside your availability.</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="my-4" />
+
+                    <!-- Deposits -->
+                    <div class="mb-4">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <h6 class="text-muted mb-0">Deposits</h6>
+                            <span class="badge @(depositEnabled ? "badge-success-light" : "badge-primary-light")">
+                                @(depositEnabled ? "Enabled" : "Optional")
+                            </span>
+                        </div>
+
+                        <div class="sa-card-note mt-3">
+                            <div class="d-flex align-items-start gap-2">
+                                <i class="align-middle text-muted" data-feather="info"></i>
+                                <div class="text-muted">
+                                    Deposits are optional for now. You can later decide to require them for specific services.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mt-3">
+                            <div class="col-12 col-md-6 mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" @(depositEnabled ? "checked" : "")>
+                                    <label class="form-check-label">Require deposit for online bookings</label>
+                                </div>
+                                <div class="form-text">Useful to reduce no-shows.</div>
+                            </div>
+
+                            <div class="col-12 col-md-3 mb-3">
+                                <label class="form-label">Type</label>
+                                <select class="form-select">
+                                    <option value="percent" @@(depositType == "percent" ? "selected" : "")>%</option>
+                                    <option value="fixed" @@(depositType == "fixed" ? "selected" : "")>€</option>
+                                </select>
+                            </div>
+
+                            <div class="col-12 col-md-3 mb-0">
+                                <label class="form-label">Value</label>
+                                <input type="number" class="form-control" value="@depositValue" min="0" step="0.01" placeholder="e.g. 20" />
+                                <div class="form-text">Percent or fixed amount.</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="my-4" />
+
+                    <!-- No-show -->
+                    <div class="mb-0">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <h6 class="text-muted mb-0">No-show policy</h6>
+                            <span class="badge @(noShowEnabled ? "badge-danger-light" : "badge-primary-light")">
+                                @(noShowEnabled ? "Active" : "Optional")
+                            </span>
+                        </div>
+
+                        <div class="row mt-3">
+                            <div class="col-12 col-md-6 mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" @(noShowEnabled ? "checked" : "")>
+                                    <label class="form-check-label">Enable no-show fee</label>
+                                </div>
+                                <div class="form-text">Applies when customers don’t show up.</div>
+                            </div>
+
+                            <div class="col-12 col-md-6 mb-0">
+                                <label class="form-label">Fee (€)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">€</span>
+                                    <input type="number" class="form-control" value="@noShowFee" min="0" step="0.01" placeholder="e.g. 10" />
+                                </div>
+                                <div class="form-text">UI-only for now.</div>
+                            </div>
+                        </div>
+                    </div>
+
+                </form>
+            </div>
+
+            <div class="card-footer d-flex justify-content-end gap-2">
+                <a asp-area="Admin" asp-controller="Settings" asp-action="Index" class="btn btn-light bg-white">
+                    Cancel
+                </a>
+                <button type="submit" form="saRulesForm" class="btn btn-primary">
+                    <i class="align-middle me-1" data-feather="check"></i> Save changes
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-12 col-lg-4 d-flex">
+        <div class="d-flex flex-column w-100">
+
+            <div class="card flex-fill">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">At a glance</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-muted">Online booking</span>
+                        <span class="badge @(allowOnline ? "badge-success-light" : "badge-danger-light")">@(allowOnline ? "On" : "Off")</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-muted">Auto-confirm</span>
+                        <span class="badge @(autoConfirm ? "badge-success-light" : "badge-warning-light")">@(autoConfirm ? "On" : "Pending")</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-muted">Min notice</span>
+                        <span class="fw-semibold">@minNotice</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="text-muted">Cancellation</span>
+                        <span class="fw-semibold">@cancellation</span>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <a asp-area="Admin" asp-controller="Calendar" asp-action="Index" class="btn btn-light bg-white">
+                            <i class="align-middle me-2" data-feather="calendar"></i> Open calendar
+                        </a>
+                        <a asp-area="Admin" asp-controller="Appointments" asp-action="Index" class="btn btn-light bg-white">
+                            <i class="align-middle me-2" data-feather="list"></i> View appointments
+                        </a>
+                    </div>
+
+                    <div class="text-muted small mt-3">
+                        Tip: Keep rules simple at first. Add deposits/no-show fees only if you actually need them.
+                    </div>
+                </div>
+            </div>
+
+            <div class="card flex-fill">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Common setups</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        <a href="#" class="list-group-item list-group-item-action">
+                            <div class="fw-semibold">“Fast & flexible”</div>
+                            <div class="text-muted small">No notice, 30 days advance, cancel up to 2h.</div>
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action">
+                            <div class="fw-semibold">“Busy schedule”</div>
+                            <div class="text-muted small">2h notice, 14 days advance, auto-confirm on.</div>
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action">
+                            <div class="fw-semibold">“Strict policy”</div>
+                            <div class="text-muted small">24h notice, 7 days advance, no cancellations.</div>
+                        </a>
+                    </div>
+
+                    <div class="text-muted small mt-3">
+                        UI-only presets. You can wire these to set values later.
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>

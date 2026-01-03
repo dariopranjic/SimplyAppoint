@@ -1,0 +1,342 @@
+﻿@{
+    ViewData["Title"] = "Dashboard";
+    Layout = "_AdminLayout";
+}
+
+<div class="row mb-2 mb-xl-3">
+    <div class="col-auto d-none d-sm-block">
+        <h3><strong>Dashboard</strong></h3>
+    </div>
+
+    <div class="col-auto ms-auto text-end mt-n1">
+        <a asp-area="Admin" asp-controller="Calendar" asp-action="Index" class="btn btn-light bg-white me-2">
+            Open Calendar
+        </a>
+        <a asp-area="Admin" asp-controller="Appointments" asp-action="Index" class="btn btn-primary">
+            View Appointments
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-sm-6 col-xl-3">
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col mt-0">
+                        <h5 class="card-title">Today’s Appointments</h5>
+                    </div>
+                    <div class="col-auto">
+                        <div class="stat text-primary">
+                            <i class="align-middle" data-feather="clock"></i>
+                        </div>
+                    </div>
+                </div>
+                <h1 class="mt-1 mb-3">8</h1>
+                <div class="mb-0">
+                    <span class="badge badge-success-light">+2</span>
+                    <span class="text-muted">vs yesterday</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col mt-0">
+                        <h5 class="card-title">Upcoming (7 days)</h5>
+                    </div>
+                    <div class="col-auto">
+                        <div class="stat text-primary">
+                            <i class="align-middle" data-feather="calendar"></i>
+                        </div>
+                    </div>
+                </div>
+                <h1 class="mt-1 mb-3">42</h1>
+                <div class="mb-0">
+                    <span class="badge badge-success-light">+6%</span>
+                    <span class="text-muted">vs last week</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col mt-0">
+                        <h5 class="card-title">Cancellations (7 days)</h5>
+                    </div>
+                    <div class="col-auto">
+                        <div class="stat text-primary">
+                            <i class="align-middle" data-feather="x-circle"></i>
+                        </div>
+                    </div>
+                </div>
+                <h1 class="mt-1 mb-3">3</h1>
+                <div class="mb-0">
+                    <span class="badge badge-danger-light">+1</span>
+                    <span class="text-muted">needs attention</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col mt-0">
+                        <h5 class="card-title">New Customers (30 days)</h5>
+                    </div>
+                    <div class="col-auto">
+                        <div class="stat text-primary">
+                            <i class="align-middle" data-feather="user-plus"></i>
+                        </div>
+                    </div>
+                </div>
+                <h1 class="mt-1 mb-3">27</h1>
+                <div class="mb-0">
+                    <span class="badge badge-success-light">+12%</span>
+                    <span class="text-muted">growth</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- CHART + QUICK ACTIONS -->
+<div class="row">
+    <div class="col-12 col-lg-8 d-flex">
+        <div class="card flex-fill w-100">
+            <div class="card-header">
+                <div class="float-end">
+                    <form class="row g-2">
+                        <div class="col-auto">
+                            <select class="form-select form-select-sm bg-light border-0">
+                                <option selected>Last 7 days</option>
+                                <option>Last 30 days</option>
+                                <option>This year</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <h5 class="card-title mb-0">Bookings Trend</h5>
+            </div>
+            <div class="card-body pt-2 pb-3">
+                <div class="chart chart-md">
+                    <canvas id="chart-bookings-trend"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-lg-4 d-flex">
+        <div class="card flex-fill w-100">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Quick Actions</h5>
+            </div>
+
+            <div class="card-body pt-2">
+                <div class="row g-2">
+                    <div class="col-6">
+                        <a asp-area="Admin" asp-controller="Appointments" asp-action="Index"
+                           class="btn btn-outline-primary w-100 d-flex align-items-center justify-content-center py-2">
+                            <i class="align-middle me-2" data-feather="calendar"></i>
+                            <span class="fw-semibold">Appointments</span>
+                        </a>
+                    </div>
+
+                    <div class="col-6">
+                        <a asp-area="Admin" asp-controller="Customers" asp-action="Index"
+                           class="btn btn-outline-primary w-100 d-flex align-items-center justify-content-center py-2">
+                            <i class="align-middle me-2" data-feather="users"></i>
+                            <span class="fw-semibold">Customers</span>
+                        </a>
+                    </div>
+
+                    <div class="col-6">
+                        <a asp-area="Admin" asp-controller="Services" asp-action="Index"
+                           class="btn btn-outline-primary w-100 d-flex align-items-center justify-content-center py-2">
+                            <i class="align-middle me-2" data-feather="briefcase"></i>
+                            <span class="fw-semibold">Services</span>
+                        </a>
+                    </div>
+
+                    <div class="col-6">
+                        <a asp-area="Admin" asp-controller="Settings" asp-action="Index"
+                           class="btn btn-outline-primary w-100 d-flex align-items-center justify-content-center py-2">
+                            <i class="align-middle me-2" data-feather="settings"></i>
+                            <span class="fw-semibold">Settings</span>
+                        </a>
+                    </div>
+                </div>
+
+                <hr class="my-3">
+
+                <div class="d-grid">
+                    <a asp-area="Admin" asp-controller="Calendar" asp-action="Index"
+                       class="btn btn-primary">
+                        <i class="align-middle me-2" data-feather="clock"></i>
+                        Open Today
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- TABLE + SCHEDULE -->
+<div class="row">
+    <div class="col-12 col-lg-8 d-flex">
+        <div class="card flex-fill">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Next Appointments</h5>
+            </div>
+
+            <table class="table table-hover my-0">
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>Customer</th>
+                        <th class="d-none d-xl-table-cell">Service</th>
+                        <th class="d-none d-xl-table-cell">Status</th>
+                        <th class="text-end">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>09:00</td>
+                        <td>Anna K.</td>
+                        <td class="d-none d-xl-table-cell">Haircut</td>
+                        <td class="d-none d-xl-table-cell">
+                            <span class="badge badge-success-light">Confirmed</span>
+                        </td>
+                        <td class="text-end">
+                            <a asp-area="Admin" asp-controller="Appointments" asp-action="Index" class="btn btn-light btn-sm">Open</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>10:30</td>
+                        <td>Marko P.</td>
+                        <td class="d-none d-xl-table-cell">Beard trim</td>
+                        <td class="d-none d-xl-table-cell">
+                            <span class="badge badge-warning-light">Pending</span>
+                        </td>
+                        <td class="text-end">
+                            <a asp-area="Admin" asp-controller="Appointments" asp-action="Index" class="btn btn-light btn-sm">Open</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>12:00</td>
+                        <td>Sara L.</td>
+                        <td class="d-none d-xl-table-cell">Nails</td>
+                        <td class="d-none d-xl-table-cell">
+                            <span class="badge badge-success-light">Confirmed</span>
+                        </td>
+                        <td class="text-end">
+                            <a asp-area="Admin" asp-controller="Appointments" asp-action="Index" class="btn btn-light btn-sm">Open</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>14:00</td>
+                        <td>Ivan M.</td>
+                        <td class="d-none d-xl-table-cell">Dog grooming</td>
+                        <td class="d-none d-xl-table-cell">
+                            <span class="badge badge-danger-light">Cancelled</span>
+                        </td>
+                        <td class="text-end">
+                            <a asp-area="Admin" asp-controller="Appointments" asp-action="Index" class="btn btn-light btn-sm">Open</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+
+    <div class="col-12 col-lg-4 d-flex">
+        <div class="card flex-fill w-100">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Today's Schedule</h5>
+            </div>
+            <div class="card-body">
+
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between">
+                        <span>09:00 – 12:00</span>
+                        <span class="badge badge-success-light">Busy</span>
+                    </div>
+                    <div class="progress progress-sm mt-1">
+                        <div class="progress-bar bg-success" style="width: 100%"></div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between">
+                        <span>12:00 – 15:00</span>
+                        <span class="badge badge-warning-light">Almost full</span>
+                    </div>
+                    <div class="progress progress-sm mt-1">
+                        <div class="progress-bar bg-warning" style="width: 80%"></div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between">
+                        <span>15:00 – 18:00</span>
+                        <span class="badge badge-primary-light">Available</span>
+                    </div>
+                    <div class="progress progress-sm mt-1">
+                        <div class="progress-bar bg-primary" style="width: 40%"></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var canvas = document.getElementById("chart-bookings-trend");
+            if (!canvas) return;
+
+            new Chart(canvas, {
+                type: "line",
+                data: {
+                    labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+                    datasets: [{
+                        label: "Bookings",
+                        fill: true,
+                        borderColor: window.theme.primary,
+                        backgroundColor: "rgba(0, 0, 0, 0)",
+                        data: [6, 8, 5, 10, 12, 7, 9],
+                        tension: 0.35,
+                        pointRadius: 3
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: {
+                            ticks: { stepSize: 2 }
+                        },
+                        x: {
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+
+            if (window.feather) {
+                window.feather.replace();
+            }
+        });
+    </script>
+}

@@ -1,0 +1,401 @@
+﻿@{
+    ViewData["Title"] = "Calendar";
+    Layout = "_AdminLayout";
+}
+
+<style>
+    /* =========================
+           Calendar (FullCalendar) UI
+           ========================= */
+
+    .fc {
+        --fc-page-bg-color: transparent;
+        --fc-border-color: rgba(255,255,255,.08);
+        --fc-today-bg-color: rgba(59, 130, 246, .12);
+        --fc-now-indicator-color: rgba(239, 68, 68, .95);
+        font-size: .95rem;
+    }
+
+        .fc .fc-scrollgrid,
+        .fc .fc-scrollgrid-section > td,
+        .fc .fc-timegrid-divider,
+        .fc .fc-timegrid-slot,
+        .fc .fc-timegrid-axis,
+        .fc .fc-col-header-cell,
+        .fc .fc-timegrid-col,
+        .fc .fc-daygrid-day {
+            border-color: rgba(255,255,255,.08) !important;
+        }
+
+        .fc .fc-toolbar {
+            margin-bottom: 1rem !important;
+            gap: .75rem;
+            flex-wrap: wrap;
+        }
+
+        .fc .fc-toolbar-title {
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: rgba(255,255,255,.92);
+            letter-spacing: .2px;
+        }
+
+        .fc .fc-button {
+            border-radius: 12px !important;
+            border: 1px solid rgba(255,255,255,.10) !important;
+            background: rgba(255,255,255,.06) !important;
+            color: rgba(255,255,255,.90) !important;
+            padding: .45rem .85rem !important;
+            font-weight: 750;
+            box-shadow: none !important;
+            transition: transform .10s ease, background .15s ease, border-color .15s ease;
+        }
+
+            .fc .fc-button:hover {
+                background: rgba(255,255,255,.10) !important;
+                border-color: rgba(255,255,255,.16) !important;
+                transform: translateY(-1px);
+            }
+
+            .fc .fc-button:active {
+                transform: translateY(0);
+            }
+
+        .fc .fc-button-primary:not(:disabled).fc-button-active {
+            background: rgba(59, 130, 246, .22) !important;
+            border-color: rgba(59, 130, 246, .35) !important;
+            color: rgba(255,255,255,.96) !important;
+        }
+
+        .fc .fc-col-header-cell {
+            background: rgba(255,255,255,.03);
+        }
+
+        .fc .fc-col-header-cell-cushion {
+            padding: .75rem .6rem;
+            color: rgba(255,255,255,.75);
+            font-weight: 800;
+            text-decoration: none;
+        }
+
+        .fc .fc-timegrid-slot-label,
+        .fc .fc-timegrid-axis {
+            background: rgba(255,255,255,.02);
+        }
+
+        .fc .fc-timegrid-slot-label-cushion,
+        .fc .fc-timegrid-axis-cushion {
+            padding: .35rem .6rem;
+            color: rgba(255,255,255,.60);
+            font-weight: 800;
+            letter-spacing: .2px;
+        }
+
+        .fc .fc-timegrid-slot {
+            background: rgba(255,255,255,.012);
+        }
+
+        .fc .fc-timegrid-slot-minor {
+            border-top-style: dashed !important;
+            border-top-color: rgba(255,255,255,.06) !important;
+        }
+
+        .fc .fc-day-today {
+            background: rgba(59, 130, 246, .10) !important;
+        }
+
+        .fc .fc-timegrid-col.fc-day-today {
+            box-shadow: inset 0 0 0 1px rgba(59, 130, 246, .20);
+        }
+
+        .fc .fc-timegrid-event,
+        .fc .fc-daygrid-event {
+            border: 1px solid rgba(255,255,255,.14) !important;
+            border-radius: 14px !important;
+            overflow: hidden;
+            box-shadow: 0 12px 24px rgba(0,0,0,.28);
+        }
+
+        .fc .fc-timegrid-event {
+            min-height: 44px;
+        }
+
+        .fc .fc-event-main {
+            padding: .6rem .7rem !important;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+        }
+
+    .sa-timeonly {
+        font-weight: 800;
+        font-size: .9rem;
+        color: rgba(255,255,255,.97);
+        letter-spacing: .2px;
+        line-height: 1;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .fc .fc-event-title,
+    .fc .fc-event-title-container {
+        display: none !important;
+    }
+
+    .fc .fc-event-resizer {
+        opacity: .35;
+    }
+
+    .fc .fc-timegrid-now-indicator-line {
+        border-top-width: 3px !important;
+    }
+
+    .fc .fc-timegrid-axis .fc-timegrid-now-indicator-arrow {
+        display: none !important;
+    }
+
+    .fc .fc-daygrid-day-number {
+        padding: .55rem .55rem 0 .55rem;
+        color: rgba(255,255,255,.70);
+        font-weight: 800;
+        text-decoration: none;
+    }
+
+    .fc .fc-daygrid-day-frame {
+        padding: .15rem .35rem .35rem;
+    }
+
+    .fc .fc-timegrid-event-harness-inset .fc-timegrid-event {
+        margin: 2px 6px !important;
+    }
+
+    .fc ::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+    }
+
+    .fc ::-webkit-scrollbar-thumb {
+        background: rgba(255,255,255,.10);
+        border-radius: 999px;
+    }
+
+    .fc ::-webkit-scrollbar-track {
+        background: rgba(255,255,255,.03);
+    }
+</style>
+
+<div class="row mb-2 mb-xl-3">
+    <div class="col-auto d-none d-sm-block">
+        <h3><strong>Calendar</strong></h3>
+    </div>
+
+    <div class="col-auto ms-auto text-end mt-n1">
+        <a asp-area="Admin" asp-controller="Appointments" asp-action="Create" class="btn btn-primary me-2">
+            <i class="align-middle me-1" data-feather="plus"></i> New Appointment
+        </a>
+        <a asp-area="Admin" asp-controller="Appointments" asp-action="Index" class="btn btn-light bg-white">
+            <i class="align-middle me-1" data-feather="list"></i> All Appointments
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Calendar -->
+    <div class="col-12 col-lg-8 d-flex">
+        <div class="card flex-fill w-100">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Schedule</h5>
+            </div>
+            <div class="card-body">
+                <div id="fullcalendar" style="min-height: 720px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right column widgets -->
+    <div class="col-12 col-lg-4 d-flex">
+        <div class="d-flex flex-column w-100">
+
+            <!-- Today overview -->
+            <div class="card flex-fill">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Today Overview</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-muted">Date</span>
+                        <span class="fw-semibold">@DateTime.Today.ToString("ddd, dd MMM")</span>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-muted">Appointments</span>
+                        <span class="badge badge-primary-light">8</span>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="text-muted">Open slots</span>
+                        <span class="badge badge-success-light">5</span>
+                    </div>
+
+                    <div class="d-grid">
+                        <a asp-area="Admin" asp-controller="Appointments" asp-action="Create" class="btn btn-primary">
+                            <i class="align-middle me-2" data-feather="calendar"></i> Book Appointment
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Upcoming -->
+            <div class="card flex-fill">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Upcoming (Next 3)</h5>
+                </div>
+                <div class="card-body pt-2">
+                    <div class="list-group">
+                        <a href="#" class="list-group-item list-group-item-action">
+                            <div class="d-flex justify-content-between">
+                                <strong>09:00</strong>
+                                <span class="badge badge-success-light">Confirmed</span>
+                            </div>
+                            <div class="text-muted">Anna K. - Haircut</div>
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action">
+                            <div class="d-flex justify-content-between">
+                                <strong>10:30</strong>
+                                <span class="badge badge-warning-light">Pending</span>
+                            </div>
+                            <div class="text-muted">Marko P. - Beard trim</div>
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action">
+                            <div class="d-flex justify-content-between">
+                                <strong>12:00</strong>
+                                <span class="badge badge-success-light">Confirmed</span>
+                            </div>
+                            <div class="text-muted">Sara L. - Nails</div>
+                        </a>
+                    </div>
+
+                    <div class="d-grid mt-3">
+                        <a asp-area="Admin" asp-controller="Appointments" asp-action="Index" class="btn btn-light bg-white">
+                            View all upcoming
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick actions -->
+            <div class="card flex-fill">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Quick Actions</h5>
+                </div>
+                <div class="card-body pt-2">
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <a asp-area="Admin" asp-controller="Customers" asp-action="Index"
+                               class="btn btn-outline-primary w-100 d-flex align-items-center justify-content-center py-2">
+                                <i class="align-middle me-2" data-feather="users"></i>
+                                <span class="fw-semibold">Customers</span>
+                            </a>
+                        </div>
+                        <div class="col-6">
+                            <a asp-area="Admin" asp-controller="Services" asp-action="Index"
+                               class="btn btn-outline-primary w-100 d-flex align-items-center justify-content-center py-2">
+                                <i class="align-middle me-2" data-feather="briefcase"></i>
+                                <span class="fw-semibold">Services</span>
+                            </a>
+                        </div>
+                        <div class="col-6">
+                            <a asp-area="Admin" asp-controller="Appointments" asp-action="Index"
+                               class="btn btn-outline-primary w-100 d-flex align-items-center justify-content-center py-2">
+                                <i class="align-middle me-2" data-feather="list"></i>
+                                <span class="fw-semibold">Appointments</span>
+                            </a>
+                        </div>
+                        <div class="col-6">
+                            <a asp-area="Admin" asp-controller="Home" asp-action="Index"
+                               class="btn btn-outline-primary w-100 d-flex align-items-center justify-content-center py-2">
+                                <i class="align-middle me-2" data-feather="bar-chart-2"></i>
+                                <span class="fw-semibold">Dashboard</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/AdminKit/js/fullcalendar.js"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var calendarEl = document.getElementById("fullcalendar");
+            if (!calendarEl || typeof FullCalendar === "undefined") return;
+
+            var todayStr = "@DateTime.Today.ToString("yyyy-MM-dd")";
+
+            function fmtTime(dateObj) {
+                return new Intl.DateTimeFormat([], { hour: "2-digit", minute: "2-digit" }).format(dateObj);
+            }
+
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                themeSystem: "bootstrap",
+                initialView: "timeGridWeek",
+                initialDate: todayStr,
+
+                allDaySlot: false,          
+                nowIndicator: true,
+                selectable: true,
+                editable: false,
+
+                height: "auto",
+                expandRows: true,
+
+                slotDuration: "00:30:00",
+                slotLabelInterval: "01:00",
+                slotMinTime: "07:00:00",
+                slotMaxTime: "20:00:00",
+                scrollTime: "08:00:00",
+
+                headerToolbar: {
+                    left: "prev,next today",
+                    center: "title",
+                    right: "dayGridMonth,timeGridWeek,timeGridDay"
+                },
+                buttonText: { today: "Today", month: "Month", week: "Week", day: "Day" },
+
+                eventDisplay: "block",
+
+                eventContent: function (arg) {
+                    var start = arg.event.start;
+                    var end = arg.event.end;
+                    var timeText = end ? (fmtTime(start) + " – " + fmtTime(end)) : fmtTime(start);
+
+                    var wrap = document.createElement("div");
+                    wrap.className = "sa-timeonly";
+                    wrap.textContent = timeText;
+
+                    return { domNodes: [wrap] };
+                },
+
+                eventDidMount: function (info) {
+                    info.el.removeAttribute("title");
+                },
+
+                // Dummy events (replace later)
+                events: [
+                    { start: todayStr + "T09:00:00", end: todayStr + "T09:45:00", backgroundColor: "#3b82f6", borderColor: "#3b82f6" },
+                    { start: todayStr + "T10:30:00", end: todayStr + "T11:00:00", backgroundColor: "#10b981", borderColor: "#10b981" },
+                    { start: todayStr + "T12:00:00", end: todayStr + "T13:00:00", backgroundColor: "#f59e0b", borderColor: "#f59e0b" }
+                ]
+            });
+
+            setTimeout(function () { calendar.render(); }, 150);
+            if (window.feather) window.feather.replace();
+        });
+    </script>
+}

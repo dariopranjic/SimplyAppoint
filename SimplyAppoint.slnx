@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="SimplyAppoint.DataAccess/SimplyAppoint.DataAccess.csproj" />
+  <Project Path="SimplyAppoint.Models/SimplyAppoint.Models.csproj" />
+  <Project Path="SimplyAppoint.Utility/SimplyAppoint.Utility.csproj" />
+  <Project Path="SimplyAppointWeb/SimplyAppointWeb.csproj" />
+</Solution>

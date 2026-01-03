@@ -1,0 +1,329 @@
+﻿@{
+    ViewData["Title"] = "Business";
+    Layout = "_AdminLayout";
+
+    // Dummy data (replace later with your model)
+    var bizName = "SimplyAppoint Studio";
+    var bizLegal = "SimplyAppoint Studio d.o.o.";
+    var bizEmail = "hello@simplyappoint.com";
+    var bizPhone = "+385 99 123 4567";
+    var bizWebsite = "www.simplyappoint.com";
+    var bizTz = "Europe/Zagreb";
+    var bizCurrency = "EUR (€)";
+
+    var addr1 = "Ulica Example 12";
+    var city = "Zagreb";
+    var postal = "10000";
+    var country = "Croatia";
+
+    var bookingUrl = "simplyappoint.com/book/simplyappoint-studio";
+}
+
+<style>
+    .sa-avatar {
+        width: 64px;
+        height: 64px;
+        border-radius: 999px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(59,130,246,.15);
+        border: 1px solid rgba(255,255,255,.10);
+        overflow: hidden;
+    }
+
+        .sa-avatar i {
+            width: 26px;
+            height: 26px;
+        }
+
+    .sa-muted-row {
+        padding: .35rem 0;
+        border-bottom: 1px solid rgba(255,255,255,.06);
+    }
+
+        .sa-muted-row:last-child {
+            border-bottom: 0;
+        }
+
+    .sa-kv {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+    }
+
+        .sa-kv > span:first-child {
+            color: rgba(255,255,255,.55);
+        }
+
+        .sa-kv > span:last-child {
+            font-weight: 600;
+            text-align: right;
+            max-width: 65%;
+            word-break: break-word;
+        }
+</style>
+
+<div class="row mb-2 mb-xl-3 align-items-center">
+    <div class="col-auto">
+        <h3 class="mb-0"><strong>Business</strong></h3>
+        <div class="text-muted">Business details shown on booking pages</div>
+    </div>
+
+    <div class="col-auto ms-auto text-end mt-n1">
+        <a asp-area="Admin" asp-controller="Settings" asp-action="Index" class="btn btn-light bg-white me-2">
+            <i class="align-middle me-1" data-feather="arrow-left"></i> Back to Settings
+        </a>
+        <button type="submit" form="BusinessForm" class="btn btn-primary">
+            <i class="align-middle me-1" data-feather="check"></i> Save changes
+        </button>
+    </div>
+</div>
+
+<div class="row g-3">
+    <!-- Form -->
+    <div class="col-12 col-lg-8 d-flex">
+        <div class="card flex-fill">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Business details</h5>
+            </div>
+
+            <div class="card-body">
+                <form id="BusinessForm" asp-area="Admin" asp-controller="Settings" asp-action="Business" method="post" novalidate>
+
+                    <!-- Profile -->
+                    <div class="mb-4">
+                        <h6 class="text-muted mb-3">Profile</h6>
+
+                        <div class="row">
+                            <div class="col-12 col-md-6 mb-3">
+                                <label class="form-label">Business name</label>
+                                <input name="BusinessName" type="text" class="form-control" value="@bizName" placeholder="e.g. SimplyAppoint Studio" required />
+                                <div class="form-text">Shown to customers on booking pages.</div>
+                            </div>
+
+                            <div class="col-12 col-md-6 mb-3">
+                                <label class="form-label">Legal name (optional)</label>
+                                <input name="LegalName" type="text" class="form-control" value="@bizLegal" placeholder="e.g. Company d.o.o." />
+                                <div class="form-text">Used for invoices/receipts if needed.</div>
+                            </div>
+                        </div>
+
+                        <div class="mb-0">
+                            <label class="form-label">Short description (optional)</label>
+                            <textarea name="About" class="form-control" rows="3" placeholder="A short description shown on booking."></textarea>
+                        </div>
+                    </div>
+
+                    <hr class="my-4" />
+
+                    <!-- Contact -->
+                    <div class="mb-4">
+                        <h6 class="text-muted mb-3">Contact</h6>
+
+                        <div class="row">
+                            <div class="col-12 col-md-6 mb-3">
+                                <label class="form-label">Email</label>
+                                <input name="Email" type="email" class="form-control" value="@bizEmail" placeholder="e.g. hello@business.com" />
+                            </div>
+
+                            <div class="col-12 col-md-6 mb-3">
+                                <label class="form-label">Phone</label>
+                                <input name="Phone" type="tel" class="form-control" value="@bizPhone" placeholder="+385 ..." />
+                            </div>
+
+                            <div class="col-12 col-md-6 mb-3">
+                                <label class="form-label">Website (optional)</label>
+                                <input name="Website" type="text" class="form-control" value="@bizWebsite" placeholder="e.g. www.example.com" />
+                            </div>
+
+                            <div class="col-12 col-md-6 mb-3">
+                                <label class="form-label">Booking URL (optional)</label>
+                                <input name="BookingUrl" type="text" class="form-control" value="@bookingUrl" placeholder="yourdomain.com/book/your-business" />
+                                <div class="form-text">Copy & share this link with customers.</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="my-4" />
+
+                    <!-- Location -->
+                    <div class="mb-4">
+                        <h6 class="text-muted mb-3">Location</h6>
+
+                        <div class="row">
+                            <div class="col-12 mb-3">
+                                <label class="form-label">Address line</label>
+                                <input name="Address1" type="text" class="form-control" value="@addr1" placeholder="Street, number" />
+                            </div>
+
+                            <div class="col-12 col-md-6 mb-3">
+                                <label class="form-label">City</label>
+                                <input name="City" type="text" class="form-control" value="@city" />
+                            </div>
+
+                            <div class="col-12 col-md-3 mb-3">
+                                <label class="form-label">Postal code</label>
+                                <input name="PostalCode" type="text" class="form-control" value="@postal" />
+                            </div>
+
+                            <div class="col-12 col-md-3 mb-3">
+                                <label class="form-label">Country</label>
+                                <input name="Country" type="text" class="form-control" value="@country" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="my-4" />
+
+                    <!-- Regional -->
+                    <div class="mb-0">
+                        <h6 class="text-muted mb-3">Regional</h6>
+
+                        <div class="row">
+                            <div class="col-12 col-md-6 mb-3">
+                                <label class="form-label">Timezone</label>
+                                <select name="Timezone" class="form-select">
+                                    <option selected>@bizTz</option>
+                                    <option>Europe/Vienna</option>
+                                    <option>Europe/Berlin</option>
+                                    <option>Europe/Ljubljana</option>
+                                    <option>UTC</option>
+                                </select>
+                                <div class="form-text">Used for booking slots and calendar views.</div>
+                            </div>
+
+                            <div class="col-12 col-md-6 mb-3">
+                                <label class="form-label">Currency</label>
+                                <select name="Currency" class="form-select">
+                                    <option selected>@bizCurrency</option>
+                                    <option>USD ($)</option>
+                                    <option>GBP (£)</option>
+                                    <option>CHF (CHF)</option>
+                                </select>
+                                <div class="form-text">Shown on services and invoices.</div>
+                            </div>
+                        </div>
+
+                        <div class="form-check form-switch mb-0">
+                            <input class="form-check-input" type="checkbox" name="ShowAddressOnBooking" checked />
+                            <label class="form-check-label">Show address on booking page</label>
+                        </div>
+                        <div class="form-text">Turn off if you offer mobile / at-home services.</div>
+                    </div>
+
+                </form>
+            </div>
+
+            <div class="card-footer d-flex justify-content-end gap-2">
+                <a asp-area="Admin" asp-controller="Settings" asp-action="Index" class="btn btn-light bg-white">
+                    Cancel
+                </a>
+                <button type="submit" form="BusinessForm" class="btn btn-primary">
+                    <i class="align-middle me-1" data-feather="check"></i> Save changes
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-12 col-lg-4 d-flex">
+        <div class="d-flex flex-column w-100">
+
+            <!-- Preview (static UI-only) -->
+            <div class="card flex-fill">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Preview</h5>
+                </div>
+
+                <div class="card-body">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="sa-avatar">
+                            <i class="align-middle text-primary" data-feather="briefcase"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="fw-semibold">@bizName</div>
+                            <div class="text-muted small">@bizPhone</div>
+                        </div>
+                    </div>
+
+                    <hr class="my-3" />
+
+                    <div class="sa-muted-row">
+                        <div class="sa-kv">
+                            <span>Email</span>
+                            <span>@bizEmail</span>
+                        </div>
+                    </div>
+
+                    <div class="sa-muted-row">
+                        <div class="sa-kv">
+                            <span>Timezone</span>
+                            <span>@bizTz</span>
+                        </div>
+                    </div>
+
+                    <div class="sa-muted-row">
+                        <div class="sa-kv">
+                            <span>Address</span>
+                            <span>@addr1, @postal @city</span>
+                        </div>
+                    </div>
+
+                    <div class="mt-3">
+                        <div class="text-muted small mb-1">Booking link</div>
+                        <div class="input-group">
+                            <input type="text" class="form-control" value="@bookingUrl" readonly />
+                            <button class="btn btn-light bg-white" type="button" title="Copy (UI only)">
+                                <i class="align-middle" data-feather="copy"></i>
+                            </button>
+                        </div>
+                        <div class="text-muted small mt-2">
+                            Copy button is UI-only for now. Need to implement clipboard later.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick actions -->
+            <div class="card flex-fill">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Quick actions</h5>
+                </div>
+                <div class="card-body pt-2">
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <a asp-area="Admin" asp-controller="Settings" asp-action="Availability"
+                               class="btn btn-outline-primary w-100 d-flex align-items-center justify-content-center py-2">
+                                <i class="align-middle me-2" data-feather="clock"></i>
+                                <span class="fw-semibold">Availability</span>
+                            </a>
+                        </div>
+                        <div class="col-6">
+                            <a asp-area="Admin" asp-controller="Settings" asp-action="BookingRules"
+                               class="btn btn-outline-primary w-100 d-flex align-items-center justify-content-center py-2">
+                                <i class="align-middle me-2" data-feather="sliders"></i>
+                                <span class="fw-semibold">Rules</span>
+                            </a>
+                        </div>
+                        <div class="col-6">
+                            <a asp-area="Admin" asp-controller="Calendar" asp-action="Index"
+                               class="btn btn-outline-primary w-100 d-flex align-items-center justify-content-center py-2">
+                                <i class="align-middle me-2" data-feather="calendar"></i>
+                                <span class="fw-semibold">Calendar</span>
+                            </a>
+                        </div>
+                        <div class="col-6">
+                            <a asp-area="Admin" asp-controller="Services" asp-action="Index"
+                               class="btn btn-outline-primary w-100 d-flex align-items-center justify-content-center py-2">
+                                <i class="align-middle me-2" data-feather="briefcase"></i>
+                                <span class="fw-semibold">Services</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>

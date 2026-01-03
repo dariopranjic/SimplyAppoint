@@ -1,0 +1,287 @@
+﻿@{
+    ViewData["Title"] = "Edit Appointment";
+    Layout = "_AdminLayout";
+
+    // Dummy data (replace later with your model)
+    var apptId = 1;
+    var customerName = "Anna K.";
+    var customerPhone = "+385 99 123 4567";
+    var customerEmail = "anna@example.com";
+
+    var serviceName = "Haircut";
+    var serviceDuration = "45 min";
+    var servicePrice = "€ 25";
+
+    var status = "confirmed"; // confirmed | pending | cancelled | completed
+    var dateStr = DateTime.Today.ToString("yyyy-MM-dd");
+    var startTime = "09:00";
+    var endTime = "09:45";
+}
+
+<div class="row mb-2 mb-xl-3 align-items-center">
+    <div class="col-auto d-none d-sm-block">
+        <h3 class="mb-0"><strong>Edit Appointment</strong></h3>
+        <div class="text-muted">Update details, status and notes</div>
+    </div>
+
+    <div class="col-auto ms-auto text-end mt-n1">
+        <a asp-area="Admin" asp-controller="Appointments" asp-action="Index" class="btn btn-light bg-white me-2">
+            <i class="align-middle me-1" data-feather="arrow-left"></i> Back
+        </a>
+        <a asp-area="Admin" asp-controller="Calendar" asp-action="Index" class="btn btn-light bg-white me-2">
+            <i class="align-middle me-1" data-feather="calendar"></i> Calendar
+        </a>
+        <button type="submit" form="saEditForm" class="btn btn-primary">
+            <i class="align-middle me-1" data-feather="save"></i> Save changes
+        </button>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Main: Edit form -->
+    <div class="col-12 col-lg-8 d-flex">
+        <div class="card flex-fill">
+            <div class="card-header">
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                    <div>
+                        <h5 class="card-title mb-0">Appointment Details</h5>
+                        <div class="text-muted">ID: #@apptId</div>
+                    </div>
+
+                    <div>
+                        @* Status badge preview *@
+                        @if (status == "confirmed")
+                        {
+                            <span class="badge badge-success-light">Confirmed</span>
+                        }
+                        else if (status == "pending")
+                        {
+                            <span class="badge badge-warning-light">Pending</span>
+                        }
+                        else if (status == "cancelled")
+                        {
+                            <span class="badge badge-danger-light">Cancelled</span>
+                        }
+                        else
+                        {
+                            <span class="badge badge-primary-light">Completed</span>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-body">
+                <form id="saEditForm" method="post" asp-area="Admin" asp-controller="Appointments" asp-action="Edit" asp-route-id="@apptId">
+
+                    @* Scheduling *@
+                    <div class="row">
+                        <div class="col-12 col-md-4 mb-3">
+                            <label class="form-label">Date</label>
+                            <input type="date" class="form-control" name="Date" value="@dateStr" />
+                        </div>
+                        <div class="col-6 col-md-4 mb-3">
+                            <label class="form-label">Start</label>
+                            <input type="time" class="form-control" name="StartTime" value="@startTime" />
+                        </div>
+                        <div class="col-6 col-md-4 mb-3">
+                            <label class="form-label">End</label>
+                            <input type="time" class="form-control" name="EndTime" value="@endTime" />
+                        </div>
+                    </div>
+
+                    <hr class="my-3" />
+
+                    @* Customer + Service *@
+                    <div class="row">
+                        <div class="col-12 col-md-6 mb-3">
+                            <label class="form-label">Customer</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="align-middle" data-feather="user"></i>
+                                </span>
+                                <input type="text" class="form-control" name="CustomerName" value="@customerName" placeholder="Customer name" />
+                            </div>
+                            <div class="form-text">You can later replace this with a customer picker.</div>
+                        </div>
+
+                        <div class="col-12 col-md-6 mb-3">
+                            <label class="form-label">Service</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="align-middle" data-feather="briefcase"></i>
+                                </span>
+                                <select class="form-select" name="Service">
+                                    <option selected>@serviceName</option>
+                                    <option>Beard Trim</option>
+                                    <option>Nails</option>
+                                    <option>Dog Grooming</option>
+                                </select>
+                            </div>
+                            <div class="form-text">Duration & price can be auto-filled later from your Services table.</div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-12 col-md-6 mb-3">
+                            <label class="form-label">Phone</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="align-middle" data-feather="phone"></i>
+                                </span>
+                                <input type="text" class="form-control" name="CustomerPhone" value="@customerPhone" placeholder="+385 ..." />
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-md-6 mb-3">
+                            <label class="form-label">Email</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="align-middle" data-feather="mail"></i>
+                                </span>
+                                <input type="email" class="form-control" name="CustomerEmail" value="@customerEmail" placeholder="name@domain.com" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="my-3" />
+
+                    @* Status + Notes *@
+                    <div class="row">
+                        <div class="col-12 col-md-4 mb-3">
+                            <label class="form-label">Status</label>
+                            <select id="saStatus" class="form-select" name="Status">
+                                <option value="confirmed" selected="@(status == "confirmed")">Confirmed</option>
+                                <option value="pending" selected="@(status == "pending")">Pending</option>
+                                <option value="cancelled" selected="@(status == "cancelled")">Cancelled</option>
+                                <option value="completed" selected="@(status == "completed")">Completed</option>
+                            </select>
+                            <div class="form-text">Shown on Calendar & Appointments list.</div>
+                        </div>
+
+                        <div class="col-12 col-md-8 mb-3">
+                            <label class="form-label">Internal Notes</label>
+                            <textarea class="form-control" name="Notes" rows="3" placeholder="Add notes for yourself (preferences, warnings, etc.)">Prefers short sides. First-time discount.</textarea>
+                        </div>
+                    </div>
+
+                    @* Action buttons *@
+                    <div class="d-flex flex-wrap gap-2 justify-content-end mt-2">
+                        <a asp-area="Admin" asp-controller="Appointments" asp-action="Index" class="btn btn-outline-light">
+                            Cancel
+                        </a>
+
+                        <button type="submit" class="btn btn-primary">
+                            <i class="align-middle me-1" data-feather="save"></i> Save changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right: Summary + actions -->
+    <div class="col-12 col-lg-4 d-flex">
+        <div class="d-flex flex-column w-100">
+
+            @* Appointment summary *@
+            <div class="card flex-fill">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Summary</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-muted">Date</span>
+                        <span class="fw-semibold">@DateTime.Parse(dateStr).ToString("ddd, dd MMM")</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-muted">Time</span>
+                        <span class="fw-semibold">@startTime – @endTime</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-muted">Service</span>
+                        <span class="fw-semibold">@serviceName</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-muted">Duration</span>
+                        <span class="fw-semibold">@serviceDuration</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="text-muted">Price</span>
+                        <span class="fw-semibold">@servicePrice</span>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <a asp-area="Admin" asp-controller="Customers" asp-action="Index" class="btn btn-light bg-white">
+                            <i class="align-middle me-1" data-feather="users"></i> Open customers
+                        </a>
+                        <a asp-area="Admin" asp-controller="Services" asp-action="Index" class="btn btn-light bg-white">
+                            <i class="align-middle me-1" data-feather="briefcase"></i> Open services
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            @* Quick actions *@
+            <div class="card flex-fill">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <button type="button" class="btn btn-outline-success" id="saConfirmBtn">
+                            <i class="align-middle me-1" data-feather="check-circle"></i> Mark as Confirmed
+                        </button>
+                        <button type="button" class="btn btn-outline-warning" id="saPendingBtn">
+                            <i class="align-middle me-1" data-feather="alert-triangle"></i> Mark as Pending
+                        </button>
+                        <button type="button" class="btn btn-outline-danger" id="saCancelBtn">
+                            <i class="align-middle me-1" data-feather="x-circle"></i> Mark as Cancelled
+                        </button>
+                    </div>
+
+                    <hr class="my-3" />
+
+                    <div class="d-grid">
+                        <button type="button" class="btn btn-outline-light" id="saDeleteBtn">
+                            <i class="align-middle me-1" data-feather="trash-2"></i> Delete (UI only)
+                        </button>
+                        <div class="text-muted small mt-2">
+                            Delete is UI-only for now. Later you can wire it to a POST action with confirmation.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            // Feather icons
+            if (window.feather) window.feather.replace();
+
+            // Quick Actions -> just set status dropdown (no backend logic here)
+            var status = document.getElementById("saStatus");
+            var btnConfirm = document.getElementById("saConfirmBtn");
+            var btnPending = document.getElementById("saPendingBtn");
+            var btnCancel = document.getElementById("saCancelBtn");
+            var btnDelete = document.getElementById("saDeleteBtn");
+
+            function setStatus(value) {
+                if (!status) return;
+                status.value = value;
+            }
+
+            btnConfirm?.addEventListener("click", function () { setStatus("confirmed"); });
+            btnPending?.addEventListener("click", function () { setStatus("pending"); });
+            btnCancel?.addEventListener("click", function () { setStatus("cancelled"); });
+
+            btnDelete?.addEventListener("click", function () {
+                alert("Delete is UI-only right now. Wire this to a POST action later.");
+            });
+        });
+    </script>
+}

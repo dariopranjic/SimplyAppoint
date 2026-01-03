@@ -1,0 +1,387 @@
+﻿@{
+    ViewData["Title"] = "New Appointment";
+    Layout = "_AdminLayout";
+}
+
+<style>
+    /* small helper styles (still AdminKit/Bootstrap based) */
+    .sa-chip {
+        border: 1px solid rgba(255,255,255,.10);
+        background: rgba(255,255,255,.05);
+        color: rgba(255,255,255,.85);
+        border-radius: 12px;
+        padding: .55rem .75rem;
+        font-weight: 700;
+        cursor: pointer;
+        user-select: none;
+        transition: transform .08s ease, background .12s ease, border-color .12s ease;
+        text-align: center;
+    }
+
+        .sa-chip:hover {
+            transform: translateY(-1px);
+            background: rgba(255,255,255,.08);
+            border-color: rgba(255,255,255,.16);
+        }
+
+        .sa-chip.sa-chip-active {
+            background: rgba(59,130,246,.22);
+            border-color: rgba(59,130,246,.35);
+            color: rgba(255,255,255,.95);
+        }
+
+        .sa-chip.sa-chip-disabled {
+            opacity: .35;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+    .sa-summary-pill {
+        border: 1px solid rgba(255,255,255,.10);
+        background: rgba(255,255,255,.04);
+        border-radius: 14px;
+        padding: .65rem .75rem;
+    }
+
+    .sa-divider {
+        height: 1px;
+        background: rgba(255,255,255,.08);
+        margin: .75rem 0;
+    }
+</style>
+
+<div class="row mb-2 mb-xl-3 align-items-center">
+    <div class="col-auto d-none d-sm-block">
+        <h3 class="mb-0"><strong>Book Appointment</strong></h3>
+        <div class="text-muted">Create a new booking for your customer</div>
+    </div>
+
+    <div class="col-auto ms-auto text-end mt-n1">
+        <a asp-area="Admin" asp-controller="Appointments" asp-action="Index" class="btn btn-light bg-white me-2">
+            <i class="align-middle me-1" data-feather="arrow-left"></i> Back
+        </a>
+        <a asp-area="Admin" asp-controller="Calendar" asp-action="Index" class="btn btn-light bg-white">
+            <i class="align-middle me-1" data-feather="calendar"></i> Calendar
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Main form -->
+    <div class="col-12 col-lg-8 d-flex">
+        <div class="card flex-fill">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+                    <div>
+                        <h5 class="card-title mb-0">Appointment Details</h5>
+                        <div class="text-muted">Choose customer, service and time</div>
+                    </div>
+                    <span class="badge badge-primary-light">New</span>
+                </div>
+            </div>
+
+            <div class="card-body">
+                <form method="post" novalidate>
+                    <!-- Customer -->
+                    <div class="row">
+                        <div class="col-md-8">
+                            <label class="form-label">Customer</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="align-middle" data-feather="user"></i></span>
+                                <select id="saCustomer" class="form-select" required>
+                                    <option value="" selected disabled>Select customer…</option>
+                                    <option value="Anna K.">Anna K.</option>
+                                    <option value="Marko P.">Marko P.</option>
+                                    <option value="Sara L.">Sara L.</option>
+                                </select>
+                            </div>
+                            <div class="form-text">Add “New Customer” later when you build the flow.</div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label">Status</label>
+                            <select id="saStatus" class="form-select">
+                                <option value="Confirmed" selected>Confirmed</option>
+                                <option value="Pending">Pending</option>
+                                <option value="Cancelled">Cancelled</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="sa-divider"></div>
+
+                    <!-- Service -->
+                    <div class="row">
+                        <div class="col-md-8">
+                            <label class="form-label">Service</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="align-middle" data-feather="briefcase"></i></span>
+                                <select id="saService" class="form-select" required>
+                                    <option value="" selected disabled>Select service…</option>
+                                    <option value="Haircut" data-duration="45" data-price="25">Haircut (45 min)</option>
+                                    <option value="Beard Trim" data-duration="30" data-price="15">Beard Trim (30 min)</option>
+                                    <option value="Color" data-duration="90" data-price="60">Color (90 min)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label">Price</label>
+                            <div class="input-group">
+                                <span class="input-group-text">€</span>
+                                <input id="saPrice" type="number" step="0.01" min="0" class="form-control" placeholder="0.00" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Date</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="align-middle" data-feather="calendar"></i></span>
+                                <input id="saDate" type="date" class="form-control" value="@DateTime.Today.ToString("yyyy-MM-dd")" required />
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label">Start time</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="align-middle" data-feather="clock"></i></span>
+                                <input id="saTime" type="time" class="form-control" required />
+                            </div>
+                            <div class="form-text">Pick from Available Times on the right.</div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label">Duration</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="align-middle" data-feather="hash"></i></span>
+                                <select id="saDuration" class="form-select">
+                                    <option value="15">15 min</option>
+                                    <option value="30">30 min</option>
+                                    <option value="45" selected>45 min</option>
+                                    <option value="60">60 min</option>
+                                    <option value="90">90 min</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="sa-divider"></div>
+
+                    <!-- Notes -->
+                    <div class="row">
+                        <div class="col-12">
+                            <label class="form-label">Notes (optional)</label>
+                            <textarea id="saNotes" class="form-control" rows="4" placeholder="e.g., customer preference, special request, internal note…"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mt-4 flex-wrap gap-2">
+                        <a asp-area="Admin" asp-controller="Appointments" asp-action="Index" class="btn btn-outline-light">
+                            Cancel
+                        </a>
+
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-light bg-white">
+                                <i class="align-middle me-1" data-feather="copy"></i> Save as Draft
+                            </button>
+                            <a asp-area="Admin" asp-controller="Services" asp-action="Index" class="btn btn-primary">
+                                <i class="align-middle me-1" data-feather="check"></i> Create Appointment
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right column -->
+    <div class="col-12 col-lg-4 d-flex">
+        <div class="d-flex flex-column w-100">
+
+            <!-- Summary -->
+            <div class="card flex-fill">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Summary</h5>
+                </div>
+                <div class="card-body">
+                    <div class="sa-summary-pill">
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted">Customer</span>
+                            <span class="fw-semibold" id="saSumCustomer">—</span>
+                        </div>
+                        <div class="d-flex justify-content-between mt-2">
+                            <span class="text-muted">Service</span>
+                            <span class="fw-semibold" id="saSumService">—</span>
+                        </div>
+                        <div class="d-flex justify-content-between mt-2">
+                            <span class="text-muted">When</span>
+                            <span class="fw-semibold" id="saSumWhen">—</span>
+                        </div>
+                        <div class="d-flex justify-content-between mt-2">
+                            <span class="text-muted">Duration</span>
+                            <span class="fw-semibold" id="saSumDuration">—</span>
+                        </div>
+                        <div class="d-flex justify-content-between mt-2">
+                            <span class="text-muted">Price</span>
+                            <span class="fw-semibold" id="saSumPrice">—</span>
+                        </div>
+                    </div>
+
+                    <div class="d-grid mt-3">
+                        <a asp-area="Admin" asp-controller="Calendar" asp-action="Index" class="btn btn-light bg-white">
+                            <i class="align-middle me-2" data-feather="external-link"></i> View in Calendar
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Available times -->
+            <div class="card flex-fill">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">Available Times</h5>
+                        <span class="badge badge-success-light" id="saSlotsBadge">Today</span>
+                    </div>
+                </div>
+
+                <div class="card-body pt-2">
+                    <div class="text-muted small mb-2">Click a slot to fill Start time.</div>
+
+                    <div class="row g-2" id="saSlots">
+                        <div class="col-4"><div class="sa-chip" data-time="09:00">09:00</div></div>
+                        <div class="col-4"><div class="sa-chip" data-time="09:30">09:30</div></div>
+                        <div class="col-4"><div class="sa-chip sa-chip-disabled">10:00</div></div>
+
+                        <div class="col-4"><div class="sa-chip" data-time="10:30">10:30</div></div>
+                        <div class="col-4"><div class="sa-chip" data-time="11:00">11:00</div></div>
+                        <div class="col-4"><div class="sa-chip sa-chip-disabled">11:30</div></div>
+
+                        <div class="col-4"><div class="sa-chip" data-time="12:00">12:00</div></div>
+                        <div class="col-4"><div class="sa-chip" data-time="12:30">12:30</div></div>
+                        <div class="col-4"><div class="sa-chip" data-time="13:00">13:00</div></div>
+                    </div>
+
+                    <div class="text-muted small mt-3">
+                        Disabled slots are already booked.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Policies / reminders (replaces “tips”) -->
+            <div class="card flex-fill">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Booking Rules</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-start mb-3">
+                        <i class="align-middle me-2 text-primary" data-feather="info"></i>
+                        <div>
+                            <div class="fw-semibold">Buffer time</div>
+                            <div class="text-muted small">Keep 10 minutes between bookings for cleanup/prep.</div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex align-items-start mb-3">
+                        <i class="align-middle me-2 text-primary" data-feather="bell"></i>
+                        <div>
+                            <div class="fw-semibold">Confirmation</div>
+                            <div class="text-muted small">Set status to Pending if you still need to confirm.</div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex align-items-start">
+                        <i class="align-middle me-2 text-primary" data-feather="shield"></i>
+                        <div>
+                            <div class="fw-semibold">Cancellation policy</div>
+                            <div class="text-muted small">Same-day cancellations should be marked and tracked.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            if (window.feather) window.feather.replace();
+
+            var customer = document.getElementById("saCustomer");
+            var service = document.getElementById("saService");
+            var date = document.getElementById("saDate");
+            var time = document.getElementById("saTime");
+            var duration = document.getElementById("saDuration");
+            var price = document.getElementById("saPrice");
+
+            var sumCustomer = document.getElementById("saSumCustomer");
+            var sumService = document.getElementById("saSumService");
+            var sumWhen = document.getElementById("saSumWhen");
+            var sumDuration = document.getElementById("saSumDuration");
+            var sumPrice = document.getElementById("saSumPrice");
+
+            function pad2(n) { return (n < 10 ? "0" : "") + n; }
+
+            function fmtDate(yyyyMmDd) {
+                if (!yyyyMmDd) return "—";
+                var d = new Date(yyyyMmDd + "T00:00:00");
+                var day = d.toLocaleDateString(undefined, { weekday: "short", day: "2-digit", month: "short" });
+                return day;
+            }
+
+            function refreshSummary() {
+                sumCustomer.textContent = customer.value || "—";
+                sumService.textContent = service.value || "—";
+
+                var when = "—";
+                if (date.value && time.value) {
+                    when = fmtDate(date.value) + " • " + time.value;
+                } else if (date.value) {
+                    when = fmtDate(date.value);
+                }
+                sumWhen.textContent = when;
+
+                sumDuration.textContent = (duration.value ? duration.value + " min" : "—");
+                sumPrice.textContent = (price.value ? ("€ " + Number(price.value).toFixed(2)) : "—");
+            }
+
+            // auto-set duration/price from service option metadata
+            service.addEventListener("change", function () {
+                var opt = service.options[service.selectedIndex];
+                var d = opt ? opt.getAttribute("data-duration") : "";
+                var p = opt ? opt.getAttribute("data-price") : "";
+
+                if (d) duration.value = d;
+                if (p && (!price.value || Number(price.value) === 0)) price.value = p;
+
+                refreshSummary();
+            });
+
+            [customer, date, time, duration, price].forEach(function (el) {
+                el.addEventListener("input", refreshSummary);
+                el.addEventListener("change", refreshSummary);
+            });
+
+            // slot chips
+            var chips = document.querySelectorAll("#saSlots .sa-chip");
+            chips.forEach(function (chip) {
+                if (chip.classList.contains("sa-chip-disabled")) return;
+
+                chip.addEventListener("click", function () {
+                    chips.forEach(function (c) { c.classList.remove("sa-chip-active"); });
+                    chip.classList.add("sa-chip-active");
+
+                    var t = chip.getAttribute("data-time");
+                    if (t) time.value = t;
+
+                    refreshSummary();
+                });
+            });
+
+            refreshSummary();
+        });
+    </script>
+}

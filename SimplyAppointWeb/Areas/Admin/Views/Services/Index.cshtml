@@ -1,0 +1,252 @@
+﻿@{
+    ViewData["Title"] = "Services";
+    Layout = "_AdminLayout";
+
+    // Dummy data (replace later with your model)
+    var services = new[]
+    {
+        new { Id = 1, Name = "Haircut", Duration = 45, Price = 25, Category = "Hair", Color = "primary", Active = true, Description = "Classic haircut, wash included." },
+        new { Id = 2, Name = "Beard Trim", Duration = 20, Price = 12, Category = "Beard", Color = "success", Active = true, Description = "Clean shaping + line-up." },
+        new { Id = 3, Name = "Nails", Duration = 60, Price = 30, Category = "Beauty", Color = "warning", Active = true, Description = "Full manicure service." },
+        new { Id = 4, Name = "Dog Grooming", Duration = 90, Price = 50, Category = "Pets", Color = "danger", Active = false, Description = "Bath + grooming (currently paused)." }
+    };
+
+    var total = services.Length;
+    var activeCount = services.Count(s => s.Active);
+    var inactiveCount = total - activeCount;
+
+    var avgDuration = (int)Math.Round(services.Average(s => s.Duration));
+    var avgPrice = (int)Math.Round(services.Average(s => s.Price));
+
+    var minPrice = services.Min(s => s.Price);
+    var maxPrice = services.Max(s => s.Price);
+    var minDuration = services.Min(s => s.Duration);
+    var maxDuration = services.Max(s => s.Duration);
+
+    var mostExpensive = services.OrderByDescending(s => s.Price).First();
+    var longest = services.OrderByDescending(s => s.Duration).First();
+
+    var activePct = total == 0 ? 0 : (int)Math.Round((activeCount * 100.0) / total);
+}
+
+<div class="row mb-2 mb-xl-3 align-items-center">
+    <div class="col-auto d-none d-sm-block">
+        <h3 class="mb-0"><strong>Services</strong></h3>
+    </div>
+
+    <div class="col-auto ms-auto text-end mt-n1">
+        <a asp-area="Admin" asp-controller="Services" asp-action="Upsert" class="btn btn-primary me-2">
+            <i class="align-middle me-1" data-feather="plus"></i> New Service
+        </a>
+        <a asp-area="Admin" asp-controller="Calendar" asp-action="Index" class="btn btn-light bg-white">
+            <i class="align-middle me-1" data-feather="calendar"></i> Calendar
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Main -->
+    <div class="col-12 col-lg-8 d-flex">
+        <div class="card flex-fill">
+            <div class="card-header">
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                    <div>
+                        <h5 class="card-title mb-0">All Services</h5>
+                        <div class="text-muted">Click a service to edit</div>
+                    </div>
+
+                    <!-- UI-only controls (wire to backend later) -->
+                    <div class="d-flex flex-wrap gap-2">
+                        <div class="input-group input-group-navbar">
+                            <input type="text" class="form-control" placeholder="Search services…" aria-label="Search services">
+                            <button class="btn" type="button" title="Search (UI only)">
+                                <i class="align-middle" data-feather="search"></i>
+                            </button>
+                        </div>
+
+                        <select class="form-select" style="max-width: 190px;">
+                            <option selected>All</option>
+                            <option>Active</option>
+                            <option>Inactive</option>
+                        </select>
+
+                        <select class="form-select" style="max-width: 200px;">
+                            <option selected>Sort: Name</option>
+                            <option>Sort: Price</option>
+                            <option>Sort: Duration</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-body">
+                <!-- Quick actions -->
+                <div class="row g-2 mb-3">
+                    <div class="col-6 col-md-3">
+                        <a asp-area="Admin" asp-controller="Services" asp-action="Upsert"
+                           class="btn btn-primary w-100 d-flex align-items-center justify-content-center py-2">
+                            <i class="align-middle me-2" data-feather="plus"></i>
+                            <span class="fw-semibold">Add</span>
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <a asp-area="Admin" asp-controller="Appointments" asp-action="Index"
+                           class="btn btn-light bg-white w-100 d-flex align-items-center justify-content-center py-2">
+                            <i class="align-middle me-2" data-feather="list"></i>
+                            <span class="fw-semibold">Appointments</span>
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <a asp-area="Admin" asp-controller="Customers" asp-action="Index"
+                           class="btn btn-light bg-white w-100 d-flex align-items-center justify-content-center py-2">
+                            <i class="align-middle me-2" data-feather="users"></i>
+                            <span class="fw-semibold">Customers</span>
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <a asp-area="Admin" asp-controller="Home" asp-action="Index"
+                           class="btn btn-light bg-white w-100 d-flex align-items-center justify-content-center py-2">
+                            <i class="align-middle me-2" data-feather="bar-chart-2"></i>
+                            <span class="fw-semibold">Dashboard</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Services grid -->
+                <div class="row g-3">
+                    @foreach (var s in services)
+                    {
+                        <div class="col-12 col-md-6">
+                            <a asp-area="Admin" asp-controller="Services" asp-action="Upsert" asp-route-id="@s.Id"
+                               class="card text-decoration-none mb-0">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-start justify-content-between">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="badge bg-@s.Color">@s.Category</span>
+                                            @if (s.Active)
+                                            {
+                                                <span class="badge badge-success-light">Active</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge badge-danger-light">Inactive</span>
+                                            }
+                                        </div>
+                                        <i class="align-middle text-muted" data-feather="chevron-right"></i>
+                                    </div>
+
+                                    <h4 class="mt-3 mb-1">@s.Name</h4>
+                                    <div class="text-muted">@s.Description</div>
+
+                                    <div class="row mt-3">
+                                        <div class="col-6">
+                                            <div class="text-muted small">Duration</div>
+                                            <div class="fw-semibold">@s.Duration min</div>
+                                        </div>
+                                        <div class="col-6 text-end">
+                                            <div class="text-muted small">Price</div>
+                                            <div class="fw-semibold">€ @s.Price</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    }
+                </div>
+
+                <!-- Empty state (UI only; show/hide via backend later) -->
+                <div class="text-center text-muted py-4 d-none">
+                    <div class="mb-2">
+                        <i class="align-middle" data-feather="inbox"></i>
+                    </div>
+                    No services match your filters.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-12 col-lg-4 d-flex">
+        <div class="d-flex flex-column w-100">
+
+            <!-- Overview -->
+            <div class="card flex-fill">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Overview</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-muted">Total services</span>
+                        <span class="fw-semibold">@total</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-muted">Active</span>
+                        <span class="badge badge-success-light">@activeCount</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-muted">Avg duration</span>
+                        <span class="fw-semibold">@avgDuration min</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="text-muted">Avg price</span>
+                        <span class="fw-semibold">€ @avgPrice</span>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <a asp-area="Admin" asp-controller="Services" asp-action="Upsert" class="btn btn-primary">
+                            <i class="align-middle me-2" data-feather="plus"></i> Create service
+                        </a>
+                        <a asp-area="Admin" asp-controller="Settings" asp-action="Index" class="btn btn-light bg-white">
+                            <i class="align-middle me-2" data-feather="settings"></i> Service settings
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Service Health -->
+            <div class="card flex-fill">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Service Health</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-muted">Active services</span>
+                        <span class="fw-semibold">@activePct%</span>
+                    </div>
+                    <div class="progress progress-sm mb-3">
+                        <div class="progress-bar bg-success" style="width: @activePct%"></div>
+                    </div>
+
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <div class="border rounded-3 p-2">
+                                <div class="text-muted small">Price range</div>
+                                <div class="fw-semibold">€ @minPrice – € @maxPrice</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="border rounded-3 p-2">
+                                <div class="text-muted small">Duration range</div>
+                                <div class="fw-semibold">@minDuration – @maxDuration min</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-muted">Most expensive</span>
+                        <span class="fw-semibold">@mostExpensive.Name (€ @mostExpensive.Price)</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-muted">Longest</span>
+                        <span class="fw-semibold">@longest.Name (@longest.Duration min)</span>
+                    </div>
+
+                    <div class="mt-3 text-muted small">
+                        Inactive services: <span class="fw-semibold">@inactiveCount</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>

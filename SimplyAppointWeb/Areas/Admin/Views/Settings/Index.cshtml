@@ -1,0 +1,293 @@
+﻿@{
+    ViewData["Title"] = "Settings";
+    Layout = "_AdminLayout";
+
+    // Dummy data (replace later)
+    var bizName = "SimplyAppoint Studio";
+    var bizPhone = "+385 99 123 4567";
+    var bizEmail = "hello@simplyappoint.com";
+    var bizTz = "Europe/Zagreb";
+
+    var workingHours = "Mon–Fri 09:00–18:00";
+    var nextDayOff = "None planned";
+
+    var minNotice = "No minimum";
+    var cancellation = "Up to 2h before";
+}
+
+<div class="row mb-2 mb-xl-3 align-items-center">
+    <div class="col-auto">
+        <h3 class="mb-0"><strong>Settings</strong></h3>
+    </div>
+
+    <div class="col-auto ms-auto text-end mt-n1">
+        <a asp-area="Admin" asp-controller="Home" asp-action="Index" class="btn btn-light bg-white me-2">
+            <i class="align-middle me-1" data-feather="bar-chart-2"></i> Dashboard
+        </a>
+        <a asp-area="Admin" asp-controller="Calendar" asp-action="Index" class="btn btn-primary">
+            <i class="align-middle me-1" data-feather="calendar"></i> Calendar
+        </a>
+    </div>
+</div>
+
+<!-- Top summary cards -->
+<div class="row g-3">
+    <div class="col-12 col-lg-4 d-flex">
+        <div class="card flex-fill">
+            <div class="card-body">
+                <div class="d-flex align-items-start justify-content-between">
+                    <div>
+                        <h5 class="card-title mb-1">Business</h5>
+                        <div class="text-muted">Profile and contact</div>
+                    </div>
+                    <div class="stat text-primary">
+                        <i class="align-middle" data-feather="home"></i>
+                    </div>
+                </div>
+
+                <div class="mt-3">
+                    <div class="d-flex justify-content-between py-1">
+                        <span class="text-muted">Name</span>
+                        <span class="fw-semibold">@bizName</span>
+                    </div>
+                    <div class="d-flex justify-content-between py-1">
+                        <span class="text-muted">Phone</span>
+                        <span class="fw-semibold">@bizPhone</span>
+                    </div>
+                    <div class="d-flex justify-content-between py-1">
+                        <span class="text-muted">Email</span>
+                        <span class="fw-semibold">@bizEmail</span>
+                    </div>
+                    <div class="d-flex justify-content-between py-1">
+                        <span class="text-muted">Timezone</span>
+                        <span class="fw-semibold">@bizTz</span>
+                    </div>
+                </div>
+
+                <div class="d-grid mt-3">
+                    <a asp-area="Admin" asp-controller="Settings" asp-action="Business" class="btn btn-primary">
+                        <i class="align-middle me-2" data-feather="edit-2"></i> Edit business
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-lg-4 d-flex">
+        <div class="card flex-fill">
+            <div class="card-body">
+                <div class="d-flex align-items-start justify-content-between">
+                    <div>
+                        <h5 class="card-title mb-1">Availability</h5>
+                        <div class="text-muted">Hours and days off</div>
+                    </div>
+                    <div class="stat text-primary">
+                        <i class="align-middle" data-feather="clock"></i>
+                    </div>
+                </div>
+
+                <div class="mt-3">
+                    <div class="d-flex justify-content-between py-1">
+                        <span class="text-muted">Working hours</span>
+                        <span class="fw-semibold">@workingHours</span>
+                    </div>
+                    <div class="d-flex justify-content-between py-1">
+                        <span class="text-muted">Next day off</span>
+                        <span class="fw-semibold">@nextDayOff</span>
+                    </div>
+                </div>
+
+                <div class="d-grid mt-3">
+                    <a asp-area="Admin" asp-controller="Settings" asp-action="Availability" class="btn btn-light bg-white">
+                        <i class="align-middle me-2" data-feather="calendar"></i> Manage availability
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-lg-4 d-flex">
+        <div class="card flex-fill">
+            <div class="card-body">
+                <div class="d-flex align-items-start justify-content-between">
+                    <div>
+                        <h5 class="card-title mb-1">Booking rules</h5>
+                        <div class="text-muted">Notice, cancellations</div>
+                    </div>
+                    <div class="stat text-primary">
+                        <i class="align-middle" data-feather="sliders"></i>
+                    </div>
+                </div>
+
+                <div class="mt-3">
+                    <div class="d-flex justify-content-between py-1">
+                        <span class="text-muted">Minimum notice</span>
+                        <span class="fw-semibold">@minNotice</span>
+                    </div>
+                    <div class="d-flex justify-content-between py-1">
+                        <span class="text-muted">Cancellation</span>
+                        <span class="fw-semibold">@cancellation</span>
+                    </div>
+                </div>
+
+                <div class="d-grid mt-3">
+                    <a asp-area="Admin" asp-controller="Settings" asp-action="Booking" class="btn btn-light bg-white">
+                        <i class="align-middle me-2" data-feather="shield"></i> Edit rules
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bottom row: equal height (FIXED gaps) -->
+<div class="row g-3 mt-1">
+    <!-- Navigation -->
+    <div class="col-12 col-lg-8 d-flex">
+        <div class="card flex-fill h-100">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Settings sections</h5>
+                <div class="text-muted">Open a section to update your configuration</div>
+            </div>
+
+            <div class="card-body">
+                <div class="row g-3">
+
+                    <div class="col-12 col-md-6">
+                        <a asp-area="Admin" asp-controller="Settings" asp-action="Business"
+                           class="card mb-0 text-decoration-none h-100">
+                            <div class="card-body d-flex align-items-center justify-content-between">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="stat text-primary">
+                                        <i class="align-middle" data-feather="home"></i>
+                                    </div>
+                                    <div>
+                                        <div class="fw-semibold">Business</div>
+                                        <div class="text-muted small">Name, contacts, address</div>
+                                    </div>
+                                </div>
+                                <i class="align-middle text-muted" data-feather="chevron-right"></i>
+                            </div>
+                        </a>
+                    </div>
+
+                    <div class="col-12 col-md-6">
+                        <a asp-area="Admin" asp-controller="Settings" asp-action="Availability"
+                           class="card mb-0 text-decoration-none h-100">
+                            <div class="card-body d-flex align-items-center justify-content-between">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="stat text-primary">
+                                        <i class="align-middle" data-feather="clock"></i>
+                                    </div>
+                                    <div>
+                                        <div class="fw-semibold">Availability</div>
+                                        <div class="text-muted small">Working hours, days off</div>
+                                    </div>
+                                </div>
+                                <i class="align-middle text-muted" data-feather="chevron-right"></i>
+                            </div>
+                        </a>
+                    </div>
+
+                    <div class="col-12 col-md-6">
+                        <a asp-area="Admin" asp-controller="Settings" asp-action="Booking"
+                           class="card mb-0 text-decoration-none h-100">
+                            <div class="card-body d-flex align-items-center justify-content-between">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="stat text-primary">
+                                        <i class="align-middle" data-feather="sliders"></i>
+                                    </div>
+                                    <div>
+                                        <div class="fw-semibold">Booking rules</div>
+                                        <div class="text-muted small">Notice, cancellation window</div>
+                                    </div>
+                                </div>
+                                <i class="align-middle text-muted" data-feather="chevron-right"></i>
+                            </div>
+                        </a>
+                    </div>
+
+                    <div class="col-12 col-md-6">
+                        <a asp-area="Admin" asp-controller="Calendar" asp-action="Index"
+                           class="card mb-0 text-decoration-none h-100">
+                            <div class="card-body d-flex align-items-center justify-content-between">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="stat text-primary">
+                                        <i class="align-middle" data-feather="calendar"></i>
+                                    </div>
+                                    <div>
+                                        <div class="fw-semibold">Open calendar</div>
+                                        <div class="text-muted small">Check schedule and bookings</div>
+                                    </div>
+                                </div>
+                                <i class="align-middle text-muted" data-feather="chevron-right"></i>
+                            </div>
+                        </a>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick toggles -->
+    <div class="col-12 col-lg-4 d-flex">
+        <div class="card flex-fill h-100">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Quick toggles</h5>
+            </div>
+
+            <div class="card-body d-flex flex-column">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <div class="fw-semibold">Online booking</div>
+                        <div class="text-muted small">Allow customers to book online</div>
+                    </div>
+                    <div class="form-check form-switch m-0">
+                        <input class="form-check-input" type="checkbox" id="saBookingToggle" checked />
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <div class="fw-semibold">Auto-confirm</div>
+                        <div class="text-muted small">New bookings are confirmed instantly</div>
+                    </div>
+                    <div class="form-check form-switch m-0">
+                        <input class="form-check-input" type="checkbox" id="saAutoConfirm" />
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="fw-semibold">Show prices</div>
+                        <div class="text-muted small">Display service prices in booking</div>
+                    </div>
+                    <div class="form-check form-switch m-0">
+                        <input class="form-check-input" type="checkbox" id="saShowPrices" checked />
+                    </div>
+                </div>
+
+                <div class="mt-auto">
+                    <div class="d-grid mt-3">
+                        <a asp-area="Admin" asp-controller="Settings" asp-action="Availability" class="btn btn-primary">
+                            <i class="align-middle me-2" data-feather="clock"></i> Update availability
+                        </a>
+                    </div>
+
+                    <div class="text-muted small mt-3">
+                        These toggles are UI-only for now. You can wire them up later.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            if (window.feather) window.feather.replace();
+        });
+    </script>
+}

@@ -1,0 +1,230 @@
+﻿@{
+    ViewData["Title"] = "Create Customer";
+    Layout = "_AdminLayout";
+}
+<style>
+    .sa-avatar {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background-color: #3b82f6; /* or your primary */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+        .sa-avatar i,
+        .sa-avatar svg {
+            width: 22px;
+            height: 22px;
+            stroke-width: 2;
+            color: #fff;
+        }
+</style>
+
+<div class="row mb-2 mb-xl-3 align-items-center">
+    <div class="col-auto d-none d-sm-block">
+        <h3 class="mb-0"><strong>Create</strong> Customer</h3>
+        <div class="text-muted">Add a new customer to your business</div>
+    </div>
+
+    <div class="col-auto ms-auto text-end mt-n1">
+        <a asp-area="Admin" asp-controller="Customers" asp-action="Index" class="btn btn-light bg-white me-2">
+            <i class="align-middle me-1" data-feather="arrow-left"></i> Back
+        </a>
+        <a asp-area="Admin" asp-controller="Customers" asp-action="Index" class="btn btn-primary">
+            <i class="align-middle me-1" data-feather="check"></i> Save Customer
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Main form -->
+    <div class="col-12 col-lg-8 d-flex">
+        <div class="card flex-fill">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Customer Details</h5>
+            </div>
+
+            <div class="card-body">
+                <form id="saCustomerForm"
+                      asp-area="Admin"
+                      asp-controller="Customers"
+                      asp-action="Create"
+                      method="post"
+                      novalidate>
+
+                    <!-- Basic Info -->
+                    <div class="mb-4">
+                        <h6 class="text-muted mb-3">Basic Information</h6>
+
+                        <div class="row">
+                            <div class="col-12 col-md-6 mb-3">
+                                <label class="form-label" for="saFirstName">First Name</label>
+                                <input id="saFirstName" name="FirstName" type="text" class="form-control" placeholder="e.g. Anna" required>
+                            </div>
+
+                            <div class="col-12 col-md-6 mb-3">
+                                <label class="form-label" for="saLastName">Last Name</label>
+                                <input id="saLastName" name="LastName" type="text" class="form-control" placeholder="e.g. Kovac" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label" for="saPhone">Phone</label>
+                            <input id="saPhone" name="Phone" type="tel" class="form-control" placeholder="+385 91 123 4567" required>
+                        </div>
+
+                        <div class="mb-0">
+                            <label class="form-label" for="saEmail">Email (optional)</label>
+                            <input id="saEmail" name="Email" type="email" class="form-control" placeholder="anna@email.com">
+                        </div>
+                    </div>
+
+                    <hr class="my-4" />
+
+                    <!-- Notes -->
+                    <div class="mb-4">
+                        <h6 class="text-muted mb-3">Notes</h6>
+                        <textarea id="saNotes" name="Notes" class="form-control" rows="4"
+                                  placeholder="Preferences, allergies, special requests..."></textarea>
+                        <div class="form-text">Only visible to you.</div>
+                    </div>
+
+                    <hr class="my-4" />
+
+                    <!-- Status -->
+                    <div class="mb-0">
+                        <h6 class="text-muted mb-3">Status</h6>
+
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="saIsActive" name="IsActive" value="true" checked>
+                            <label class="form-check-label" for="saIsActive">Active customer</label>
+                        </div>
+
+                        <!-- Hidden fallback so unchecked still posts (optional but useful) -->
+                        <input type="hidden" name="IsActive" value="false" />
+                    </div>
+
+                </form>
+            </div>
+
+            <div class="card-footer d-flex justify-content-end gap-2">
+                <a asp-area="Admin" asp-controller="Customers" asp-action="Index" class="btn btn-light bg-white">
+                    Cancel
+                </a>
+                <a asp-area="Admin" asp-controller="Customers" asp-action="Index" class="btn btn-primary">
+                    <i class="align-middle me-1" data-feather="check"></i> Save Customer
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-12 col-lg-4 d-flex">
+        <div class="d-flex flex-column w-100">
+
+            <!-- Preview -->
+            <div class="card flex-fill">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Preview</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center sa-customer-header">
+                        <div class="sa-avatar me-3">
+                            <i data-feather="user"></i>
+                        </div>
+                        <div>
+                            <div class="fw-semibold">Customer name</div>
+                            <div class="text-muted small">Phone number</div>
+                        </div>
+                    </div>
+
+
+                    <hr class="my-3" />
+
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Email</span>
+                        <span class="fw-semibold" id="saPrevEmail">—</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span class="text-muted">Status</span>
+                        <span class="badge badge-success-light" id="saPrevStatus">Active</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card flex-fill">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Quick Actions</h5>
+                </div>
+                <div class="card-body pt-2">
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <a asp-area="Admin" asp-controller="Appointments" asp-action="Index"
+                               class="btn btn-light bg-white w-100 d-flex align-items-center justify-content-center py-2">
+                                <i class="align-middle me-2" data-feather="list"></i>
+                                <span class="fw-semibold">Appointments</span>
+                            </a>
+                        </div>
+                        <div class="col-6">
+                            <a asp-area="Admin" asp-controller="Calendar" asp-action="Index"
+                               class="btn btn-light bg-white w-100 d-flex align-items-center justify-content-center py-2">
+                                <i class="align-middle me-2" data-feather="calendar"></i>
+                                <span class="fw-semibold">Calendar</span>
+                            </a>
+                        </div>
+                        <div class="col-12">
+                            <a asp-area="Admin" asp-controller="Services" asp-action="Index"
+                               class="btn btn-outline-primary w-100 d-flex align-items-center justify-content-center py-2">
+                                <i class="align-middle me-2" data-feather="briefcase"></i>
+                                <span class="fw-semibold">Services</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            if (window.feather) window.feather.replace();
+
+            // Live preview (UI only)
+            var fn = document.getElementById("saFirstName");
+            var ln = document.getElementById("saLastName");
+            var ph = document.getElementById("saPhone");
+            var em = document.getElementById("saEmail");
+            var ac = document.getElementById("saIsActive");
+
+            var pName = document.getElementById("saPrevName");
+            var pPhone = document.getElementById("saPrevPhone");
+            var pEmail = document.getElementById("saPrevEmail");
+            var pStatus = document.getElementById("saPrevStatus");
+
+            function refresh() {
+                var name = ((fn.value || "").trim() + " " + (ln.value || "").trim()).trim();
+                pName.textContent = name || "Customer name";
+                pPhone.textContent = (ph.value || "").trim() || "Phone number";
+                pEmail.textContent = (em.value || "").trim() || "—";
+
+                if (ac.checked) {
+                    pStatus.className = "badge badge-success-light";
+                    pStatus.textContent = "Active";
+                } else {
+                    pStatus.className = "badge badge-danger-light";
+                    pStatus.textContent = "Inactive";
+                }
+            }
+
+            [fn, ln, ph, em].forEach(function (el) { el.addEventListener("input", refresh); });
+            ac.addEventListener("change", refresh);
+            refresh();
+        });
+    </script>
+}

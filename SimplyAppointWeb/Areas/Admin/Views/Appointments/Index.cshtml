@@ -1,0 +1,415 @@
+﻿@{
+    ViewData["Title"] = "Appointments";
+    Layout = "_AdminLayout";
+}
+
+<div class="row mb-2 mb-xl-3 align-items-center">
+    <div class="col-auto d-none d-sm-block">
+        <h3 class="mb-0"><strong>Appointments</strong></h3>
+    </div>
+
+    <div class="col-auto ms-auto text-end mt-n1">
+        <a asp-area="Admin" asp-controller="Calendar" asp-action="Index" class="btn btn-light bg-white me-2">
+            <i class="align-middle me-1" data-feather="calendar"></i> Calendar
+        </a>
+        <a asp-area="Admin" asp-controller="Appointments" asp-action="Create" class="btn btn-primary">
+            <i class="align-middle me-1" data-feather="plus"></i> New Appointment
+        </a>
+    </div>
+</div>
+
+<!--  Stats row (AdminKit style cards) -->
+<div class="row">
+    <div class="col-sm-6 col-xl-3">
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col mt-0">
+                        <h5 class="card-title">Today</h5>
+                    </div>
+                    <div class="col-auto">
+                        <div class="stat text-primary">
+                            <i class="align-middle" data-feather="clock"></i>
+                        </div>
+                    </div>
+                </div>
+                <h1 class="mt-1 mb-3">8</h1>
+                <div class="mb-0">
+                    <span class="badge badge-success-light">+2</span>
+                    <span class="text-muted">vs yesterday</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col mt-0">
+                        <h5 class="card-title">Next 7 Days</h5>
+                    </div>
+                    <div class="col-auto">
+                        <div class="stat text-primary">
+                            <i class="align-middle" data-feather="calendar"></i>
+                        </div>
+                    </div>
+                </div>
+                <h1 class="mt-1 mb-3">42</h1>
+                <div class="mb-0">
+                    <span class="badge badge-success-light">+6%</span>
+                    <span class="text-muted">vs last week</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col mt-0">
+                        <h5 class="card-title">Revenue (Week)</h5>
+                    </div>
+                    <div class="col-auto">
+                        <div class="stat text-primary">
+                            <i class="align-middle" data-feather="credit-card"></i>
+                        </div>
+                    </div>
+                </div>
+                <h1 class="mt-1 mb-3">€ 620</h1>
+                <div class="mb-0">
+                    <span class="badge badge-primary-light">est.</span>
+                    <span class="text-muted">based on bookings</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col mt-0">
+                        <h5 class="card-title">Cancellations</h5>
+                    </div>
+                    <div class="col-auto">
+                        <div class="stat text-primary">
+                            <i class="align-middle" data-feather="x-circle"></i>
+                        </div>
+                    </div>
+                </div>
+                <h1 class="mt-1 mb-3">3</h1>
+                <div class="mb-0">
+                    <span class="badge badge-danger-light">+1</span>
+                    <span class="text-muted">needs attention</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Main table -->
+    <div class="col-12 col-lg-8 d-flex">
+        <div class="card flex-fill">
+            <div class="card-header">
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                    <div>
+                        <h5 class="card-title mb-0">Appointments</h5>
+                        <div class="text-muted">Filter and manage your schedule</div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <div class="input-group input-group-navbar">
+                            <input id="saSearch" type="text" class="form-control" placeholder="Search…" aria-label="Search">
+                            <button class="btn" type="button">
+                                <i class="align-middle" data-feather="search"></i>
+                            </button>
+                        </div>
+
+                        <div class="dropdown">
+                            <button class="btn btn-light bg-white dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                <i class="align-middle me-1" data-feather="filter"></i> Filters
+                            </button>
+                            <div class="dropdown-menu dropdown-menu-end p-3" style="min-width: 320px;">
+                                <div class="mb-2 text-muted fw-semibold">Date range</div>
+                                <select id="saRange" class="form-select mb-3">
+                                    <option value="today">Today</option>
+                                    <option value="week" selected>This week</option>
+                                    <option value="month">This month</option>
+                                    <option value="all">All</option>
+                                </select>
+
+                                <div class="mb-2 text-muted fw-semibold">Status</div>
+                                <select id="saStatus" class="form-select mb-3">
+                                    <option value="all" selected>All</option>
+                                    <option value="confirmed">Confirmed</option>
+                                    <option value="pending">Pending</option>
+                                    <option value="cancelled">Cancelled</option>
+                                </select>
+
+                            </div>
+                        </div>
+
+                        <a href="#" class="btn btn-outline-light">
+                            <i class="align-middle me-1" data-feather="download"></i> Export
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-body pt-0">
+                <div class="table-responsive">
+                    <table class="table table-hover my-0" id="saAppointmentsTable">
+                        <thead>
+                            <tr>
+                                <th>When</th>
+                                <th>Customer</th>
+                                <th class="d-none d-xl-table-cell">Service</th>
+                                <th>Status</th>
+                                <th class="text-end">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="sa-row" data-status="confirmed" data-staff="maria">
+                                <td>
+                                    <div class="fw-semibold">09:00 – 09:45</div>
+                                    <div class="text-muted small">@DateTime.Today.ToString("ddd, dd MMM")</div>
+                                </td>
+                                <td>
+                                    <div class="fw-semibold">Anna K.</div>
+                                    <div class="text-muted small">Prefers short sides</div>
+                                </td>
+                                <td class="d-none d-xl-table-cell">
+                                    <div class="fw-semibold">Haircut</div>
+                                    <div class="text-muted small">Staff: Maria</div>
+                                </td>
+                                <td><span class="badge badge-success-light">Confirmed</span></td>
+                                <td class="text-end">
+                                    <a asp-area="Admin" asp-controller="Appointments" asp-action="Edit" asp-route-id="1"
+                                       class="btn btn-primary btn-sm">Open</a>
+                                </td>
+                            </tr>
+
+                            <tr class="sa-row" data-status="pending" data-staff="ivan">
+                                <td>
+                                    <div class="fw-semibold">10:30 – 11:00</div>
+                                    <div class="text-muted small">@DateTime.Today.ToString("ddd, dd MMM")</div>
+                                </td>
+                                <td>
+                                    <div class="fw-semibold">Marko P.</div>
+                                    <div class="text-muted small">Call to confirm</div>
+                                </td>
+                                <td class="d-none d-xl-table-cell">
+                                    <div class="fw-semibold">Beard Trim</div>
+                                    <div class="text-muted small">Staff: Ivan</div>
+                                </td>
+                                <td><span class="badge badge-warning-light">Pending</span></td>
+                                <td class="text-end">
+                                    <a asp-area="Admin" asp-controller="Appointments" asp-action="Edit" asp-route-id="2"
+                                       class="btn btn-primary btn-sm">Open</a>
+                                </td>
+                            </tr>
+
+                            <tr class="sa-row" data-status="confirmed" data-staff="maria">
+                                <td>
+                                    <div class="fw-semibold">12:00 – 13:00</div>
+                                    <div class="text-muted small">@DateTime.Today.ToString("ddd, dd MMM")</div>
+                                </td>
+                                <td>
+                                    <div class="fw-semibold">Sara L.</div>
+                                    <div class="text-muted small">First visit</div>
+                                </td>
+                                <td class="d-none d-xl-table-cell">
+                                    <div class="fw-semibold">Nails</div>
+                                    <div class="text-muted small">Staff: Maria</div>
+                                </td>
+                                <td><span class="badge badge-success-light">Confirmed</span></td>
+                                <td class="text-end">
+                                    <a asp-area="Admin" asp-controller="Appointments" asp-action="Edit" asp-route-id="3"
+                                       class="btn btn-primary btn-sm">Open</a>
+                                </td>
+                            </tr>
+
+                            <tr class="sa-row" data-status="cancelled" data-staff="ivan">
+                                <td>
+                                    <div class="fw-semibold">14:00 – 14:45</div>
+                                    <div class="text-muted small">@DateTime.Today.ToString("ddd, dd MMM")</div>
+                                </td>
+                                <td>
+                                    <div class="fw-semibold">Ivan M.</div>
+                                    <div class="text-muted small">Cancelled same day</div>
+                                </td>
+                                <td class="d-none d-xl-table-cell">
+                                    <div class="fw-semibold">Dog Grooming</div>
+                                    <div class="text-muted small">Staff: Ivan</div>
+                                </td>
+                                <td><span class="badge badge-danger-light">Cancelled</span></td>
+                                <td class="text-end">
+                                    <a asp-area="Admin" asp-controller="Appointments" asp-action="Edit" asp-route-id="4"
+                                       class="btn btn-primary btn-sm">Open</a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="text-muted mt-3" id="saCount">Showing 4 appointments</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right side column (AdminKit cards) -->
+    <div class="col-12 col-lg-4 d-flex">
+        <div class="d-flex flex-column w-100">
+
+            <!-- Today Overview -->
+            <div class="card flex-fill">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Today Overview</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-muted">Date</span>
+                        <span class="fw-semibold">@DateTime.Today.ToString("ddd, dd MMM")</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-muted">Appointments</span>
+                        <span class="badge badge-primary-light">8</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="text-muted">Open slots</span>
+                        <span class="badge badge-success-light">5</span>
+                    </div>
+                    <div class="d-grid">
+                        <a asp-area="Admin" asp-controller="Appointments" asp-action="Create" class="btn btn-primary">
+                            <i class="align-middle me-2" data-feather="plus"></i> Book Appointment
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Upcoming -->
+            <div class="card flex-fill">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Upcoming (Next 3)</h5>
+                </div>
+                <div class="card-body pt-2">
+                    <div class="list-group">
+                        <a href="#" class="list-group-item list-group-item-action">
+                            <div class="d-flex justify-content-between">
+                                <strong>09:00</strong>
+                                <span class="badge badge-success-light">Confirmed</span>
+                            </div>
+                            <div class="text-muted">Anna K. - Haircut</div>
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action">
+                            <div class="d-flex justify-content-between">
+                                <strong>10:30</strong>
+                                <span class="badge badge-warning-light">Pending</span>
+                            </div>
+                            <div class="text-muted">Marko P. - Beard trim</div>
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action">
+                            <div class="d-flex justify-content-between">
+                                <strong>12:00</strong>
+                                <span class="badge badge-success-light">Confirmed</span>
+                            </div>
+                            <div class="text-muted">Sara L. - Nails</div>
+                        </a>
+                    </div>
+
+                    <div class="d-grid mt-3">
+                        <a asp-area="Admin" asp-controller="Calendar" asp-action="Index" class="btn btn-light bg-white">
+                            Open calendar
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card flex-fill">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Quick Actions</h5>
+                </div>
+                <div class="card-body pt-2">
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <a asp-area="Admin" asp-controller="Customers" asp-action="Index"
+                               class="btn btn-outline-primary w-100 d-flex align-items-center justify-content-center py-2">
+                                <i class="align-middle me-2" data-feather="users"></i>
+                                <span class="fw-semibold">Customers</span>
+                            </a>
+                        </div>
+                        <div class="col-6">
+                            <a asp-area="Admin" asp-controller="Services" asp-action="Index"
+                               class="btn btn-outline-primary w-100 d-flex align-items-center justify-content-center py-2">
+                                <i class="align-middle me-2" data-feather="briefcase"></i>
+                                <span class="fw-semibold">Services</span>
+                            </a>
+                        </div>
+                        <div class="col-6">
+                            <a asp-area="Admin" asp-controller="Home" asp-action="Index"
+                               class="btn btn-outline-primary w-100 d-flex align-items-center justify-content-center py-2">
+                                <i class="align-middle me-2" data-feather="bar-chart-2"></i>
+                                <span class="fw-semibold">Dashboard</span>
+                            </a>
+                        </div>
+                        <div class="col-6">
+                            <a asp-area="Admin" asp-controller="Settings" asp-action="Index"
+                               class="btn btn-outline-primary w-100 d-flex align-items-center justify-content-center py-2">
+                                <i class="align-middle me-2" data-feather="settings"></i>
+                                <span class="fw-semibold">Settings</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            // Feather icons
+            if (window.feather) window.feather.replace();
+
+            // Simple client-side filtering demo (AdminKit-style page, no extra libs)
+            var search = document.getElementById("saSearch");
+            var status = document.getElementById("saStatus");
+            var rows = document.querySelectorAll("#saAppointmentsTable tbody .sa-row");
+            var count = document.getElementById("saCount");
+
+            function applyFilters() {
+                var q = (search.value || "").trim().toLowerCase();
+                var st = status.value;
+
+                var visible = 0;
+                rows.forEach(function (r) {
+                    var rs = r.getAttribute("data-status");
+                    var rf = r.getAttribute("data-staff") || "all";
+                    var txt = (r.innerText || "").toLowerCase();
+
+                    var okStatus = (st === "all") || (rs === st);
+                    var okSearch = (!q) || txt.includes(q);
+
+                    var show = okStatus && okSearch;
+                    r.style.display = show ? "" : "none";
+                    if (show) visible++;
+                });
+
+                count.textContent = "Showing " + visible + " appointment" + (visible === 1 ? "" : "s");
+            }
+
+            search.addEventListener("input", applyFilters);
+            status.addEventListener("change", applyFilters);
+            staff.addEventListener("change", applyFilters);
+
+            applyFilters();
+        });
+    </script>
+}
