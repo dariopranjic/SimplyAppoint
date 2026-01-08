@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Text;
+using System.Linq;
 
 namespace SimplyAppoint.DataAccess.Repository
 {
@@ -15,14 +16,17 @@ namespace SimplyAppoint.DataAccess.Repository
         {
             _db = db;
         }
-        public void Save()
-        {
-            _db.SaveChanges();
-        }
 
         public void Update(Business obj)
         {
-            _db.Businesses.Update(obj);
+            var businessFromDb = _db.Businesses.FirstOrDefault(b => b.Id == obj.Id);
+            if (businessFromDb == null) return;
+
+            businessFromDb.Name = obj.Name;
+            businessFromDb.Slug = obj.Slug;
+            businessFromDb.TimeZoneId = obj.TimeZoneId;
+            businessFromDb.Phone = obj.Phone;
+            businessFromDb.Address = obj.Address;
         }
     }
 }

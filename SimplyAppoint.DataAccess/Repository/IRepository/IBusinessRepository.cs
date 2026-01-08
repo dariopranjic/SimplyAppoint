@@ -8,6 +8,5 @@ namespace SimplyAppoint.DataAccess.Repository.IRepository
     public interface IBusinessRepository : IRepository<Business>
     {
         void Update(Business obj);
-        void Save();
     }
 }
