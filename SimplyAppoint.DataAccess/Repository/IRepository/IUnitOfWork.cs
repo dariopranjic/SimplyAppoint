@@ -7,6 +7,7 @@ namespace SimplyAppoint.DataAccess.Repository.IRepository
     public interface IUnitOfWork
     {
         IBusinessRepository Business { get; }
+        IServiceRepository Service { get; }
 
         void Save();
         void Dispose();

@@ -11,5 +11,6 @@ namespace SimplyAppoint.DataAccess.Data
         }
 
         public DbSet<Business> Businesses { get; set; }
+        public DbSet<Service> Services { get; set; }
     }
 }
