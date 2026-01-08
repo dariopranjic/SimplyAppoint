@@ -30,13 +30,13 @@ namespace SimplyAppoint.Models
         public decimal Price { get; set; }
 
         [Range(0, 24 * 60)]
-        public int BufferBefore { get; set; } = 0;
+        public int BufferBefore { get; set; }
 
         [Range(0, 24 * 60)]
-        public int BufferAfter { get; set; } = 0;
+        public int BufferAfter { get; set; }
 
         [Required]
-        public bool IsActive { get; set; } = true;
+        public bool IsActive { get; set; }
 
         [Required]
         public DateTimeOffset CreatedUtc { get; set; } = DateTimeOffset.UtcNow;
