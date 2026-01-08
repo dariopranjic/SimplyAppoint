@@ -8,6 +8,7 @@ namespace SimplyAppoint.DataAccess.Repository.IRepository
     {
         IBusinessRepository Business { get; }
         IServiceRepository Service { get; }
+        IBookingPolicyRepository BookingPolicy { get; }
 
         void Save();
         void Dispose();
