@@ -12,12 +12,14 @@ namespace SimplyAppoint.DataAccess.Repository
         public IBusinessRepository Business { get; private set; }
         public IServiceRepository Service { get; private set; }
         public IBookingPolicyRepository BookingPolicy { get; private set; }
+        public IWorkingHoursRepository WorkingHours { get; private set; }
         public UnitOfWork(ApplicationDbContext db)
         {
             _db = db;
             Business = new BusinessRepository(_db);
             Service = new ServiceRepository(_db);
             BookingPolicy = new BookingPolicyRepository(_db);
+            WorkingHours = new WorkingHoursRepository(_db);
 
         }
 

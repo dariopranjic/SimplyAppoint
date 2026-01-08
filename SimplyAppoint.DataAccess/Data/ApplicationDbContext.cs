@@ -13,5 +13,7 @@ namespace SimplyAppoint.DataAccess.Data
         public DbSet<Business> Businesses { get; set; }
         public DbSet<Service> Services { get; set; }
         public DbSet<BookingPolicy> BookingPolicies { get; set; }
+        public DbSet<WorkingHours> WorkingHours { get; set; }
+
     }
 }

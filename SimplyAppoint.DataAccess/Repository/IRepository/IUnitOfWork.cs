@@ -9,6 +9,7 @@ namespace SimplyAppoint.DataAccess.Repository.IRepository
         IBusinessRepository Business { get; }
         IServiceRepository Service { get; }
         IBookingPolicyRepository BookingPolicy { get; }
+        IWorkingHoursRepository WorkingHours { get; }
 
         void Save();
         void Dispose();
