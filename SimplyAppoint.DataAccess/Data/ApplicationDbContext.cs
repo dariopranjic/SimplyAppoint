@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using SimplyAppoint.Models;
 
 namespace SimplyAppoint.DataAccess.Data
 {
@@ -8,5 +9,7 @@ namespace SimplyAppoint.DataAccess.Data
         {
 
         }
+
+        public DbSet<Business> Businesses { get; set; }
     }
 }
