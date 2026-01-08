@@ -5,372 +5,291 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - SimplyAppoint</title>
 
-    @* If you already load AdminKit/Bootstrap globally in _Layout, keep only what you need here.
-       Otherwise, include your AdminKit css bundle below. *@
+    <link rel="stylesheet" href="~/AdminKit/css/light.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-    @* Optional: your site CSS *@
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-
     <style>
-        :root {
-            --c-bg: #0b1220;
-            --c-panel: rgba(255,255,255,.06);
-            --c-panel2: rgba(255,255,255,.08);
-            --c-border: rgba(255,255,255,.10);
-            --c-muted: rgba(255,255,255,.65);
-            --c-text: rgba(255,255,255,.92);
-            --c-brand: #4f8cff;
-            --c-brand2: #7c3aed;
-            --c-shadow: 0 24px 70px rgba(0,0,0,.45);
-        }
-
-        html, body {
-            height: 100%;
-        }
-
         body {
-            margin: 0;
             font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-            background: radial-gradient(900px 500px at 20% 10%, rgba(79,140,255,.25), transparent 55%), radial-gradient(900px 500px at 80% 0%, rgba(124,58,237,.22), transparent 55%), var(--c-bg);
-            color: var(--c-text);
+            background: #f6f7fb;
         }
 
-        a {
-            color: inherit;
-            text-decoration: none;
-        }
-
-            a:hover {
-                text-decoration: none;
-            }
-
-        .c-shell {
-            min-height: 100%;
+        .customer-shell {
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
         }
 
-        /* Topbar */
-        .c-topbar {
-            position: sticky;
-            top: 0;
-            z-index: 50;
-            backdrop-filter: blur(14px);
-            background: rgba(11,18,32,.60);
-            border-bottom: 1px solid rgba(255,255,255,.06);
-        }
-
-        .c-topbar-inner {
-            max-width: 1180px;
-            margin: 0 auto;
-            padding: 14px 18px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-        }
-
-        .c-brand {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            min-width: 240px;
-        }
-
-        .c-logo {
-            width: 40px;
-            height: 40px;
-            border-radius: 14px;
-            background: radial-gradient(14px 14px at 30% 30%, rgba(255,255,255,.35), transparent 55%), linear-gradient(135deg, rgba(79,140,255,.95), rgba(124,58,237,.95));
-            border: 1px solid rgba(255,255,255,.14);
-            box-shadow: 0 16px 46px rgba(79,140,255,.18);
-            flex: 0 0 auto;
-        }
-
-        .c-brand-title {
-            font-weight: 900;
-            letter-spacing: -0.02em;
-            line-height: 1.1;
-        }
-
-        .c-brand-sub {
-            font-size: .86rem;
-            color: var(--c-muted);
-            margin-top: 2px;
-        }
-
-        .c-actions {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .c-pill {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 10px 12px;
-            border-radius: 999px;
-            border: 1px solid rgba(255,255,255,.10);
-            background: rgba(255,255,255,.05);
-            color: rgba(255,255,255,.88);
-            font-weight: 800;
-            font-size: .92rem;
-            cursor: pointer;
-            user-select: none;
-            transition: transform .10s ease, background .12s ease, border-color .12s ease;
-            white-space: nowrap;
-        }
-
-            .c-pill:hover {
-                transform: translateY(-1px);
-                background: rgba(255,255,255,.07);
-                border-color: rgba(255,255,255,.16);
-            }
-
-            .c-pill.primary {
-                background: linear-gradient(135deg, rgba(79,140,255,.95), rgba(124,58,237,.95));
-                border-color: rgba(255,255,255,.18);
-            }
-
-        /* Profile dropdown (no JS, hover) */
-        .c-profile {
-            position: relative;
-        }
-
-        .c-profile-btn {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 8px 10px;
-            border-radius: 999px;
-            border: 1px solid rgba(255,255,255,.10);
-            background: rgba(255,255,255,.05);
-            cursor: pointer;
-            user-select: none;
-            transition: transform .10s ease, background .12s ease, border-color .12s ease;
-        }
-
-            .c-profile-btn:hover {
-                transform: translateY(-1px);
-                background: rgba(255,255,255,.07);
-                border-color: rgba(255,255,255,.16);
-            }
-
-        .c-avatar {
-            width: 34px;
-            height: 34px;
-            border-radius: 999px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 900;
-            background: rgba(79,140,255,.20);
-            border: 1px solid rgba(255,255,255,.12);
-        }
-
-        .c-profile-meta {
-            display: flex;
-            flex-direction: column;
-            line-height: 1.1;
-        }
-
-        .c-profile-name {
-            font-weight: 900;
-            font-size: .92rem;
-        }
-
-        .c-profile-email {
-            font-size: .82rem;
-            color: rgba(255,255,255,.62);
-            max-width: 220px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        .c-menu {
-            position: absolute;
-            right: 0;
-            top: calc(100% + 10px);
-            width: 260px;
-            border-radius: 18px;
-            border: 1px solid rgba(255,255,255,.12);
-            background: rgba(17, 25, 40, .92);
-            backdrop-filter: blur(14px);
-            box-shadow: var(--c-shadow);
-            padding: 10px;
-            display: none;
-        }
-
-        .c-profile:hover .c-menu {
-            display: block;
-        }
-
-        .c-menu-header {
-            padding: 10px 10px 8px 10px;
-            border-bottom: 1px solid rgba(255,255,255,.08);
-            margin-bottom: 8px;
-        }
-
-        .c-menu-title {
-            font-weight: 900;
-        }
-
-        .c-menu-sub {
-            color: rgba(255,255,255,.62);
-            font-weight: 600;
-            font-size: .9rem;
-            margin-top: 4px;
-        }
-
-        .c-menu-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 10px;
-            border-radius: 14px;
-            border: 1px solid transparent;
-            color: rgba(255,255,255,.88);
-            font-weight: 800;
-        }
-
-            .c-menu-item:hover {
-                background: rgba(255,255,255,.06);
-                border-color: rgba(255,255,255,.10);
-            }
-
-        .c-menu-sep {
-            height: 1px;
-            background: rgba(255,255,255,.08);
-            margin: 8px 2px;
-        }
-
-        /* Main */
-        main {
+        .customer-main {
             flex: 1;
         }
 
-        .c-container {
-            max-width: 1180px;
-            margin: 0 auto;
-            padding: 18px;
+        .customer-nav {
+            border-bottom: 1px solid rgba(0,0,0,.06);
         }
 
-        /* Footer */
-        .c-footer {
-            border-top: 1px solid rgba(255,255,255,.06);
-            background: rgba(11,18,32,.40);
+        .customer-brand-mark {
+            width: 34px;
+            height: 34px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #2f7dff, #7c3aed);
+            display: inline-block;
+            box-shadow: 0 10px 24px rgba(47,125,255,.18);
         }
 
-        .c-footer-inner {
-            max-width: 1180px;
-            margin: 0 auto;
-            padding: 16px 18px;
-            display: flex;
-            justify-content: space-between;
-            gap: 12px;
-            color: rgba(255,255,255,.60);
-            font-size: .9rem;
-            flex-wrap: wrap;
+        .customer-brand-text {
+            color: #0f172a !important;
+            opacity: 1 !important;
+            font-weight: 800;
+            letter-spacing: -0.02em;
         }
 
-        @@media (max-width: 720px) {
-            .c-brand-sub {
-                display: none;
+        .navbar-brand:hover .customer-brand-text {
+            color: #0f172a !important;
+            opacity: 1 !important;
+        }
+
+        .customer-navlinks .nav-link {
+            font-weight: 700;
+            color: rgba(15,23,42,.80) !important;
+            border-radius: 999px;
+            padding: .45rem .8rem;
+            transition: background .12s ease, color .12s ease, transform .08s ease;
+            margin-right: .25rem;
+        }
+
+            .customer-navlinks .nav-link:hover {
+                background: rgba(15,23,42,.06);
+                color: rgba(15,23,42,.95) !important;
+                transform: translateY(-1px);
             }
 
-            .c-profile-email {
-                display: none;
+            .customer-navlinks .nav-link.active {
+                background: rgba(47,125,255,.12);
+                color: #1d4ed8 !important;
             }
+
+        .customer-avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 999px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            color: #0f172a;
+            background: #e9eefc;
+            border: 1px solid rgba(0,0,0,.06);
+        }
+
+        .customer-pill {
+            border: 1px solid rgba(0,0,0,.08);
+            background: #fff;
+            border-radius: 999px;
+            padding: .52rem .85rem;
+            font-weight: 800;
+            transition: background .12s ease, transform .08s ease, border-color .12s ease;
+        }
+
+            .customer-pill:hover {
+                background: #f8fafc;
+                transform: translateY(-1px);
+                border-color: rgba(0,0,0,.12);
+            }
+
+        .customer-primary {
+            border-radius: 999px;
+            padding: .52rem .95rem;
+            font-weight: 800;
+            box-shadow: 0 10px 22px rgba(47,125,255,.20);
+        }
+
+            .customer-primary:hover {
+                box-shadow: 0 14px 26px rgba(47,125,255,.26);
+                transform: translateY(-1px);
+            }
+
+        /* Mobile: hide desktop navbar controls (no burger, no collapse) */
+        @@media (max-width: 991.98px) {
+            .customer-desktop-only {
+                display: none !important;
+            }
+        }
+
+        /* Desktop: hide mobile-only items */
+        @@media (min-width: 992px) {
+            .customer-mobile-only {
+                display: none !important;
+            }
+        }
+
+        /* Dropdown nice spacing for nav group on mobile */
+        .customer-dd-section-title {
+            font-size: .72rem;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            color: rgba(15,23,42,.50);
+            font-weight: 800;
+            margin: .25rem 0 .25rem;
         }
     </style>
 
     @RenderSection("Styles", required: false)
 </head>
 <body>
-    <div class="c-shell">
-        <header class="c-topbar">
-            <div class="c-topbar-inner">
+    <div class="customer-shell">
 
-                <a class="c-brand" asp-controller="Customer" asp-action="Index">
-                    <div class="c-logo"></div>
-                    <div>
-                        <div class="c-brand-title">SimplyAppoint</div>
-                        <div class="c-brand-sub">Bookings, reminders & profile</div>
-                    </div>
+        <nav class="navbar navbar-expand-lg navbar-light bg-white customer-nav">
+            <div class="container">
+
+                <!-- Brand -->
+                <a class="navbar-brand d-flex align-items-center gap-2" asp-controller="Customer" asp-action="Index">
+                    <span class="customer-brand-mark"></span>
+                    <span class="customer-brand-text">SimplyAppoint</span>
                 </a>
 
-                <div class="c-actions">
-                    <a class="c-pill" asp-controller="Customer" asp-action="Bookings">
-                        My bookings
-                    </a>
-                    <a class="c-pill primary" asp-controller="Customer" asp-action="Discover">
-                        Book new
-                    </a>
+                <!-- DESKTOP NAV (no burger needed on mobile) -->
+                <div class="customer-desktop-only d-flex align-items-center flex-grow-1">
 
-                    <div class="c-profile">
-                        <div class="c-profile-btn">
-                            <div class="c-avatar">CU</div>
-                            <div class="c-profile-meta">
-                                <div class="c-profile-name">Customer</div>
-                                <div class="c-profile-email">customer@email.com</div>
-                            </div>
-                            <span style="opacity:.7; font-weight:900;">▾</span>
-                        </div>
+                    <ul class="navbar-nav me-auto mb-0 customer-navlinks">
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Customer" asp-action="Discover">Book</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Customer" asp-action="Bookings">My bookings</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Customer" asp-action="Support">Support</a>
+                        </li>
+                    </ul>
 
-                        <div class="c-menu">
-                            <div class="c-menu-header">
-                                <div class="c-menu-title">Customer</div>
-                                <div class="c-menu-sub">customer@email.com</div>
-                            </div>
+                    <div class="d-flex align-items-center gap-2 ms-lg-auto">
 
-                            <a class="c-menu-item" asp-controller="Customer" asp-action="Profile">
-                                <span>👤</span> Profile
-                            </a>
-                            <a class="c-menu-item" asp-controller="Customer" asp-action="Bookings">
-                                <span>📅</span> My bookings
-                            </a>
-                            <a class="c-menu-item" asp-controller="Customer" asp-action="Settings">
-                                <span>⚙️</span> Settings
-                            </a>
+                        <button type="button" class="btn customer-pill d-inline-flex align-items-center gap-2">
+                            <span data-feather="sun"></span>
+                            <span class="d-none d-sm-inline">Light</span>
+                        </button>
 
-                            <div class="c-menu-sep"></div>
+                        <a asp-controller="Customer" asp-action="Discover"
+                           class="btn btn-primary customer-primary d-inline-flex align-items-center gap-2">
+                            <span data-feather="plus"></span>
+                            <span>New booking</span>
+                        </a>
 
-                            <a class="c-menu-item" asp-controller="Auth" asp-action="Logout">
-                                <span>↩️</span> Sign out
-                            </a>
-                        </div>
+                    </div>
+                </div>
+
+                <!-- Profile dropdown (ALWAYS visible; becomes the mobile nav) -->
+                <div class="ms-auto d-flex align-items-center">
+                    <div class="dropdown">
+                        <a class="btn customer-pill dropdown-toggle d-inline-flex align-items-center gap-2"
+                           href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <span class="customer-avatar">CU</span>
+                            <span class="d-none d-md-inline fw-bold">Customer</span>
+                        </a>
+
+                        <ul class="dropdown-menu dropdown-menu-end shadow-sm" style="min-width: 260px;">
+                            <li class="px-3 py-2">
+                                <div class="fw-bold">Customer</div>
+                                <div class="text-muted small text-truncate">customer@email.com</div>
+                            </li>
+
+                            <!-- MOBILE NAV INSIDE DROPDOWN -->
+                            <li class="customer-mobile-only"><hr class="dropdown-divider"></li>
+                            <li class="customer-mobile-only px-3">
+                                <div class="customer-dd-section-title">Navigation</div>
+                            </li>
+                            <li class="customer-mobile-only">
+                                <a class="dropdown-item d-flex align-items-center gap-2"
+                                   asp-controller="Customer" asp-action="Discover">
+                                    <span data-feather="plus"></span> New booking
+                                </a>
+                            </li>
+                            <li class="customer-mobile-only">
+                                <a class="dropdown-item d-flex align-items-center gap-2"
+                                   asp-controller="Customer" asp-action="Discover">
+                                    <span data-feather="search"></span> Book
+                                </a>
+                            </li>
+                            <li class="customer-mobile-only">
+                                <a class="dropdown-item d-flex align-items-center gap-2"
+                                   asp-controller="Customer" asp-action="Bookings">
+                                    <span data-feather="calendar"></span> My bookings
+                                </a>
+                            </li>
+                            <li class="customer-mobile-only">
+                                <a class="dropdown-item d-flex align-items-center gap-2"
+                                   asp-controller="Customer" asp-action="Support">
+                                    <span data-feather="help-circle"></span> Support
+                                </a>
+                            </li>
+                            <li class="customer-mobile-only">
+                                <a class="dropdown-item d-flex align-items-center gap-2" href="#">
+                                    <span data-feather="sun"></span> Light mode
+                                </a>
+                            </li>
+
+                            <li><hr class="dropdown-divider"></li>
+
+                            <!-- Existing profile items (UNCHANGED) -->
+                            <li>
+                                <a class="dropdown-item d-flex align-items-center gap-2"
+                                   asp-controller="Customer" asp-action="Profile">
+                                    <span data-feather="user"></span> Profile
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item d-flex align-items-center gap-2"
+                                   asp-controller="Customer" asp-action="Bookings">
+                                    <span data-feather="calendar"></span> My bookings
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item d-flex align-items-center gap-2"
+                                   asp-controller="Customer" asp-action="Settings">
+                                    <span data-feather="settings"></span> Settings
+                                </a>
+                            </li>
+
+                            <li><hr class="dropdown-divider"></li>
+
+                            <li>
+                                <a class="dropdown-item d-flex align-items-center gap-2"
+                                   asp-controller="Auth" asp-action="Logout">
+                                    <span data-feather="log-out"></span> Sign out
+                                </a>
+                            </li>
+                        </ul>
                     </div>
                 </div>
 
             </div>
-        </header>
+        </nav>
 
-        <main role="main">
-            <div class="c-container">
+        <main class="customer-main">
+            <div class="container py-4">
                 @RenderBody()
             </div>
         </main>
 
-        <footer class="c-footer">
-            <div class="c-footer-inner">
+        <footer class="bg-white border-top" style="border-color: rgba(0,0,0,.06) !important;">
+            <div class="container py-3 d-flex flex-wrap justify-content-between gap-2 text-muted small">
                 <div>© @DateTime.Now.Year SimplyAppoint</div>
                 <div>Privacy • Terms • Support</div>
             </div>
         </footer>
+
     </div>
 
-    @* If AdminKit/Bootstrap JS is already loaded globally, you can remove these. *@
+    <script src="~/AdminKit/js/app.js" asp-append-version="true"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
 
     @RenderSection("Scripts", required: false)
 
-    @* Optional: feather icon replace if you use it on customer pages *@
     <script>
         if (window.feather) window.feather.replace();
     </script>
