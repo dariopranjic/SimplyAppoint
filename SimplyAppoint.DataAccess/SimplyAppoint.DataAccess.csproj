@@ -20,8 +20,4 @@
     <ProjectReference Include="..\SimplyAppoint.Utility\SimplyAppoint.Utility.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Repository\" />
-  </ItemGroup>
-
 </Project>
