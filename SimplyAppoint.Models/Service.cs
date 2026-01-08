@@ -36,7 +36,7 @@ namespace SimplyAppoint.Models
         public int BufferAfter { get; set; }
 
         [Required]
-        public bool IsActive { get; set; }
+        public bool IsActive { get; set; } = true;
 
         [Required]
         public DateTimeOffset CreatedUtc { get; set; } = DateTimeOffset.UtcNow;
