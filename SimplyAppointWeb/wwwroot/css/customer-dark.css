@@ -193,3 +193,7 @@ body {
     height: 16px;
 }
 
+.customer-dd-email {
+    color: rgba(233, 238, 252, 0.72) !important;
+}
+
