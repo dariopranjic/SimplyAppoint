@@ -18,6 +18,7 @@ namespace SimplyAppoint.DataAccess.Data
         public DbSet<WorkingHours> WorkingHours { get; set; }
         public DbSet<TimeOff> TimeOffs { get; set; }
         public DbSet<Appointment> Appointments { get; set; }
+        public DbSet<BusinessCustomer> BusinessCustomers { get; set; }  
 
     }
 }

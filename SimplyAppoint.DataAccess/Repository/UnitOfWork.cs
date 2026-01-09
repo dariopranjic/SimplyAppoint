@@ -15,6 +15,7 @@ namespace SimplyAppoint.DataAccess.Repository
         public IWorkingHoursRepository WorkingHours { get; private set; }
         public ITimeOffRepository TimeOff { get; private set; }
         public IAppointmentRepository Appointment { get; private set; } 
+        public IBusinessCustomerRepository BusinessCustomer { get; private set; }
         public UnitOfWork(ApplicationDbContext db)
         {
             _db = db;
@@ -24,6 +25,7 @@ namespace SimplyAppoint.DataAccess.Repository
             WorkingHours = new WorkingHoursRepository(_db);
             TimeOff = new TimeOffRepository(_db);
             Appointment = new AppointmentRepository(_db);
+            BusinessCustomer = new BusinessCustomerRepository(_db);
 
         }
 

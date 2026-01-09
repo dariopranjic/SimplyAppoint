@@ -12,6 +12,7 @@ namespace SimplyAppoint.DataAccess.Repository.IRepository
         IWorkingHoursRepository WorkingHours { get; }
         ITimeOffRepository TimeOff { get; }
         IAppointmentRepository Appointment { get; }
+        IBusinessCustomerRepository BusinessCustomer { get; }
 
         void Save();
         void Dispose();
