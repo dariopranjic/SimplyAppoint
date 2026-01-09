@@ -4,5 +4,26 @@
     ViewData["Title"] = "Confirm email";
 }
 
-<h1>@ViewData["Title"]</h1>
-<partial name="_StatusMessage" model="Model.StatusMessage" />
+<div class="auth-page">
+    <div class="auth-card text-center">
+        <div class="auth-header">
+            <div class="auth-badge">SimplyAppoint</div>
+            <h1 class="auth-title">Email confirmed</h1>
+        </div>
+
+        <p class="auth-subtitle mb-4">
+            Your email has been successfully confirmed.
+        </p>
+
+        @if (!string.IsNullOrEmpty(Model.StatusMessage))
+        {
+            <p class="auth-subtitle mb-3">
+                @Model.StatusMessage
+            </p>
+        }
+
+        <a asp-page="./Login" class="btn btn-primary w-100 auth-primary">
+            Log in
+        </a>
+    </div>
+</div>

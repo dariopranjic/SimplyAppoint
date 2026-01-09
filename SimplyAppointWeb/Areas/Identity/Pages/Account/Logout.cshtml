@@ -4,18 +4,38 @@
     ViewData["Title"] = "Log out";
 }
 
-<header>
-    <h1>@ViewData["Title"]</h1>
-    @{
-        if (User.Identity?.IsAuthenticated ?? false)
+<div class="auth-page">
+    <div class="auth-card text-center">
+        <div class="auth-header">
+            <div class="auth-badge">SimplyAppoint</div>
+            <h1 class="auth-title">Log out</h1>
+        </div>
+
+        @if (User.Identity?.IsAuthenticated ?? false)
         {
-            <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Page("/", new { area = "" })" method="post">
-                <button type="submit" class="nav-link btn btn-link text-dark">Click here to Logout</button>
+            <p class="auth-subtitle mb-4">
+                Are you sure you want to log out?
+            </p>
+
+            <form asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Page("/", new { area = "" })" method="post">
+                <button type="submit" class="btn btn-danger btn-lg w-100 auth-primary">
+                    Log out
+                </button>
             </form>
+
+            <div class="auth-links mt-3">
+                <a asp-page="./Login">Cancel</a>
+            </div>
         }
         else
         {
-            <p>You have successfully logged out of the application.</p>
+            <p class="auth-subtitle mb-3">
+                You have been successfully logged out.
+            </p>
+
+            <a asp-page="./Login" class="btn btn-primary w-100 auth-primary">
+                Log in again
+            </a>
         }
-    }
-</header>
+    </div>
+</div>
