@@ -26,7 +26,7 @@ namespace SimplyAppoint.Models
 
         [Required]
         [Precision(10, 2)]
-        [Range(0, 1000000)]
+        [Range(0.01, 1000000)]
         public decimal Price { get; set; }
 
         [Range(0, 24 * 60)]

@@ -1,1 +1,96 @@
-﻿
+﻿@model BookingPolicy
+
+@{
+    ViewData["Title"] = "Booking Policy";
+    Layout = "_OnboardingLayout";
+}
+
+<div class="admin-card admin-card-lg">
+    <div class="admin-header">
+        <div class="admin-badge">Step 4 of 5</div>
+        <h1 class="admin-title">Booking Rules</h1>
+        <p class="admin-subtitle">Control how and when clients can book with you.</p>
+    </div>
+
+    <form asp-action="BookingPolicy" method="post" class="admin-form">
+        <input type="hidden" asp-for="BusinessId" />
+
+        <div class="row g-3">
+            <div class="col-md-6 mb-3">
+                <div class="admin-select-wrap">
+                    <div class="form-floating">
+                        <select asp-for="SlotIntervalMinutes" class="form-select admin-select">
+                            <option value="15">Every 15 mins</option>
+                            <option value="30" selected>Every 30 mins</option>
+                            <option value="45">Every 45 mins</option>
+                            <option value="60">Every 1 hour</option>
+                        </select>
+                        <label asp-for="SlotIntervalMinutes">Calendar Grid Interval</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+                <div class="admin-select-wrap">
+                    <div class="form-floating">
+                        <select asp-for="MaxAdvanceDays" class="form-select admin-select">
+                            <option value="30">1 Month</option>
+                            <option value="60" selected>2 Months</option>
+                            <option value="90">3 Months</option>
+                            <option value="180">6 Months</option>
+                            <option value="365">1 Year</option>
+                        </select>
+                        <label asp-for="MaxAdvanceDays">Booking Window</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+                <div class="admin-select-wrap">
+                    <div class="form-floating">
+                        <select asp-for="AdvanceNoticeMinutes" class="form-select admin-select">
+                            <option value="0">None (Instant)</option>
+                            <option value="60">1 hour before</option>
+                            <option value="180">3 hours before</option>
+                            <option value="1440" selected>24 hours before</option>
+                        </select>
+                        <label asp-for="AdvanceNoticeMinutes">Minimum Lead Time</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+                <div class="admin-select-wrap">
+                    <div class="form-floating">
+                        <select asp-for="CancellationWindowMinutes" class="form-select admin-select">
+                            <option value="0">Flexible (Anytime)</option>
+                            <option value="120">2 hours before</option>
+                            <option value="1440" selected>24 hours before</option>
+                            <option value="2880">48 hours before</option>
+                        </select>
+                        <label asp-for="CancellationWindowMinutes">Cancellation Deadline</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="admin-badge admin-dropdown w-100 mt-2 mb-4" style="cursor: default; border-style: dashed; background: rgba(13, 110, 253, 0.05);">
+            <small class="text-center">
+                <strong>Tip:</strong> Most businesses prefer a 24-hour notice to prevent last-minute gaps in their schedule.
+            </small>
+        </div>
+
+        <div class="admin-actions-row">
+            <a asp-action="WorkingHours" class="btn btn-outline-secondary admin-btn-soft flex-grow-1">
+                Back
+            </a>
+            <a asp-action="Finish" class="btn btn-primary admin-btn-primary flex-grow-1">
+                Finish Setup
+            </a>
+            @* <button type="submit" class="btn btn-primary admin-btn-primary flex-grow-1">
+                Finish Setup
+            </button> *@
+        </div>
+    </form>
+</div>
+

@@ -1,1 +1,111 @@
-﻿
+﻿@model Business
+
+@{
+    ViewData["Title"] = "Business details";
+    Layout = "_OnboardingLayout";
+}
+
+<div class="admin-card admin-card-lg">
+    <div class="admin-header">
+        <div class="admin-badge">Step 1 of 5</div>
+        <h1 class="admin-title">Business details</h1>
+        <p class="admin-subtitle">Set up your business profile. You can change this later.</p>
+    </div>
+
+    <form asp-action="Business" method="post" class="admin-form">
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+        <div class="form-floating mb-3">
+            <input asp-for="Name" class="form-control admin-input" placeholder="Business name" />
+            <label asp-for="Name">Business name</label>
+            <span asp-validation-for="Name" class="text-danger"></span>
+        </div>
+
+        <div class="row g-3">
+            <div class="col-md-6">
+                <div class="form-floating mb-3">
+                    <input asp-for="Phone" class="form-control admin-input" placeholder="+385 99 123 4567" />
+                    <label asp-for="Phone">Phone</label>
+                    <span asp-validation-for="Phone" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="mb-3 admin-select-wrap">
+                    <select asp-for="TimeZoneId" class="form-select admin-select" id="TimeZoneId"></select>
+                    <span asp-validation-for="TimeZoneId" class="text-danger"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-floating mb-4">
+            <input asp-for="Address" class="form-control admin-input" placeholder="Address" />
+            <label asp-for="Address">Address</label>
+            <span asp-validation-for="Address" class="text-danger"></span>
+        </div>
+
+        <div class="admin-actions-row">
+            <a asp-action="Index" class="btn btn-outline-secondary admin-btn-soft">
+                Back
+            </a>
+
+            <a asp-action="Services" class="btn btn-primary admin-btn-primary">
+                Continue
+            </a>
+            @* <button type="submit" class="btn btn-primary admin-btn-primary flex-grow-1">
+                Continue
+            </button> *@
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        (function () {
+            const select = document.getElementById("TimeZoneId");
+            if (!select) return;
+
+            const browserTz = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+
+            select.innerHTML = "";
+
+            // Get full list if supported (Chrome/Edge/modern)
+            let tzList = [];
+            if (typeof Intl.supportedValuesOf === "function") {
+                try {
+                    tzList = Intl.supportedValuesOf("timeZone");
+                } catch {
+                    tzList = [];
+                }
+            }
+
+            // Fallback if not supported
+            if (!tzList || tzList.length === 0) {
+                tzList = Array.from(new Set([
+                    browserTz,
+                    "Europe/Zagreb",
+                    "Europe/Berlin",
+                    "Europe/Warsaw",
+                    "UTC",
+                    "America/New_York"
+                ]));
+            }
+
+            if (!tzList.includes(browserTz)) tzList.unshift(browserTz);
+
+            // Build options
+            for (const tz of tzList) {
+                const opt = document.createElement("option");
+                opt.value = tz;
+                opt.textContent = tz;
+                if (tz === browserTz) opt.selected = true;
+                select.appendChild(opt);
+            }
+
+            select.value = browserTz;
+        })();
+    </script>
+
+}

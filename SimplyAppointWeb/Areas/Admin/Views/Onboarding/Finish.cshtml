@@ -1,1 +1,37 @@
-﻿
+﻿@{
+    ViewData["Title"] = "Setup Complete";
+    Layout = "_OnboardingLayout";
+}
+
+<div class="admin-card admin-card-lg text-center">
+    <div class="finish-icon-wrapper mb-4">
+        <div class="finish-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" class="bi bi-check-lg" viewBox="0 0 16 16">
+                <path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425z" />
+            </svg>
+        </div>
+    </div>
+
+    <div class="admin-header">
+        <div class="admin-badge">Step 5 of 5</div>
+        <h1 class="admin-title">You're all set!</h1>
+        <p class="admin-subtitle">Your business is ready to start accepting appointments.</p>
+    </div>
+
+    <div class="finish-content my-4 p-3 admin-radius" style="background: var(--admin-accent-soft);">
+        <p class="mb-0 text-muted" style="font-size: 0.95rem;">
+            We've configured your <strong>services</strong>, <strong>availability</strong>, and <strong>booking policies</strong>.
+            You can change these anytime from your settings.
+        </p>
+    </div>
+
+    <div class="d-flex flex-column gap-3 mt-4">
+        <a asp-area="Admin" asp-controller="Dashboard" asp-action="Index" class="btn btn-primary admin-btn-primary w-100 py-3">
+            Go to Admin Dashboard
+        </a>
+
+        @* <a href="/" target="_blank" class="btn admin-btn-add-another w-100 m-0">
+            View my public booking page
+        </a> *@
+    </div>
+</div>

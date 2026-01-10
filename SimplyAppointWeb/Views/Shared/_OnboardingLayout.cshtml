@@ -1,0 +1,53 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - SimplyAppoint</title>
+
+    <link rel="stylesheet" href="~/AdminKit/css/light.css" asp-append-version="true" />
+
+    <link rel="stylesheet" href="~/css/admin-dark.css" asp-append-version="true" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    @RenderSection("Styles", required: false)
+</head>
+
+<body>
+    <nav class="ob-nav">
+        <div class="container py-3 d-flex align-items-center justify-content-between gap-3">
+            <a class="ob-brand" asp-controller="Onboarding" asp-action="Index">
+                <span class="ob-mark"></span>
+                <span class="ob-brand-text">SimplyAppoint</span>
+            </a>
+
+            <div class="d-flex align-items-center gap-2">
+                <form asp-area="Identity" asp-page="/Account/Logout" method="post" class="m-0">
+                    <button type="submit" class="btn btn-outline-secondary" style="border-radius:999px; font-weight:800;">
+                        Sign out
+                    </button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <main class="ob-page">
+        @RenderBody()
+    </main>
+
+    <footer class="ob-footer">
+        <div class="container py-3 d-flex flex-wrap justify-content-between gap-2">
+            <div>© @DateTime.Now.Year SimplyAppoint</div>
+            <div style="opacity:.85;">Privacy • Terms • Support</div>
+        </div>
+    </footer>
+
+    <script src="~/AdminKit/js/app.js" asp-append-version="true"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    @RenderSection("Scripts", required: false)
+</body>
+</html>

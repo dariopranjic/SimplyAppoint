@@ -1,0 +1,342 @@
+:root {
+    --admin-bg-1: #0b1020;
+    --admin-bg-2: #0a0f1a;
+    --admin-text: #e9eefc;
+    --admin-muted: rgba(233, 238, 252, 0.65);
+    --admin-border: rgba(255, 255, 255, 0.10);
+    --admin-accent: #0d6efd;
+    --admin-accent-hover: #1d4ed8;
+    --admin-accent-soft: rgba(13, 110, 253, 0.18);
+    --admin-radius: 14px;
+    --admin-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
+}
+
+body {
+    font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    font-size: 1.05rem;
+    background: radial-gradient(900px 520px at 10% 10%, rgba(13,110,253,0.16), transparent 60%), radial-gradient(900px 520px at 90% 20%, rgba(32,201,151,0.12), transparent 55%), linear-gradient(180deg, var(--admin-bg-1) 0%, var(--admin-bg-2) 100%);
+    background-attachment: fixed;
+    color: var(--admin-text);
+    margin: 0;
+}
+
+.ob-nav {
+    position: sticky;
+    top: 0;
+    z-index: 1020;
+    background: transparent;
+    border-bottom: 1px solid var(--admin-border);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+}
+
+.ob-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: .75rem;
+    text-decoration: none;
+}
+
+.ob-brand:hover {
+    text-decoration: none;
+}
+
+.ob-mark {
+    width: 36px;
+    height: 36px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #2f7dff, #7c3aed);
+    box-shadow: 0 12px 28px rgba(47,125,255,.18);
+}
+
+.ob-brand-text {
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    color: var(--admin-text);
+    line-height: 1.05;
+}
+
+.ob-page {
+    min-height: calc(100vh - 120px);
+    display: grid;
+    place-items: center;
+    padding: 2.25rem 1rem;
+}
+
+.ob-footer {
+    font-size: .95rem;
+    border-top: 1px solid var(--admin-border);
+    background: transparent !important;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    color: var(--admin-muted);
+}
+
+.admin-page {
+    min-height: calc(100vh - 140px);
+    display: grid;
+    place-items: center;
+    padding: 2.25rem 1rem;
+}
+
+.admin-card {
+    width: 100%;
+    max-width: 560px;
+    border-radius: 18px;
+    padding: 1.8rem;
+    background: rgba(255, 255, 255, 0.06) !important;
+    border: 1px solid var(--admin-border);
+    box-shadow: var(--admin-shadow);
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+}
+
+.admin-card-lg {
+    max-width: 600px;
+}
+
+.admin-header {
+    text-align: center;
+    margin-bottom: 1.25rem;
+}
+
+.admin-title {
+    font-size: 1.7rem;
+    margin: 0;
+    letter-spacing: -0.02em;
+    font-weight: 800;
+    color: #ffffff;
+}
+
+.admin-subtitle {
+    margin: 0.45rem 0 0;
+    color: var(--admin-muted);
+}
+
+.admin-input,
+.admin-select {
+    border-radius: var(--admin-radius) !important;
+    border: 1px solid var(--admin-border) !important;
+    background: transparent !important;
+    color: var(--admin-text) !important;
+    font-size: 1rem !important;
+    font-weight: 400;
+}
+
+.admin-input:focus,
+.admin-select:focus {
+    border-color: rgba(13, 110, 253, 0.7) !important;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25) !important;
+    background: transparent !important;
+    outline: none;
+}
+
+
+.admin-input::-webkit-inner-spin-button,
+.admin-input::-webkit-outer-spin-button {
+    background: transparent !important;
+    cursor: pointer;
+    margin-left: 5px;
+}
+
+.admin-select-wrap {
+    position: relative;
+}
+
+.admin-select {
+    padding: 1.05rem 2.6rem 0.75rem 0.75rem !important;
+    appearance: none;
+    -webkit-appearance: none;
+    min-height: calc(3.5rem + 2px);
+    cursor: pointer;
+}
+
+.admin-select option {
+    background-color: #0f172a;
+    color: #ffffff;
+}
+
+.admin-select-wrap::after {
+    content: "";
+    position: absolute;
+    right: 16px;
+    top: 45%;
+    width: 10px;
+    height: 10px;
+    transform: translateY(-25%) rotate(45deg);
+    border-right: 2px solid var(--admin-muted);
+    border-bottom: 2px solid var(--admin-muted);
+    pointer-events: none;
+}
+
+.admin-form .form-floating > label {
+    color: var(--admin-muted);
+}
+
+.admin-form .form-floating > label::after {
+    background: transparent !important;
+}
+
+.text-danger {
+    font-size: 0.9rem !important;
+    color: #ff6b6b !important;
+}
+
+.admin-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.35rem 0.7rem;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    background: var(--admin-accent-soft);
+    border: 1px solid rgba(13, 110, 253, 0.3);
+    color: #dbe7ff;
+    margin-bottom: 0.75rem;
+    font-weight: 700;
+}
+
+.admin-btn-primary,
+.admin-btn-soft {
+    border-radius: var(--admin-radius);
+    padding: 0.85rem 1.15rem;
+    font-weight: 800;
+}
+
+.admin-btn-primary {
+    background-color: var(--admin-accent);
+    color: #fff;
+    border: none;
+    box-shadow: 0 14px 28px rgba(13, 110, 253, 0.25);
+    transition: all 0.2s ease;
+}
+
+.admin-btn-primary:hover {
+    background-color: var(--admin-accent-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 18px 34px rgba(13, 110, 253, 0.35);
+}
+
+.admin-btn-soft {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border: 1px solid var(--admin-border) !important;
+    color: var(--admin-text) !important;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.admin-btn-soft:hover {
+    background: rgba(255, 255, 255, 0.12) !important;
+}
+
+.admin-badge.admin-dropdown,
+.admin-btn-add-another {
+    display: flex;
+    width: 100%;
+    justify-content: center;
+    align-items: center;
+    border-radius: 999px !important;
+    padding: 0.85rem !important;
+    margin-bottom: 1rem;
+    font-size: 0.95rem;
+    font-weight: 700;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    background: var(--admin-accent-soft);
+    color: #dbe7ff;
+}
+
+.admin-badge.admin-dropdown:hover {
+    background: rgba(13, 110, 253, 0.25);
+    border-color: rgba(13, 110, 253, 0.45);
+    color: #ffffff;
+    transform: translateY(-1px);
+}
+
+.admin-btn-add-another {
+    border: 2px dashed rgba(13, 110, 253, 0.4) !important;
+}
+
+.admin-btn-add-another:hover {
+    border-color: var(--admin-accent) !important;
+    background: rgba(13, 110, 253, 0.25);
+    transform: translateY(-1px);
+}
+
+.working-hours-container {
+    margin-bottom: 1.5rem;
+}
+
+.form-floating > .admin-select,
+.form-floating > .admin-input,
+.form-floating > .form-control {
+    padding-top: 1.85rem !important; 
+    padding-bottom: 0.625rem !important;
+    padding-left: 1.25rem !important;
+}
+
+.form-floating > .admin-select ~ label,
+.form-floating > .admin-input ~ label,
+.form-floating > .form-control ~ label {
+    padding-left: 1.25rem !important;
+    padding-top: 1.1rem !important;
+}
+
+.form-floating > .admin-select ~ label,
+.form-floating > .admin-input:focus ~ label,
+.form-floating > .admin-input:not(:placeholder-shown) ~ label,
+.form-floating > .form-control:focus ~ label,
+.form-floating > .form-control:not(:placeholder-shown) ~ label {
+    opacity: 0.8;
+    transform: scale(0.85) translateY(-0.75rem) translateX(0.15rem);
+}
+
+.admin-select {
+    cursor: pointer;
+    background-image: none !important;
+}
+
+.finish-icon-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.finish-icon {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, #20c997, #0d6efd);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 15px 35px rgba(32, 201, 151, 0.35);
+    animation: scaleUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes scaleUp {
+    from {
+        transform: scale(0);
+        opacity: 0;
+    }
+
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.admin-actions-row {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    padding-bottom: 0.5rem;
+}
+
+.admin-actions-row > * {
+    flex: 1;
+}

@@ -1,1 +1,16 @@
-﻿
+﻿@{
+    ViewData["Title"] = "Get started";
+    Layout = "_OnboardingLayout";
+}
+
+<div class="admin-card">
+    <div class="admin-header">
+        <div class="admin-badge">SimplyAppoint • Business Setup</div>
+        <h1 class="admin-title">Let’s set up your business</h1>
+        <p class="admin-subtitle">This takes about 3–5 minutes.</p>
+    </div>
+
+    <a asp-controller="Onboarding" asp-action="Business" class="btn btn-primary admin-btn-primary w-100">
+        Start setup
+    </a>
+</div>
