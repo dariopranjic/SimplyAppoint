@@ -7,7 +7,8 @@
 
     <link rel="stylesheet" href="~/AdminKit/css/light.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/customer-light.css" asp-append-version="true" />
+
+    <link id="customer-theme-stylesheet" rel="stylesheet" href="~/css/customer-light.css" asp-append-version="true" />
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -21,7 +22,6 @@
         <nav class="navbar navbar-expand-lg customer-nav">
             <div class="container d-flex align-items-center justify-content-between">
 
-                <!-- Brand -->
                 <a class="customer-brand" asp-controller="Home" asp-action="Index">
                     <span class="customer-brand-mark"></span>
                     <span>
@@ -29,8 +29,11 @@
                     </span>
                 </a>
 
-                <!-- Right side -->
                 <div class="d-flex align-items-center gap-3">
+
+                    <button id="theme-toggle" class="btn customer-pill" style="font-weight:800;">
+                        Theme
+                    </button>
 
                     @if (!User.Identity?.IsAuthenticated ?? true)
                     {
@@ -98,7 +101,40 @@
     @RenderSection("Scripts", required: false)
 
     <script>
-        if (window.feather) window.feather.replace();
+        // Theme Switcher Logic
+        document.addEventListener("DOMContentLoaded", function () {
+            const toggleBtn = document.getElementById('theme-toggle');
+            const themeLink = document.getElementById('customer-theme-stylesheet');
+
+            const lightThemePath = '/css/customer-light.css';
+            const darkThemePath = '/css/customer-dark.css';
+
+            // Check localStorage
+            const savedTheme = localStorage.getItem('sa-theme');
+
+            if (savedTheme === 'dark') {
+                themeLink.setAttribute('href', darkThemePath);
+                toggleBtn.innerText = "Light";
+            } else {
+                themeLink.setAttribute('href', lightThemePath);
+                toggleBtn.innerText = "Dark";
+            }
+
+            toggleBtn.addEventListener('click', function () {
+                const currentHref = themeLink.getAttribute('href');
+                if (currentHref.includes('customer-light.css')) {
+                    themeLink.setAttribute('href', darkThemePath);
+                    toggleBtn.innerText = "Light";
+                    localStorage.setItem('sa-theme', 'dark');
+                } else {
+                    themeLink.setAttribute('href', lightThemePath);
+                    toggleBtn.innerText = "Dark";
+                    localStorage.setItem('sa-theme', 'light');
+                }
+            });
+
+            if (window.feather) window.feather.replace();
+        });
     </script>
 </body>
 </html>

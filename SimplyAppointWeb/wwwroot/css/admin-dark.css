@@ -340,3 +340,21 @@ body {
 .admin-actions-row > * {
     flex: 1;
 }
+
+.finish-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 1rem 0;
+    gap: 1rem;
+    background: rgba(13, 110, 253, 0.15);
+    border-radius: 14px;
+}
+
+.finish-content p {
+    max-width: 400px;
+    margin: 0 auto;
+    opacity: 0.8;
+}

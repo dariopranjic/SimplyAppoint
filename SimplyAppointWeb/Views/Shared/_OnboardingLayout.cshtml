@@ -7,7 +7,7 @@
 
     <link rel="stylesheet" href="~/AdminKit/css/light.css" asp-append-version="true" />
 
-    <link rel="stylesheet" href="~/css/admin-dark.css" asp-append-version="true" />
+    <link id="theme-stylesheet" rel="stylesheet" href="~/css/admin-light.css" asp-append-version="true" />
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -25,6 +25,10 @@
             </a>
 
             <div class="d-flex align-items-center gap-2">
+                <button id="theme-toggle" class="btn btn-outline-secondary" style="border-radius:999px; font-weight:800; padding: 0.375rem 0.75rem;">
+                    Theme
+                </button>
+
                 <form asp-area="Identity" asp-page="/Account/Logout" method="post" class="m-0">
                     <button type="submit" class="btn btn-outline-secondary" style="border-radius:999px; font-weight:800;">
                         Sign out
@@ -47,6 +51,46 @@
 
     <script src="~/AdminKit/js/app.js" asp-append-version="true"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const toggleBtn = document.getElementById('theme-toggle');
+            const themeLink = document.getElementById('theme-stylesheet');
+
+            // Define your paths
+            const lightThemePath = '/css/admin-light.css';
+            const darkThemePath = '/css/admin-dark.css';
+
+            // Check localStorage for saved preference
+            const savedTheme = localStorage.getItem('sa-theme');
+
+            // Apply saved theme on load
+            if (savedTheme === 'dark') {
+                themeLink.setAttribute('href', darkThemePath);
+                toggleBtn.innerText = "Light Mode";
+            } else {
+                themeLink.setAttribute('href', lightThemePath);
+                toggleBtn.innerText = "Dark Mode";
+            }
+
+            // Toggle Click Handler
+            toggleBtn.addEventListener('click', function () {
+                const currentHref = themeLink.getAttribute('href');
+
+                if (currentHref.includes('admin-light.css')) {
+                    // Switch to Dark
+                    themeLink.setAttribute('href', darkThemePath);
+                    toggleBtn.innerText = "Light Mode";
+                    localStorage.setItem('sa-theme', 'dark');
+                } else {
+                    // Switch to Light
+                    themeLink.setAttribute('href', lightThemePath);
+                    toggleBtn.innerText = "Dark Mode";
+                    localStorage.setItem('sa-theme', 'light');
+                }
+            });
+        });
+    </script>
 
     @RenderSection("Scripts", required: false)
 </body>
