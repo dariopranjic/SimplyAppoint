@@ -40,5 +40,6 @@ namespace SimplyAppoint.Models
 
         [Required]
         public DateTimeOffset CreatedUtc { get; set; } = DateTimeOffset.UtcNow;
+        public bool IsOnboardingComplete { get; set; } = false;
     }
 }
