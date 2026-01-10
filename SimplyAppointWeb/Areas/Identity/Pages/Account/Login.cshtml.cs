@@ -105,6 +105,11 @@ namespace SimplyAppointWeb.Areas.Identity.Pages.Account
         {
             returnUrl ??= Url.Content("~/");
 
+            if (IsBadReturnUrl(returnUrl))
+            {
+                returnUrl = Url.Content("~/");
+            }
+
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
 
             if (ModelState.IsValid)
@@ -135,6 +140,14 @@ namespace SimplyAppointWeb.Areas.Identity.Pages.Account
 
             // If we got this far, something failed, redisplay form
             return Page();
+        }
+
+        private static bool IsBadReturnUrl(string returnUrl)
+        {
+            if (string.IsNullOrWhiteSpace(returnUrl)) return true;
+
+            // To prevent redirecting to logout 
+            return returnUrl.Contains("/Identity/Account/Logout", StringComparison.OrdinalIgnoreCase);
         }
     }
 }
