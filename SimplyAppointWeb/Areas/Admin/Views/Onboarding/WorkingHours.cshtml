@@ -14,26 +14,29 @@
 
     <form asp-action="WorkingHours" method="post" class="admin-form" id="hoursForm">
         <div class="working-hours-container mb-4">
-            @{
-                var days = Enum.GetValues(typeof(SimplyAppoint.Models.Enums.Weekday)).Cast<SimplyAppoint.Models.Enums.Weekday>().ToList();
-            }
-
-            @for (int i = 0; i < days.Count; i++)
+            @for (int i = 0; i < Model.Count; i++)
             {
-                <div class="working-day-row d-flex align-items-center py-3 border-bottom">
+                <div class="working-day-row d-flex align-items-center py-3 border-bottom" style="@(Model[i].IsClosed ? "opacity: 0.5;" : "")">
+
+                    @* CRITICAL: Hidden fields for binding *@
+                    <input type="hidden" asp-for="@Model[i].Weekday" />
+                    <input type="hidden" asp-for="@Model[i].BusinessId" />
+
                     <div class="day-label fw-bold" style="width: 100px;">
-                        @days[i].ToString()
+                        @Model[i].Weekday.ToString()
                     </div>
 
                     <div class="form-check form-switch me-4">
-                        <input class="form-check-input day-toggle" type="checkbox" role="switch" id="closed_@i" checked>
-                        <label class="form-check-label small text-muted" for="closed_@i">Open</label>
+                        @* We use a checkbox for "Open", but we must invert it for "IsClosed" logic in JS or Controller *@
+                        <input class="form-check-input day-toggle" type="checkbox" role="switch" id="open_@i" @(Model[i].IsClosed ? "" : "checked")>
+                        <input type="hidden" asp-for="@Model[i].IsClosed" class="is-closed-hidden" />
+                        <label class="form-check-label small text-muted" for="open_@i">@(Model[i].IsClosed ? "Closed" : "Open")</label>
                     </div>
 
                     <div class="d-flex align-items-center gap-2 flex-grow-1 time-inputs-group">
-                        <input type="time" class="form-control admin-input admin-input-sm start-time" value="09:00" />
+                        <input asp-for="@Model[i].OpenTime" type="time" class="form-control admin-input admin-input-sm start-time" disabled="@(Model[i].IsClosed)" />
                         <span class="text-muted">-</span>
-                        <input type="time" class="form-control admin-input admin-input-sm end-time" value="17:00" />
+                        <input asp-for="@Model[i].CloseTime" type="time" class="form-control admin-input admin-input-sm end-time" disabled="@(Model[i].IsClosed)" />
                     </div>
                 </div>
             }
@@ -69,56 +72,52 @@
                 const startInput = row.querySelector('.start-time');
                 const endInput = row.querySelector('.end-time');
 
-                // Reset styles
                 startInput.style.borderColor = "";
                 endInput.style.borderColor = "";
 
+                // Only validate if NOT closed (toggle is checked means OPEN)
                 if (toggle.checked) {
-                    if (startInput.value >= endInput.value) {
-                        isValid = false;
-                        startInput.style.borderColor = "#dc3545";
-                        endInput.style.borderColor = "#dc3545";
+                    if (startInput.value && endInput.value) {
+                        if (startInput.value >= endInput.value) {
+                            isValid = false;
+                            startInput.style.borderColor = "#dc3545";
+                            endInput.style.borderColor = "#dc3545";
+                        }
                     }
                 }
             });
 
-            if (isValid) {
-                submitBtn.disabled = false;
-                submitBtn.style.opacity = "1";
-                errorMsg.classList.add('d-none');
-            } else {
-                submitBtn.disabled = true;
-                submitBtn.style.opacity = "0.5";
-                errorMsg.classList.remove('d-none');
-            }
+            submitBtn.disabled = !isValid;
+            submitBtn.style.opacity = isValid ? "1" : "0.5";
+            if (isValid) errorMsg.classList.add('d-none'); else errorMsg.classList.remove('d-none');
         }
 
-        // Toggle logic
         document.querySelectorAll('.day-toggle').forEach(toggle => {
             toggle.addEventListener('change', function() {
                 const row = this.closest('.working-day-row');
                 const inputs = row.querySelectorAll('input[type="time"]');
                 const label = row.querySelector('.form-check-label');
+                const hiddenIsClosed = row.querySelector('.is-closed-hidden');
 
                 if (this.checked) {
                     inputs.forEach(i => i.disabled = false);
                     label.textContent = "Open";
                     row.style.opacity = "1";
+                    hiddenIsClosed.value = "false";
                 } else {
                     inputs.forEach(i => i.disabled = true);
                     label.textContent = "Closed";
                     row.style.opacity = "0.5";
+                    hiddenIsClosed.value = "true";
                 }
-                validateTimes(); // Re-validate when toggling
+                validateTimes();
             });
         });
 
-        // Listen for time changes
         document.querySelectorAll('input[type="time"]').forEach(input => {
             input.addEventListener('change', validateTimes);
         });
 
-        // Initial validation run
         validateTimes();
     </script>
 }

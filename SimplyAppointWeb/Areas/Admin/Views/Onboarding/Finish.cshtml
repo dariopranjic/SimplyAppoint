@@ -21,17 +21,20 @@
     <div class="finish-content my-4 p-3 admin-radius">
         <p class="mb-0">
             We've configured your <strong>services</strong>, <strong>availability</strong>, and <strong>booking policies</strong>.
-            You can change these anytime from your settings.
+            Click the button below to finalize your setup and save your profile.
         </p>
     </div>
 
-    <div class="d-flex flex-column gap-3 mt-4">
-        <a asp-area="Admin" asp-controller="Dashboard" asp-action="Index" class="btn btn-primary admin-btn-primary w-100 py-3">
-            Go to Admin Dashboard
-        </a>
+    @* 1. Wrap the final button in a Form to trigger the FinishPost action *@
+    <form asp-action="Finish" method="post">
+        <div class="d-flex flex-column gap-3 mt-4">
+            <button type="submit" class="btn btn-primary admin-btn-primary w-100 py-3">
+                Save & Go to Admin Dashboard
+            </button>
 
-        @* <a href="/" target="_blank" class="btn admin-btn-add-another w-100 m-0">
-            View my public booking page
-        </a> *@
-    </div>
+            <a asp-action="BookingPolicy" class="btn btn-outline-secondary admin-btn-soft m-0">
+                Back to review rules
+            </a>
+        </div>
+    </form>
 </div>
