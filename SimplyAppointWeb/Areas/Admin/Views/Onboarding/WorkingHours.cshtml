@@ -18,7 +18,6 @@
             {
                 <div class="working-day-row d-flex align-items-center py-3 border-bottom" style="@(Model[i].IsClosed ? "opacity: 0.5;" : "")">
 
-                    @* CRITICAL: Hidden fields for binding *@
                     <input type="hidden" asp-for="@Model[i].Weekday" />
                     <input type="hidden" asp-for="@Model[i].BusinessId" />
 

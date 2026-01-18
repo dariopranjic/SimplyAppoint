@@ -4,7 +4,6 @@ using SimplyAppoint.Models;
 using SimplyAppoint.Models.Enums;
 using SimplyAppoint.Models.ViewModels;
 using SimplyAppointWeb.Extensions;
-using System.Diagnostics;
 using System.Security.Claims;
 
 namespace SimplyAppointWeb.Controllers
@@ -46,7 +45,8 @@ namespace SimplyAppointWeb.Controllers
             var data = GetSessionData();
             model.OwnerUserId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "Unknown";
 
-            // IMPROVEMENT: Only generate a new slug if the business name changed or if it doesn't exist yet
+            ModelState.Remove(nameof(model.OwnerUserId));
+
             if (string.IsNullOrEmpty(data.Business?.Slug) || data.Business.Name != model.Name)
             {
                 if (!string.IsNullOrEmpty(model.Name))
@@ -54,21 +54,18 @@ namespace SimplyAppointWeb.Controllers
                     string baseSlug = model.Name.ToLower().Trim().Replace(" ", "-");
                     baseSlug = System.Text.RegularExpressions.Regex.Replace(baseSlug, @"[^a-z0-9\-]", "");
                     model.Slug = $"{baseSlug}-{Guid.NewGuid().ToString().Substring(0, 4)}";
+                    ModelState.Remove(nameof(model.Slug));
                 }
             }
             else
             {
-                model.Slug = data.Business.Slug; // Preserve the existing slug if the name is the same
+                model.Slug = data.Business.Slug;
             }
 
-            if (!ModelState.IsValid)
-            {
-                return View(model);
-            }
+            if (!ModelState.IsValid) return View(model);
 
             data.Business = model;
             HttpContext.Session.Set(SessionKey, data);
-
             return RedirectToAction(nameof(Services));
         }
 
@@ -86,15 +83,20 @@ namespace SimplyAppointWeb.Controllers
         {
             var data = GetSessionData();
 
-            if (submitAction == "Next" && string.IsNullOrEmpty(model.Name))
+            // If clicking Next and the current form is empty/partially filled
+            if (submitAction == "Next" && string.IsNullOrWhiteSpace(model.Name))
             {
                 if (data.Services.Any())
                 {
+                    // Clear current errors since we are ignoring the empty form and moving on
+                    ModelState.Clear();
                     return RedirectToAction(nameof(WorkingHours));
                 }
                 else
                 {
-                    ModelState.AddModelError("", "Please add at least one service to continue.");
+                    ModelState.AddModelError("Name", "Please add at least one service to continue.");
+                    ViewBag.ExistingServices = data.Services;
+                    return View(model);
                 }
             }
 
@@ -104,6 +106,7 @@ namespace SimplyAppointWeb.Controllers
                 return View(model);
             }
 
+            // Save the current service to session
             data.Services.Add(model);
             HttpContext.Session.Set(SessionKey, data);
 
@@ -119,11 +122,9 @@ namespace SimplyAppointWeb.Controllers
         public IActionResult WorkingHours()
         {
             var data = GetSessionData();
-
             if (data.WorkingHours == null || !data.WorkingHours.Any())
             {
                 data.WorkingHours = new List<WorkingHours>();
-
                 foreach (Weekday day in Enum.GetValues(typeof(Weekday)))
                 {
                     data.WorkingHours.Add(new WorkingHours
@@ -134,10 +135,8 @@ namespace SimplyAppointWeb.Controllers
                         IsClosed = (day == Weekday.Saturday || day == Weekday.Sunday)
                     });
                 }
-
                 HttpContext.Session.Set(SessionKey, data);
             }
-
             return View(data.WorkingHours);
         }
 
@@ -148,7 +147,6 @@ namespace SimplyAppointWeb.Controllers
             var data = GetSessionData();
             data.WorkingHours = model;
             HttpContext.Session.Set(SessionKey, data);
-
             return RedirectToAction(nameof(BookingPolicy));
         }
 
@@ -156,7 +154,6 @@ namespace SimplyAppointWeb.Controllers
         public IActionResult BookingPolicy()
         {
             var data = GetSessionData();
-            // IMPROVEMENT: Provide sensible defaults if session is empty
             var model = data.BookingPolicy ?? new BookingPolicy
             {
                 SlotIntervalMinutes = 30,
@@ -172,11 +169,9 @@ namespace SimplyAppointWeb.Controllers
         public IActionResult BookingPolicy(BookingPolicy model)
         {
             if (!ModelState.IsValid) return View(model);
-
             var data = GetSessionData();
             data.BookingPolicy = model;
             HttpContext.Session.Set(SessionKey, data);
-
             return RedirectToAction(nameof(Finish));
         }
 
@@ -192,61 +187,46 @@ namespace SimplyAppointWeb.Controllers
         public IActionResult FinishPost()
         {
             var data = GetSessionData();
-
-            // Guard check: ensure we have data to save
             if (data.Business == null) return RedirectToAction(nameof(Business));
 
             try
             {
-                // 1. Save Business first to generate the ID
+                // 1. Prepare Business
+                data.Business.Id = 0;
                 data.Business.IsOnboardingComplete = true;
-                data.Business.Id = 0; // SAFETY RESET: Ensure EF treats this as new
 
-                _unitOfWork.Business.Add(data.Business);
-                _unitOfWork.Save(); // Database generates the BusinessId here
-
-                int newBusinessId = data.Business.Id;
-
-                // 2. Save Services
-                if (data.Services != null && data.Services.Any())
+                // 2. Attach Services (1-to-Many)
+                if (data.Services != null)
                 {
-                    foreach (var service in data.Services)
-                    {
-                        service.Id = 0; // SAFETY RESET
-                        service.BusinessId = newBusinessId;
-                        _unitOfWork.Service.Add(service);
-                    }
+                    data.Services.ForEach(s => s.Id = 0);
+                    data.Business.Services = data.Services;
                 }
 
-                // 3. Save Working Hours
-                if (data.WorkingHours != null && data.WorkingHours.Any())
+                // 3. Attach Working Hours (1-to-Many)
+                if (data.WorkingHours != null)
                 {
-                    foreach (var hours in data.WorkingHours)
-                    {
-                        hours.Id = 0; // SAFETY RESET
-                        hours.BusinessId = newBusinessId;
-                        _unitOfWork.WorkingHours.Add(hours);
-                    }
+                    data.WorkingHours.ForEach(w => w.Id = 0);
+                    data.Business.WorkingHours = data.WorkingHours;
                 }
 
-                // 4. Save Booking Policy
+                // 4. Attach Booking Policy (1-to-1)
                 if (data.BookingPolicy != null)
                 {
-                    data.BookingPolicy.BusinessId = newBusinessId;
-                    _unitOfWork.BookingPolicy.Add(data.BookingPolicy);
+                    data.Business.BookingPolicy = data.BookingPolicy;
                 }
 
+                // 5. Save Everything
+                _unitOfWork.Business.Add(data.Business);
                 _unitOfWork.Save();
 
-                // 5. Cleanup session after successful save
+                // 6. Cleanup and Redirect
                 HttpContext.Session.Remove(SessionKey);
 
                 return RedirectToAction("Index", "Dashboard", new { area = "Admin" });
             }
             catch (Exception ex)
             {
-                // In a real app, log the exception: _logger.LogError(ex, "Save failed");
-                ModelState.AddModelError("", "Something went wrong while saving your setup. Please try again.");
+                ModelState.AddModelError("", "Save failed: " + ex.Message);
                 return View("Finish");
             }
         }

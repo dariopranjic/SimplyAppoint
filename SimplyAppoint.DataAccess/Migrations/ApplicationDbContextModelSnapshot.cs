@@ -294,10 +294,7 @@ namespace SimplyAppoint.DataAccess.Migrations
             modelBuilder.Entity("SimplyAppoint.Models.BookingPolicy", b =>
                 {
                     b.Property<int>("BusinessId")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("BusinessId"));
 
                     b.Property<int>("AdvanceNoticeMinutes")
                         .HasColumnType("int");
@@ -578,6 +575,42 @@ namespace SimplyAppoint.DataAccess.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("SimplyAppoint.Models.BookingPolicy", b =>
+                {
+                    b.HasOne("SimplyAppoint.Models.Business", null)
+                        .WithOne("BookingPolicy")
+                        .HasForeignKey("SimplyAppoint.Models.BookingPolicy", "BusinessId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("SimplyAppoint.Models.Service", b =>
+                {
+                    b.HasOne("SimplyAppoint.Models.Business", null)
+                        .WithMany("Services")
+                        .HasForeignKey("BusinessId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("SimplyAppoint.Models.WorkingHours", b =>
+                {
+                    b.HasOne("SimplyAppoint.Models.Business", null)
+                        .WithMany("WorkingHours")
+                        .HasForeignKey("BusinessId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("SimplyAppoint.Models.Business", b =>
+                {
+                    b.Navigation("BookingPolicy");
+
+                    b.Navigation("Services");
+
+                    b.Navigation("WorkingHours");
                 });
 #pragma warning restore 612, 618
         }

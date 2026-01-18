@@ -3,12 +3,11 @@
 @{
     ViewData["Title"] = "Add a service";
     Layout = "_OnboardingLayout";
-    // Retrieve the list we passed from the Controller
     var existingServices = ViewBag.ExistingServices as List<Service> ?? new List<Service>();
 }
 
 <div class="admin-card admin-card-lg">
-    <div class="admin-header">
+    <div class="admin-header text-center">
         <div class="admin-badge">Step 2 of 5</div>
         <h1 class="admin-title">Add your services</h1>
         <p class="admin-subtitle">What will your clients be booking? Add at least one to continue.</p>
@@ -26,6 +25,10 @@
                         <div>
                             <span class="fw-bold d-block">@s.Name</span>
                             <span class="text-muted small">@s.DurationMinutes min</span>
+                            @if (s.BufferBefore > 0 || s.BufferAfter > 0)
+                            {
+                                <span class="badge bg-info ms-2" style="font-size: 0.7rem;">Buffers included</span>
+                            }
                         </div>
                         <span class="badge bg-light text-dark border p-2">@s.Price.ToString("C")</span>
                     </div>
@@ -41,7 +44,7 @@
         <input type="hidden" asp-for="CreatedUtc" />
 
         <div class="form-floating mb-3">
-            <input asp-for="Name" class="form-control admin-input" placeholder="e.g. Haircut" autofocus />
+            <input asp-for="Name" class="form-control admin-input" placeholder="e.g. Haircut" />
             <label asp-for="Name">Service name</label>
             <span asp-validation-for="Name" class="text-danger"></span>
         </div>
@@ -49,32 +52,50 @@
         <div class="row g-3 mb-3">
             <div class="col-md-6">
                 <div class="form-floating">
-                    <input asp-for="DurationMinutes" type="number" min="1" max="1440" class="form-control admin-input" placeholder="30" />
+                    <input asp-for="DurationMinutes" type="number" class="form-control admin-input" placeholder="30" />
                     <label asp-for="DurationMinutes">Duration (min)</label>
                     <span asp-validation-for="DurationMinutes" class="text-danger"></span>
                 </div>
             </div>
-
             <div class="col-md-6">
                 <div class="form-floating">
-                    <input asp-for="Price" type="number" min="0.01" step="0.01" class="form-control admin-input" placeholder="0.00" />
+                    <input asp-for="Price" type="number" step="0.01" class="form-control admin-input" placeholder="0.00" />
                     <label asp-for="Price">Price (€)</label>
                     <span asp-validation-for="Price" class="text-danger"></span>
                 </div>
             </div>
         </div>
 
+        <div class="mb-3">
+            <button type="button" class="btn btn-link btn-sm p-0 text-decoration-none" onclick="toggleBuffers()">
+                + Add buffer time (before/after)
+            </button>
+        </div>
+
+        <div id="bufferFields" style="display: none;" class="row g-3 mb-3 p-3 bg-light rounded border">
+            <div class="col-md-6">
+                <div class="form-floating">
+                    <input asp-for="BufferBefore" type="number" class="form-control admin-input" placeholder="0" />
+                    <label asp-for="BufferBefore">Buffer Before (min)</label>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-floating">
+                    <input asp-for="BufferAfter" type="number" class="form-control admin-input" placeholder="0" />
+                    <label asp-for="BufferAfter">Buffer After (min)</label>
+                </div>
+            </div>
+        </div>
+
         <div class="d-flex flex-column gap-3 mt-4">
-            <button type="submit" name="submitAction" value="AddAnother" class="btn admin-btn-add-another">
+            <button type="submit" name="submitAction" value="AddAnother" class="btn admin-btn-add-another w-100">
                 + Save and add another service
             </button>
 
-            <div class="admin-actions-row">
-                <a asp-action="Business" class="btn btn-outline-secondary admin-btn-soft flex-grow-1">
-                    Back
-                </a>
+            <div class="d-flex gap-2">
+                <a asp-action="Business" class="btn btn-outline-secondary admin-btn-soft flex-grow-1">Back</a>
 
-                <button type="submit" name="submitAction" value="Next" class="btn btn-primary admin-btn-primary flex-grow-1">
+                <button type="submit" name="submitAction" value="Next" formnovalidate class="btn btn-primary admin-btn-primary flex-grow-1">
                     Continue
                 </button>
             </div>
@@ -84,4 +105,10 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        function toggleBuffers() {
+            var x = document.getElementById("bufferFields");
+            x.style.display = (x.style.display === "none") ? "flex" : "none";
+        }
+    </script>
 }

@@ -12,8 +12,8 @@ using SimplyAppoint.DataAccess.Data;
 namespace SimplyAppoint.DataAccess.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260109124523_AddIdentityTablesToDb")]
-    partial class AddIdentityTablesToDb
+    [Migration("20260118174321_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -297,10 +297,7 @@ namespace SimplyAppoint.DataAccess.Migrations
             modelBuilder.Entity("SimplyAppoint.Models.BookingPolicy", b =>
                 {
                     b.Property<int>("BusinessId")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("BusinessId"));
 
                     b.Property<int>("AdvanceNoticeMinutes")
                         .HasColumnType("int");
@@ -335,6 +332,9 @@ namespace SimplyAppoint.DataAccess.Migrations
                     b.Property<DateTimeOffset>("CreatedUtc")
                         .HasColumnType("datetimeoffset");
 
+                    b.Property<bool>("IsOnboardingComplete")
+                        .HasColumnType("bit");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -368,6 +368,54 @@ namespace SimplyAppoint.DataAccess.Migrations
                         .IsUnique();
 
                     b.ToTable("Businesses");
+                });
+
+            modelBuilder.Entity("SimplyAppoint.Models.BusinessCustomer", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("BusinessId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset>("CreatedUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Phone")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTimeOffset?>("UpdatedUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("UserId")
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BusinessId");
+
+                    b.HasIndex("BusinessId", "Email")
+                        .IsUnique();
+
+                    b.ToTable("BusinessCustomers");
                 });
 
             modelBuilder.Entity("SimplyAppoint.Models.Service", b =>
@@ -530,6 +578,42 @@ namespace SimplyAppoint.DataAccess.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("SimplyAppoint.Models.BookingPolicy", b =>
+                {
+                    b.HasOne("SimplyAppoint.Models.Business", null)
+                        .WithOne("BookingPolicy")
+                        .HasForeignKey("SimplyAppoint.Models.BookingPolicy", "BusinessId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("SimplyAppoint.Models.Service", b =>
+                {
+                    b.HasOne("SimplyAppoint.Models.Business", null)
+                        .WithMany("Services")
+                        .HasForeignKey("BusinessId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("SimplyAppoint.Models.WorkingHours", b =>
+                {
+                    b.HasOne("SimplyAppoint.Models.Business", null)
+                        .WithMany("WorkingHours")
+                        .HasForeignKey("BusinessId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("SimplyAppoint.Models.Business", b =>
+                {
+                    b.Navigation("BookingPolicy");
+
+                    b.Navigation("Services");
+
+                    b.Navigation("WorkingHours");
                 });
 #pragma warning restore 612, 618
         }

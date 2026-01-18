@@ -41,5 +41,8 @@ namespace SimplyAppoint.Models
         [Required]
         public DateTimeOffset CreatedUtc { get; set; } = DateTimeOffset.UtcNow;
         public bool IsOnboardingComplete { get; set; } = false;
+        public ICollection<Service> Services { get; set; } = new List<Service>();
+        public ICollection<WorkingHours> WorkingHours { get; set; } = new List<WorkingHours>();
+        public BookingPolicy? BookingPolicy { get; set; }
     }
 }

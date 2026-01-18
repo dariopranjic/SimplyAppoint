@@ -13,7 +13,6 @@
     </div>
 
     <form asp-action="BookingPolicy" method="post" class="admin-form">
-        @* Hidden field for the ID to keep the model valid *@
         <input type="hidden" asp-for="BusinessId" />
 
         <div class="row g-3">
@@ -85,7 +84,6 @@
             <a asp-action="WorkingHours" class="btn btn-outline-secondary admin-btn-soft flex-grow-1">
                 Back
             </a>
-            @* Use a SUBMIT button here to trigger the POST action *@
             <button type="submit" class="btn btn-primary admin-btn-primary flex-grow-1">
                 Finish Setup
             </button>
