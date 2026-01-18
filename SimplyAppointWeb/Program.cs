@@ -45,6 +45,13 @@ app.UseAuthorization();
 app.MapStaticAssets();
 app.MapRazorPages();
 
+
+// Business Slug Route
+app.MapControllerRoute(
+    name: "business_slug",
+    pattern: "{slug}",
+    defaults: new { controller = "Home", action = "Index" });
+
 app.MapControllerRoute(
     name: "default",
     pattern: "{area=Customer}/{controller=Home}/{action=Index}/{id?}")

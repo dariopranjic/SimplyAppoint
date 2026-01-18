@@ -16,8 +16,109 @@ body {
 
 .customer-page {
     min-height: 100vh;
-    background: radial-gradient(900px 520px at 10% 10%, rgba(13,110,253,0.12), transparent 60%), radial-gradient(900px 520px at 90% 20%, rgba(32,201,151,0.10), transparent 55%), linear-gradient(180deg, var(--bg) 0%, var(--bg2) 100%);
+    background: radial-gradient(900px 520px at 10% 10%, rgba(13,110,253,0.12), transparent 60%) fixed, radial-gradient(900px 520px at 90% 20%, rgba(32,201,151,0.10), transparent 55%) fixed, linear-gradient(180deg, var(--bg) 0%, var(--bg2) 100%) fixed;
+    background-repeat: no-repeat;
+    background-size: cover;
     color: var(--text);
+}
+
+.booking-hero {
+    background: transparent !important;
+    padding: 4rem 0 2rem;
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.hero-badge {
+    display: inline-block;
+    padding: 0.5rem 1.25rem;
+    background: rgba(255, 255, 255, 0.4);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(13, 110, 253, 0.1);
+    border-radius: 999px;
+    color: var(--accent);
+    font-size: 0.8rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 1rem;
+}
+
+.service-input, .time-input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.service-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 2px solid rgba(15, 23, 42, 0.05);
+    border-radius: 24px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    margin-bottom: 1rem;
+    width: 100%;
+}
+
+.service-card:hover {
+    border-color: var(--accent);
+    background: rgba(255, 255, 255, 0.9);
+    transform: translateY(-2px);
+}
+
+
+.service-input:checked + .service-card {
+    background: var(--accent) !important;
+    border-color: var(--accent) !important;
+    box-shadow: 0 15px 30px rgba(13, 110, 253, 0.2);
+    transform: scale(1.02);
+}
+
+.service-input:checked + .service-card h5,
+.service-input:checked + .service-card span,
+.service-input:checked + .service-card .price-tag,
+.service-input:checked + .service-card [data-feather] {
+    color: #ffffff !important;
+}
+
+.time-label {
+    display: block;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.8);
+    border: 2px solid #edf2f7;
+    border-radius: 14px;
+    cursor: pointer;
+    font-weight: 700;
+    text-align: center;
+    transition: 0.2s;
+}
+
+.time-input:checked + .time-label {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+}
+
+.sticky-sidebar {
+    position: sticky;
+    top: 110px;
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 2rem; 
+}
+
+.fw-black {
+    font-weight: 900 !important;
 }
 
 .customer-shell {

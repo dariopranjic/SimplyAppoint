@@ -1,196 +1,97 @@
 ﻿@model Business
 @{
-    ViewData["Title"] = "Book with " + Model.Name;
     Layout = "_CustomerLayout";
 }
 
-@section Styles {
-    <style>
-        .service-card {
-            background: var(--card);
-            border: 1px solid var(--card-border);
-            border-radius: 20px;
-            transition: all 0.2s ease;
-            cursor: pointer;
-            position: relative;
-            overflow: hidden;
-        }
-
-            .service-card:hover {
-                transform: translateY(-4px);
-                border-color: var(--accent);
-                box-shadow: 0 12px 24px rgba(13, 110, 253, 0.08);
-            }
-
-            .service-card.selected {
-                border: 2px solid var(--accent);
-                background: var(--accent-soft);
-            }
-
-        .price-badge {
-            font-weight: 800;
-            color: var(--accent);
-            font-size: 1.2rem;
-        }
-
-        .booking-sidebar {
-            position: sticky;
-            top: 100px;
-            background: var(--card);
-            border: 1px solid var(--card-border);
-            border-radius: 24px;
-            padding: 2rem;
-            backdrop-filter: blur(10px);
-        }
-
-        .business-header {
-            padding: 3rem 0;
-            text-align: center;
-        }
-
-        .dot-separator {
-            display: inline-block;
-            width: 4px;
-            height: 4px;
-            background: var(--muted);
-            border-radius: 50%;
-            margin: 0 8px;
-            vertical-align: middle;
-        }
-    </style>
-}
-
-<div class="business-header">
-    <h1 class="fw-extrabold display-5 mb-2">@Model.Name</h1>
-    <div class="d-flex align-items-center justify-content-center text-muted">
-        <span><i data-feather="map-pin" class="me-1"></i> @Model.Address</span>
-        <span class="dot-separator"></span>
-        <span><i data-feather="phone" class="me-1"></i> @Model.Phone</span>
+@* --- HERO SECTION *@
+<div class="booking-hero">
+    <div class="container">
+        <span class="hero-badge">Booking Experience</span>
+        @* Added 'customer-title' class to ensure it stays white in dark mode *@
+        <h1 class="display-4 fw-black mb-2 customer-title">@Model.Name</h1>
+        <p class="text-muted fw-bold">
+            <i data-feather="map-pin" class="me-1 text-primary"></i> @Model.Address
+        </p>
     </div>
 </div>
 
-<div class="row g-4">
-    @* --- Left Side: Services List --- *@
-    <div class="col-lg-8">
-        <h4 class="fw-bold mb-4">Select a service</h4>
+<div class="container pb-5">
+    <form asp-action="Confirm" method="get">
+        <input type="hidden" name="slug" value="@Model.Slug" />
 
-        <div class="d-flex flex-column gap-3">
-            @foreach (var service in Model.Services.Where(s => s.IsActive))
-            {
-                <div class="service-card p-4 d-flex justify-content-between align-items-center"
-                     onclick="selectService(@service.Id, '@service.Name', @service.Price, @service.DurationMinutes)">
-                    <div>
-                        <h5 class="fw-bold mb-1">@service.Name</h5>
-                        <div class="text-muted small">
-                            <i data-feather="clock" style="width:14px;"></i> @service.DurationMinutes min
-                            @if (service.BufferBefore > 0 || service.BufferAfter > 0)
+        <div class="row g-5">
+            @* --- 1. SERVICE SELECTION --- *@
+            <div class="col-lg-7">
+                <h4 class="fw-black mb-4 customer-title">1. Choose Service</h4>
+                <div class="service-list">
+                    @foreach (var s in Model.Services.Where(x => x.IsActive))
+                    {
+                        <input type="radio" name="serviceId" id="svc-@s.Id" value="@s.Id" class="service-input" required />
+                        <label for="svc-@s.Id" class="service-card shadow-sm">
+                            <div>
+                                <h5 class="fw-bold mb-1">@s.Name</h5>
+                                <span class="text-muted small fw-bold">
+                                    <i data-feather="clock" style="width:14px; height:14px; margin-right:4px;"></i>@s.DurationMinutes Mins
+                                </span>
+                            </div>
+                            @* Added 'price-tag' class to help CSS targeting *@
+                            <div class="price-tag fw-black fs-4 text-primary">@s.Price.ToString("C")</div>
+                        </label>
+                    }
+                </div>
+            </div>
+
+            @* --- 2. TIME & DATE SIDEBAR --- *@
+            <div class="col-lg-5">
+                @* Ensure 'sticky-sidebar' is the main class for targeting *@
+                <div class="card border-0 shadow-lg rounded-5 p-4 sticky-sidebar">
+                    <h4 class="fw-black mb-4 customer-title">2. Pick a Time</h4>
+
+                    <div class="mb-4">
+                        <label class="small fw-black text-muted text-uppercase mb-2 d-block">Select Day</label>
+                        @* Remove 'bg-light' here if it's still appearing white; your CSS targets .form-control *@
+                        <input type="date" name="date" id="dateInput" class="form-control p-3 border-0 rounded-4 fw-bold"
+                               min="@DateTime.Now.ToString("yyyy-MM-dd")" required onchange="showTimes()" />
+                    </div>
+
+                    <div id="timeSelectionArea" style="display: none;">
+                        <label class="small fw-black text-muted text-uppercase mb-3 d-block">Available Slots</label>
+                        <div class="row g-2">
+                            @foreach (var t in new[] { "09:00", "10:00", "11:00", "13:00", "14:00", "15:00" })
                             {
-                                <span class="ms-2 text-accent-soft">+ Preparation time</span>
+                                <div class="col-4">
+                                    <input type="radio" name="time" id="time-@t" value="@t" class="time-input" required />
+                                    <label for="time-@t" class="time-label shadow-sm">@t</label>
+                                </div>
                             }
                         </div>
+
+                        <button type="submit" class="btn btn-primary customer-primary w-100 py-3 mt-4 fw-black rounded-pill">
+                            Continue
+                        </button>
                     </div>
-                    <div class="text-end">
-                        <div class="price-badge">@service.Price.ToString("C")</div>
-                        <div class="text-muted small">Select <i data-feather="chevron-right" style="width:14px;"></i></div>
-                    </div>
-                </div>
-            }
-        </div>
-    </div>
 
-    @* --- Right Side: Sticky Booking Summary --- *@
-    <div class="col-lg-4">
-        <div class="booking-sidebar">
-            <h5 class="fw-bold mb-4">Your Booking</h5>
-
-            <div id="empty-state" class="text-center py-4">
-                <div class="mb-3 text-muted">
-                    <i data-feather="calendar" style="width: 48px; height: 48px; opacity: 0.2;"></i>
-                </div>
-                <p class="text-muted small">Select a service to see available time slots</p>
-            </div>
-
-            <div id="selection-summary" style="display: none;">
-                <div class="d-flex justify-content-between mb-2">
-                    <span class="text-muted">Service</span>
-                    <span id="summary-name" class="fw-bold"></span>
-                </div>
-                <div class="d-flex justify-content-between mb-4">
-                    <span class="text-muted">Total</span>
-                    <span id="summary-price" class="price-badge"></span>
-                </div>
-
-                <hr />
-
-                <div class="mb-4">
-                    <label class="form-label small fw-bold text-uppercase">Select Date</label>
-                    <input type="date" id="bookingDate" class="form-control customer-pill" min="@DateTime.Now.ToString("yyyy-MM-dd")" />
-                </div>
-
-                <div id="time-slots-container" style="display:none;">
-                    <label class="form-label small fw-bold text-uppercase">Available Time</label>
-                    <div class="d-flex flex-wrap gap-2" id="time-slots">
-                        @* Slots will be loaded via JS *@
+                    @* Placeholder shown before date is selected *@
+                    <div id="datePlaceholder" class="text-center py-5 border-2 border-dashed rounded-4">
+                        <p class="text-muted small fw-bold mb-0">Please select a date to see times</p>
                     </div>
                 </div>
-
-                <button class="btn btn-primary customer-primary w-100 mt-4 py-3" id="book-now-btn" disabled>
-                    Book Appointment
-                </button>
             </div>
         </div>
-    </div>
+    </form>
 </div>
 
 @section Scripts {
     <script>
-        let selectedServiceId = null;
+        function showTimes() {
+            const dateInput = document.getElementById('dateInput');
+            const timeArea = document.getElementById('timeSelectionArea');
+            const placeholder = document.getElementById('datePlaceholder');
 
-        function selectService(id, name, price, duration) {
-            selectedServiceId = id;
-
-            // UI Updates
-            document.querySelectorAll('.service-card').forEach(c => c.classList.remove('selected'));
-            event.currentTarget.classList.add('selected');
-
-            document.getElementById('empty-state').style.display = 'none';
-            document.getElementById('selection-summary').style.display = 'block';
-
-            document.getElementById('summary-name').innerText = name;
-            document.getElementById('summary-price').innerText = price.toLocaleString('en-IE', { style: 'currency', currency: 'EUR' });
-
-            // Trigger Date Check
-            checkAvailability();
+            if (dateInput.value) {
+                timeArea.style.display = 'block';
+                placeholder.style.display = 'none';
+            }
         }
-
-        function checkAvailability() {
-            const date = document.getElementById('bookingDate').value;
-            if (!date || !selectedServiceId) return;
-
-            // This is where you will later call your API to get real slots
-            // For now, let's show the container
-            document.getElementById('time-slots-container').style.display = 'block';
-            loadDummySlots();
-        }
-
-        function loadDummySlots() {
-            const container = document.getElementById('time-slots');
-            container.innerHTML = '';
-            const slots = ['09:00', '10:00', '11:30', '14:00', '15:30'];
-
-            slots.forEach(slot => {
-                const btn = document.createElement('button');
-                btn.className = 'btn btn-outline-primary btn-sm customer-pill';
-                btn.innerText = slot;
-                btn.onclick = () => {
-                    document.querySelectorAll('#time-slots btn').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    document.getElementById('book-now-btn').disabled = false;
-                };
-                container.appendChild(btn);
-            });
-        }
-
-        document.getElementById('bookingDate').addEventListener('change', checkAvailability);
     </script>
 }
