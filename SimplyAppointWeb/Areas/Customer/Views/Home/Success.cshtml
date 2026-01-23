@@ -1,0 +1,50 @@
+﻿@model Business
+@{
+    Layout = "_CustomerLayout";
+}
+
+<div class="customer-page d-flex align-items-center justify-content-center" style="min-height: 80vh;">
+    <div class="container text-center">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                @* Success Icon *@
+                <div class="mb-4 d-inline-flex align-items-center justify-content-center"
+                     style="width: 100px; height: 100px; background: rgba(32, 201, 151, 0.1); border-radius: 50%;">
+                    <i data-feather="mail" style="width: 48px; height: 48px; color: #20c997;"></i>
+                </div>
+
+                @* Changed text-white to default text color for light mode visibility *@
+                <h1 class="fw-black mb-3">Check your inbox!</h1>
+                <p class="text-muted fs-5 mb-5">
+                    We've sent a confirmation link to your email. Please click the link to finalize your appointment at <strong>@Model.Name</strong>.
+                </p>
+
+                <div class="card border-0 rounded-5 p-4 customer-card text-start mb-4 shadow-sm">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="bg-primary bg-opacity-10 p-3 rounded-4">
+                                <i data-feather="alert-circle" class="text-primary"></i>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold mb-1">Didn't see it?</h6>
+                                <p class="small text-muted mb-0">Check your spam folder or wait 2-3 minutes.</p>
+                            </div>
+                        </div>
+
+                        @* New Resend Button *@
+                        <form asp-action="ResendConfirmation" method="post" class="ms-3">
+                            <input type="hidden" name="slug" value="@Model.Slug" />
+                            <button type="submit" class="btn btn-sm customer-pill px-3">
+                                <i data-feather="refresh-cw" class="me-1"></i> Resend
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <a asp-area="Customer" asp-action="Details" asp-route-slug="@Model.Slug" class="btn btn-link text-muted fw-bold text-decoration-none">
+                    <i data-feather="chevron-left" class="me-1"></i> Back to Business
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

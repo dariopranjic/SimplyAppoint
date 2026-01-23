@@ -1,0 +1,82 @@
+﻿@model Business
+@{
+    Layout = "_CustomerLayout";
+}
+
+<div class="customer-page">
+    <div class="container py-5">
+        @* Progress Tracker *@
+        <div class="row justify-content-center mb-5">
+            <div class="col-md-8 col-lg-6 text-center">
+                <div class="d-flex justify-content-between position-relative">
+                    <div class="step-item active">
+                        <div class="step-dot active">1</div>
+                        @* Removed text-white so CSS variables can control color *@
+                        <span class="small fw-bold">Details</span>
+                    </div>
+                    <div class="step-item">
+                        <div class="step-dot">2</div>
+                        <span class="small fw-bold text-muted">Service</span>
+                    </div>
+                    <div class="step-item">
+                        <div class="step-dot">3</div>
+                        <span class="small fw-bold text-muted">Confirm</span>
+                    </div>
+                    <div class="step-line"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                <div class="card border-0 shadow-lg rounded-5 p-4 p-md-5 customer-card">
+                    <div class="text-center mb-4">
+                        @* Removed text-white *@
+                        <h2 class="fw-black">Let's get started</h2>
+                        <p class="text-muted fw-bold">Enter your details to view available times at @Model.Name</p>
+                    </div>
+
+                    <form asp-action="Booking" method="get">
+                        <input type="hidden" name="slug" value="@Model.Slug" />
+
+                        <div class="row">
+                            <div class="col-md-6 mb-4">
+                                <label class="small fw-black text-muted text-uppercase mb-2 d-block">First Name</label>
+                                <input type="text" name="firstName" autocomplete="given-name"
+                                       class="form-control p-3 border-0 rounded-4 fw-bold customer-input"
+                                       placeholder="John" required />
+                            </div>
+                            <div class="col-md-6 mb-4">
+                                <label class="small fw-black text-muted text-uppercase mb-2 d-block">Last Name</label>
+                                <input type="text" name="lastName" autocomplete="family-name"
+                                       class="form-control p-3 border-0 rounded-4 fw-bold customer-input"
+                                       placeholder="Doe" required />
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="small fw-black text-muted text-uppercase mb-2 d-block">Email Address</label>
+                            <input type="email" name="email" autocomplete="email"
+                                   class="form-control p-3 border-0 rounded-4 fw-bold customer-input"
+                                   placeholder="john@example.com" required />
+                        </div>
+
+                        <button type="submit" class="btn btn-primary customer-primary w-100 py-3 mt-2 fw-black rounded-pill">
+                            Find a Service
+                        </button>
+                    </form>
+                </div>
+
+                <div class="text-center mt-4">
+                    <p class="small text-muted fw-bold">Step 1 of 3</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        feather.replace();
+    </script>
+}

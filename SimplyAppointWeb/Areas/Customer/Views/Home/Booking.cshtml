@@ -3,11 +3,9 @@
     Layout = "_CustomerLayout";
 }
 
-@* --- HERO SECTION *@
 <div class="booking-hero">
     <div class="container">
         <span class="hero-badge">Booking Experience</span>
-        @* Added 'customer-title' class to ensure it stays white in dark mode *@
         <h1 class="display-4 fw-black mb-2 customer-title">@Model.Name</h1>
         <p class="text-muted fw-bold">
             <i data-feather="map-pin" class="me-1 text-primary"></i> @Model.Address
@@ -16,17 +14,22 @@
 </div>
 
 <div class="container pb-5">
-    <form asp-action="Confirm" method="get">
+    @* Changed method to POST and action to ConfirmBooking *@
+    <form asp-action="ConfirmBooking" method="post">
         <input type="hidden" name="slug" value="@Model.Slug" />
 
+        @* Carry forward the user data from Step 1 / Login *@
+        <input type="hidden" name="firstName" value="@ViewBag.FirstName" />
+        <input type="hidden" name="lastName" value="@ViewBag.LastName" />
+        <input type="hidden" name="email" value="@ViewBag.Email" />
+
         <div class="row g-5">
-            @* --- 1. SERVICE SELECTION --- *@
             <div class="col-lg-7">
                 <h4 class="fw-black mb-4 customer-title">1. Choose Service</h4>
                 <div class="service-list">
                     @foreach (var s in Model.Services.Where(x => x.IsActive))
                     {
-                        <input type="radio" name="serviceId" id="svc-@s.Id" value="@s.Id" class="service-input" required />
+                        <input type="radio" name="serviceId" id="svc-@s.Id" value="@s.Id" class="service-input" required onchange="enableStepTwo()" />
                         <label for="svc-@s.Id" class="service-card shadow-sm">
                             <div>
                                 <h5 class="fw-bold mb-1">@s.Name</h5>
@@ -34,29 +37,27 @@
                                     <i data-feather="clock" style="width:14px; height:14px; margin-right:4px;"></i>@s.DurationMinutes Mins
                                 </span>
                             </div>
-                            @* Added 'price-tag' class to help CSS targeting *@
                             <div class="price-tag fw-black fs-4 text-primary">@s.Price.ToString("C")</div>
                         </label>
                     }
                 </div>
             </div>
 
-            @* --- 2. TIME & DATE SIDEBAR --- *@
             <div class="col-lg-5">
-                @* Ensure 'sticky-sidebar' is the main class for targeting *@
-                <div class="card border-0 shadow-lg rounded-5 p-4 sticky-sidebar">
+                <div id="stepTwoContainer" class="card border-0 shadow-lg rounded-5 p-4 sticky-sidebar customer-card" style="opacity: 0.5; pointer-events: none; transition: all 0.3s ease;">
                     <h4 class="fw-black mb-4 customer-title">2. Pick a Time</h4>
 
                     <div class="mb-4">
                         <label class="small fw-black text-muted text-uppercase mb-2 d-block">Select Day</label>
-                        @* Remove 'bg-light' here if it's still appearing white; your CSS targets .form-control *@
-                        <input type="date" name="date" id="dateInput" class="form-control p-3 border-0 rounded-4 fw-bold"
-                               min="@DateTime.Now.ToString("yyyy-MM-dd")" required onchange="showTimes()" />
+                        <input type="date" name="appointmentDate" id="dateInput"
+                               class="form-control p-3 border-0 rounded-4 fw-bold customer-input"
+                               min="@DateTime.Now.ToString("yyyy-MM-dd")" required onchange="showTimes()" disabled />
                     </div>
 
                     <div id="timeSelectionArea" style="display: none;">
                         <label class="small fw-black text-muted text-uppercase mb-3 d-block">Available Slots</label>
                         <div class="row g-2">
+                            @* Note: In a real app, 'value' should ideally be a full time string like 09:00:00 *@
                             @foreach (var t in new[] { "09:00", "10:00", "11:00", "13:00", "14:00", "15:00" })
                             {
                                 <div class="col-4">
@@ -67,13 +68,12 @@
                         </div>
 
                         <button type="submit" class="btn btn-primary customer-primary w-100 py-3 mt-4 fw-black rounded-pill">
-                            Continue
+                            Confirm Appointment
                         </button>
                     </div>
 
-                    @* Placeholder shown before date is selected *@
                     <div id="datePlaceholder" class="text-center py-5 border-2 border-dashed rounded-4">
-                        <p class="text-muted small fw-bold mb-0">Please select a date to see times</p>
+                        <p id="placeholderText" class="text-muted small fw-bold mb-0">Select a service first</p>
                     </div>
                 </div>
             </div>
@@ -83,14 +83,23 @@
 
 @section Scripts {
     <script>
-        function showTimes() {
-            const dateInput = document.getElementById('dateInput');
-            const timeArea = document.getElementById('timeSelectionArea');
-            const placeholder = document.getElementById('datePlaceholder');
+        const dateInput = document.getElementById('dateInput');
+        const stepTwo = document.getElementById('stepTwoContainer');
+        const placeholderText = document.getElementById('placeholderText');
+        const timeArea = document.getElementById('timeSelectionArea');
+        const placeholderDiv = document.getElementById('datePlaceholder');
 
+        function enableStepTwo() {
+            stepTwo.style.opacity = "1";
+            stepTwo.style.pointerEvents = "auto";
+            dateInput.disabled = false;
+            placeholderText.innerText = "Please select a date to see times";
+        }
+
+        function showTimes() {
             if (dateInput.value) {
                 timeArea.style.display = 'block';
-                placeholder.style.display = 'none';
+                placeholderDiv.style.display = 'none';
             }
         }
     </script>
