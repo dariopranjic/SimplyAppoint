@@ -41,6 +41,9 @@ namespace SimplyAppoint.Models
         [Required]
         public AppointmentStatus Status { get; set; } = AppointmentStatus.Pending;
 
+        [MaxLength(100)]
+        public string? ConfirmationToken { get; set; }
+
         [Required]
         [Range(1, 24 * 60)]
         public int DurationMinutes { get; set; }
