@@ -38,7 +38,7 @@ namespace SimplyAppointWeb.Controllers
                 return RedirectToAction("Booking", new
                 {
                     slug = business.Slug,
-                    firstName = "Customer",
+                    firstName = "",
                     lastName = "",
                     email = userEmail
                 });
@@ -114,8 +114,15 @@ namespace SimplyAppointWeb.Controllers
             _unitOfWork.Appointment.Add(appointment);
             _unitOfWork.Save();
 
-            // Slanje ulijepšanog maila
-            await SendBookingEmail(appointment, business, firstName, false);
+            try
+            {
+                await SendVerificationEmail(appointment, business, firstName);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Email Error: {ex.Message}");
+                TempData["error"] = "Greška kod slanja maila, ali termin je zaprimljen.";
+            }
 
             return RedirectToAction("Success", new { slug = slug });
         }
@@ -124,7 +131,7 @@ namespace SimplyAppointWeb.Controllers
         public async Task<IActionResult> ResendConfirmation(string slug)
         {
             var business = GetBusiness(slug);
-            if (business == null) return NotFound();
+            if (business == null) return RedirectToAction("Index", "Home");
 
             var appointment = _unitOfWork.Appointment.GetAll()
                 .Where(u => u.BusinessId == business.Id && u.Status == AppointmentStatus.Pending)
@@ -135,25 +142,30 @@ namespace SimplyAppointWeb.Controllers
             {
                 try
                 {
-                    await SendBookingEmail(appointment, business, appointment.CustomerName.Split(' ')[0], true);
-                    TempData["success"] = "Confirmation email resent!";
+                    string fName = appointment.CustomerName.Split(' ')[0];
+                    await SendVerificationEmail(appointment, business, fName);
+                    TempData["success"] = "Novi verifikacijski mail je poslan!";
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
-                    TempData["error"] = "Greška pri slanju: " + ex.Message;
+                    TempData["error"] = "Greška pri ponovnom slanju.";
                 }
             }
-
             return RedirectToAction("Success", new { slug = slug });
         }
 
         [HttpGet]
-        public IActionResult ConfirmEmail(string token)
+        public async Task<IActionResult> ConfirmEmail(string token)
         {
             if (string.IsNullOrEmpty(token)) return RedirectToAction("Index", "Home");
 
-            var appointment = _unitOfWork.Appointment.Get(u => u.ConfirmationToken == token);
-            if (appointment == null) return View("Error");
+            var appointment = _unitOfWork.Appointment.Get(u => u.ConfirmationToken == token, includeProperties: "Business,Service");
+
+            if (appointment == null)
+            {
+                TempData["success"] = "Termin je već ranije potvrđen!";
+                return RedirectToAction("Index", "Home");
+            }
 
             appointment.Status = AppointmentStatus.Confirmed;
             appointment.ConfirmationToken = null;
@@ -161,8 +173,16 @@ namespace SimplyAppointWeb.Controllers
             _unitOfWork.Appointment.Update(appointment);
             _unitOfWork.Save();
 
-            var business = _unitOfWork.Business.Get(u => u.Id == appointment.BusinessId);
-            return View("FinalConfirmation", business);
+            try
+            {
+                await SendFinalConfirmationEmail(appointment);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Final Email Error: {ex.Message}");
+            }
+
+            return View("FinalConfirmation", appointment.Business);
         }
 
         public IActionResult Success(string? slug)
@@ -174,42 +194,70 @@ namespace SimplyAppointWeb.Controllers
 
         #region Helpers
 
-        private async Task SendBookingEmail(Appointment appointment, Business business, string firstName, bool isResend)
+        private async Task SendVerificationEmail(Appointment appointment, Business business, string firstName)
         {
-            var callbackUrl = Url.Action("ConfirmEmail", "Home",
-                new { token = appointment.ConfirmationToken }, protocol: Request.Scheme);
-
-            string subject = isResend ? "Ponovno slanje: Potvrdite svoj termin" : "Potvrdite svoj termin - " + business.Name;
+            var callbackUrl = Url.Action("ConfirmEmail", "Home", new { token = appointment.ConfirmationToken }, protocol: Request.Scheme);
 
             string htmlMessage = $@"
-            <div style='font-family: ""Segoe UI"", Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e1e4e8; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1);'>
-                <div style='background-color: #007bff; padding: 30px; text-align: center; color: white;'>
-                    <h1 style='margin: 0; font-size: 24px;'>Potvrda Rezervacije</h1>
-                </div>
-                <div style='padding: 30px; background-color: #ffffff; color: #333;'>
-                    <p style='font-size: 18px;'>Pozdrav <strong>{firstName}</strong>,</p>
-                    <p style='line-height: 1.6;'>Hvala vam na rezervaciji kod <strong>{business.Name}</strong>. Kako bismo osigurali vaš termin, molimo vas da potvrdite rezervaciju klikom na gumb ispod:</p>
-                    
-                    <div style='text-align: center; margin: 40px 0;'>
-                        <a href='{callbackUrl}' style='background-color: #28a745; color: white; padding: 16px 32px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 18px; display: inline-block; box-shadow: 0 2px 5px rgba(0,0,0,0.2);'>POTVRDI MOJ TERMIN</a>
+            <div style='background-color: #f4f7fa; padding: 50px 20px; font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Roboto, Helvetica, Arial, sans-serif;'>
+                <div style='max-width: 500px; margin: 0 auto; background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.08);'>
+                    <div style='background: #0d6efd; padding: 30px; text-align: center; color: #ffffff;'>
+                        <h2 style='margin: 0; font-size: 24px;'>Potvrdite dolazak</h2>
                     </div>
-                    
-                    <div style='background-color: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 4px solid #007bff;'>
-                        <p style='margin: 5px 0;'><strong>Usluga:</strong> {appointment.Price} €</p>
-                        <p style='margin: 5px 0;'><strong>Vrijeme:</strong> {appointment.StartUtc.ToString("dd.MM.yyyy. u HH:mm")} h</p>
+                    <div style='padding: 40px; text-align: center;'>
+                        <p style='font-size: 16px; color: #4b5563; margin-bottom: 25px;'>Pozdrav {firstName}, kliknite na gumb ispod kako biste potvrdili svoj termin u <strong>{business.Name}</strong>.</p>
+                        <div style='margin-bottom: 30px; padding: 20px; background: #f8fafc; border-radius: 12px;'>
+                            <span style='display: block; font-size: 20px; font-weight: bold; color: #1e293b;'>{appointment.StartUtc.ToString("dd.MM.yyyy.")}</span>
+                            <span style='font-size: 18px; color: #64748b;'>u {appointment.StartUtc.ToString("HH:mm")} h</span>
+                        </div>
+                        <a href='{callbackUrl}' style='display: inline-block; background: #0d6efd; color: #ffffff; padding: 16px 32px; text-decoration: none; border-radius: 12px; font-weight: 600; font-size: 16px;'>POTVRDI TERMIN</a>
                     </div>
-
-                    <p style='font-size: 13px; color: #6c757d; margin-top: 30px; text-align: center;'>
-                        Ako gumb ne radi, kopirajte ovaj link u preglednik:<br>
-                        <a href='{callbackUrl}' style='color: #007bff;'>{callbackUrl}</a>
-                    </p>
-                </div>
-                <div style='background-color: #f1f3f5; padding: 20px; text-align: center; color: #6c757d; font-size: 12px;'>
-                    &copy; {DateTime.Now.Year} SimplyAppoint. Sva prava pridržana.
                 </div>
             </div>";
 
-            await _emailSender.SendEmailAsync(appointment.CustomerEmail, subject, htmlMessage);
+            await _emailSender.SendEmailAsync(appointment.CustomerEmail, "Akcija potrebna: Potvrdite svoj termin", htmlMessage);
+        }
+
+        private async Task SendFinalConfirmationEmail(Appointment appointment)
+        {
+            string googleUrl = GenerateGoogleCalendarLink(appointment);
+
+            string htmlMessage = $@"
+            <div style='background-color: #f4f7fa; padding: 50px 20px; font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Roboto, Helvetica, Arial, sans-serif;'>
+                <div style='max-width: 550px; margin: 0 auto; background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.1);'>
+                    <div style='background: #198754; padding: 30px; text-align: center; color: #ffffff;'>
+                        <h2 style='margin: 0; font-size: 24px;'>Termin je potvrđen! ✅</h2>
+                    </div>
+                    <div style='padding: 40px;'>
+                        <p style='font-size: 16px; color: #334155; margin-bottom: 25px;'>Vaša rezervacija kod <strong>{appointment.Business.Name}</strong> je uspješno verificirana.</p>
+                        
+                        <div style='border-left: 4px solid #198754; background: #f0fdf4; padding: 20px; border-radius: 0 12px 12px 0; margin-bottom: 30px;'>
+                            <table style='width: 100%; font-size: 15px; color: #475569;'>
+                                <tr><td style='padding-bottom: 8px;'><strong>Usluga:</strong></td><td style='text-align: right;'>{appointment.Service?.Name}</td></tr>
+                                <tr><td style='padding-bottom: 8px;'><strong>Datum:</strong></td><td style='text-align: right;'>{appointment.StartUtc.ToString("dd.MM.yyyy.")}</td></tr>
+                                <tr><td style='padding-bottom: 8px;'><strong>Vrijeme:</strong></td><td style='text-align: right;'>{appointment.StartUtc.ToString("HH:mm")} h</td></tr>
+                                <tr><td style='border-top: 1px solid #dcfce7; padding-top: 8px;'><strong>Cijena:</strong></td><td style='border-top: 1px solid #dcfce7; padding-top: 8px; text-align: right; font-weight: bold;'>{appointment.Price} €</td></tr>
+                            </table>
+                        </div>
+
+                        <div style='text-align: center; margin-bottom: 20px;'>
+                            <a href='{googleUrl}' style='display: inline-block; padding: 12px 24px; background: #ffffff; color: #198754; border: 2px solid #198754; text-decoration: none; border-radius: 10px; font-weight: bold; font-size: 14px;'>📅 Dodaj u Google Kalendar</a>
+                        </div>
+                        
+                        <p style='font-size: 13px; color: #94a3b8; text-align: center; margin-top: 30px;'>Ovaj mail služi kao vaša službena potvrda. Vidimo se!</p>
+                    </div>
+                </div>
+            </div>";
+
+            await _emailSender.SendEmailAsync(appointment.CustomerEmail, "Potvrda rezervacije - " + appointment.Business.Name, htmlMessage);
+        }
+
+        private string GenerateGoogleCalendarLink(Appointment app)
+        {
+            var start = app.StartUtc.ToString("yyyyMMddTHHmmssZ");
+            var end = app.EndUtc.ToString("yyyyMMddTHHmmssZ");
+            var details = $"Usluga: {app.Service?.Name}. Cijena: {app.Price} EUR.";
+            return $"https://www.google.com/calendar/render?action=TEMPLATE&text={Uri.EscapeDataString("Termin: " + app.Service?.Name)}&dates={start}/{end}&details={Uri.EscapeDataString(details)}&location={Uri.EscapeDataString(app.Business?.Name)}&sf=true&output=xml";
         }
 
         private Business? GetBusiness(string? slug)
@@ -225,6 +273,9 @@ namespace SimplyAppointWeb.Controllers
         #endregion
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error() => View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        public IActionResult Error()
+        {
+            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        }
     }
 }

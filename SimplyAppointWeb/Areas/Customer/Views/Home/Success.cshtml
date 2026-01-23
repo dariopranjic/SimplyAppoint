@@ -9,11 +9,21 @@
             <div class="col-md-6">
 
                 @* Success Notification Toast (Optional but highly recommended) *@
+                @* Custom Floating Notification umjesto ružnog Alert-a *@
                 @if (TempData["success"] != null)
                 {
-                    <div class="alert alert-success alert-dismissible fade show rounded-4 mb-4 border-0 shadow-sm" role="alert">
-                        <i data-feather="check-circle" class="me-2"></i> @TempData["success"]
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    <div id="toast-container" class="position-fixed top-0 start-50 translate-middle-x mt-4" style="z-index: 1060;">
+                        <div class="toast show align-items-center text-white bg-dark border-0 rounded-pill px-3 shadow-lg" role="alert" aria-live="assertive" aria-atomic="true">
+                            <div class="d-flex p-2">
+                                <div class="toast-body d-flex align-items-center gap-2">
+                                    <div class="bg-success rounded-circle d-flex align-items-center justify-content-center" style="width: 24px; height: 24px;">
+                                        <i data-feather="check" style="width: 14px; height: 14px; color: white;"></i>
+                                    </div>
+                                    <span class="fw-bold small">@TempData["success"]</span>
+                                </div>
+                                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                            </div>
+                        </div>
                     </div>
                 }
 

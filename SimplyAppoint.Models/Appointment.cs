@@ -63,5 +63,11 @@ namespace SimplyAppoint.Models
 
         [Required]
         public DateTimeOffset CreatedUtc { get; set; } = DateTimeOffset.UtcNow;
+
+        [Required]
+        public virtual Business Business { get; set; } = default!;
+
+        [Required]
+        public virtual Service Service { get; set; } = default!;
     }
 }

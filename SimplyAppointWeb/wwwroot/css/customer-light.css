@@ -1,4 +1,4 @@
-/* customer-light.css - Full Merged & Fixed Version */
+﻿/* customer-light.css - Full Merged & Fixed Version */
 
 /* 1. Root Palette - Refined for High Contrast */
 :root {
@@ -367,4 +367,57 @@ body {
     .customer-mobile-only {
         display: none !important;
     }
+}
+
+/* 4. Progress Tracker - Popravak vidljivosti */
+.step-item {
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+}
+
+    .step-item span {
+        color: #94a3b8; /* Jasnija siva za neaktivne korake */
+        font-size: 0.85rem;
+        transition: color 0.3s ease;
+    }
+
+    .step-item.active span {
+        color: #0f172a !important; /* Tamna boja za aktivni korak "Details" */
+        font-weight: 800;
+    }
+
+/* 6. Form Inputs - Popravak paddinga i visine */
+.customer-input {
+    background-color: #f1f5f9 !important; /* Malo tamnija pozadina za bolji kontrast */
+    color: #0f172a !important;
+    border: 2px solid transparent !important;
+    border-radius: 18px !important;
+    padding: 1.2rem 1.5rem !important; /* Povećan padding da tekst ne guši input */
+    height: auto !important;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+    .customer-input:focus {
+        background-color: #ffffff !important;
+        border-color: var(--accent) !important;
+        box-shadow: 0 0 0 5px rgba(13, 110, 253, 0.1) !important;
+        transform: translateY(-1px);
+    }
+
+/* Dodano za bolji izgled labels */
+.input-label {
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #64748b;
+    margin-bottom: 8px;
+    margin-left: 4px;
+    display: block;
 }

@@ -9,7 +9,6 @@ namespace SimplyAppoint.DataAccess.Data
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {
-
         }
 
         public DbSet<Business> Businesses { get; set; }
@@ -18,7 +17,23 @@ namespace SimplyAppoint.DataAccess.Data
         public DbSet<WorkingHours> WorkingHours { get; set; }
         public DbSet<TimeOff> TimeOffs { get; set; }
         public DbSet<Appointment> Appointments { get; set; }
-        public DbSet<BusinessCustomer> BusinessCustomers { get; set; }  
+        public DbSet<BusinessCustomer> BusinessCustomers { get; set; }
 
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<Appointment>()
+                .HasOne(a => a.Service)
+                .WithMany()
+                .HasForeignKey(a => a.ServiceId)
+                .OnDelete(DeleteBehavior.NoAction); 
+
+            modelBuilder.Entity<Appointment>()
+                .HasOne(a => a.Business)
+                .WithMany()
+                .HasForeignKey(a => a.BusinessId)
+                .OnDelete(DeleteBehavior.Cascade); 
+        }
     }
 }
