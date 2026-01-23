@@ -1,8 +1,9 @@
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using SimplyAppoint.DataAccess.Data;
-using Microsoft.AspNetCore.Identity;
-using SimplyAppoint.DataAccess.Repository.IRepository;
 using SimplyAppoint.DataAccess.Repository;
+using SimplyAppoint.DataAccess.Repository.IRepository;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +16,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddDefaultIdentity<IdentityUser>().AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddRazorPages();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddTransient<IEmailSender, SimplyAppoint.Utility.EmailSender>();
 
 // --- NEW SESSION SERVICES ---
 builder.Services.AddDistributedMemoryCache();

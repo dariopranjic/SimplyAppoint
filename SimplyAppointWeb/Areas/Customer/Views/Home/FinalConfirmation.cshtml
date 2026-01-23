@@ -1,0 +1,57 @@
+﻿@model Business
+
+@{
+    ViewData["Title"] = "Termin Potvrđen";
+    Layout = "_CustomerLayout";
+}
+
+<div class="customer-page d-flex align-items-center justify-content-center" style="min-height: 85vh; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-7 text-center">
+                <div class="card border-0 shadow-lg rounded-5 p-5" style="background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px);">
+
+                    <div class="mb-4">
+                        <div class="d-inline-flex align-items-center justify-content-center"
+                             style="width: 100px; height: 100px; background: rgba(40, 167, 69, 0.1); border-radius: 50%;">
+                            <i data-feather="check-circle" style="width: 50px; height: 50px; color: #28a745;"></i>
+                        </div>
+                    </div>
+
+                    <h1 class="fw-black text-dark mb-3">Termin je potvrđen!</h1>
+
+                    <p class="fs-5 text-muted mb-4">
+                        Hvala vam, <strong>@Model.Name</strong> vas očekuje! Vaša rezervacija je uspješno verificirana i dodana u naš raspored.
+                    </p>
+
+                    <div class="alert alert-primary border-0 rounded-4 p-4 mb-4" style="background: rgba(0, 123, 255, 0.05);">
+                        <div class="d-flex align-items-center justify-content-center gap-2 mb-2">
+                            <i data-feather="info" class="text-primary" style="width: 18px;"></i>
+                            <span class="fw-bold text-primary">Što dalje?</span>
+                        </div>
+                        <p class="small text-dark mb-0">
+                            Detaljni sažetak termina poslan je na vašu e-mail adresu.
+                            Preporučujemo da ga spremite ili dodate u svoj kalendar.
+                        </p>
+                    </div>
+
+                    <div class="d-grid gap-3 d-sm-flex justify-content-sm-center mt-4">
+                        <a asp-action="Details" asp-route-slug="@Model.Slug" class="btn btn-primary btn-lg px-5 rounded-pill shadow-sm fw-bold">
+                            Vrati se na početnu
+                        </a>
+                    </div>
+
+                    <div class="mt-5">
+                        <p class="text-muted small">Trebate pomoć? Kontaktirajte nas putem e-maila vlasnika obrta.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        feather.replace();
+    </script>
+}

@@ -9,7 +9,7 @@ namespace SimplyAppoint.Utility
         public Task SendEmailAsync(string email, string subject, string htmlMessage)
         {
             var mail = "simplyappoint.system@gmail.com";
-            var pw = "1q0.-Q:$dEUn5lT0"; 
+            var pw = "txqm ckur vnyn hgqy"; 
 
             var client = new SmtpClient("smtp.gmail.com", 587)
             {
