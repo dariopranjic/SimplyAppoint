@@ -1,12 +1,12 @@
 ﻿using System.Diagnostics;
 using System.Security.Claims;
+using System.Text;
 using Microsoft.AspNetCore.Mvc;
 using SimplyAppoint.Models;
 using SimplyAppoint.DataAccess.Repository.IRepository;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using SimplyAppoint.Models.Enums;
-using Microsoft.EntityFrameworkCore;
 
 namespace SimplyAppointWeb.Controllers
 {
@@ -253,6 +253,39 @@ namespace SimplyAppointWeb.Controllers
             return View("FinalConfirmation", appointment.Business);
         }
 
+        [HttpGet]
+        public IActionResult DownloadIcs(int appointmentId)
+        {
+            var app = _unitOfWork.Appointment.Get(u => u.Id == appointmentId, includeProperties: "Business,Service");
+            if (app == null) return NotFound();
+
+            var start = app.StartUtc.ToString("yyyyMMddTHHmmssZ");
+            var end = app.EndUtc.ToString("yyyyMMddTHHmmssZ");
+            string summary = "Booking: " + (app.Service?.Name ?? "Appointment");
+            string location = app.Business?.Name ?? "Business";
+
+            var icsContent = new StringBuilder();
+            icsContent.Append("BEGIN:VCALENDAR\r\n");
+            icsContent.Append("VERSION:2.0\r\n");
+            icsContent.Append("PRODID:-//SimplyAppoint//NONSGML v1.0//EN\r\n");
+            icsContent.Append("METHOD:PUBLISH\r\n");
+            icsContent.Append("BEGIN:VEVENT\r\n");
+            icsContent.Append($"UID:simplyappoint-{app.Id}\r\n");
+            icsContent.Append($"DTSTAMP:{DateTime.UtcNow:yyyyMMddTHHmmssZ}\r\n");
+            icsContent.Append($"DTSTART:{start}\r\n");
+            icsContent.Append($"DTEND:{end}\r\n");
+            icsContent.Append($"SUMMARY:{summary}\r\n");
+            icsContent.Append($"LOCATION:{location}\r\n");
+            icsContent.Append("END:VEVENT\r\n");
+            icsContent.Append("END:VCALENDAR");
+
+            var bytes = Encoding.UTF8.GetBytes(icsContent.ToString());
+
+            // Postavljamo "inline" kako bi iPhone pokušao odmah otvoriti kalendar umjesto preuzimanja datoteke
+            Response.Headers.Add("Content-Disposition", "inline; filename=appointment.ics");
+            return File(bytes, "text/calendar");
+        }
+
         public IActionResult Success(string? slug)
         {
             var business = GetBusiness(slug);
@@ -289,18 +322,22 @@ namespace SimplyAppointWeb.Controllers
         private async Task SendFinalConfirmationEmail(Appointment appointment)
         {
             string googleUrl = GenerateGoogleCalendarLink(appointment);
+
+            // Koristimo standardni URL protokol. Jednom kad bude na serveru, bit će https://...
+            string appleUrl = Url.Action("DownloadIcs", "Home", new { appointmentId = appointment.Id }, protocol: Request.Scheme) ?? "";
+
             string businessName = appointment.Business?.Name ?? "Business";
 
             string htmlMessage = $@"
             <div style='background-color: #f4f7fa; padding: 50px 20px; font-family: sans-serif;'>
-                <div style='max-width: 550px; margin: 0 auto; background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,1);'>
+                <div style='max-width: 550px; margin: 0 auto; background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.1);'>
                     <div style='background: #198754; padding: 30px; text-align: center; color: #ffffff;'>
                         <h2 style='margin: 0;'>Appointment Confirmed!</h2>
                     </div>
                     <div style='padding: 40px;'>
                         <p>Your booking at <strong>{businessName}</strong> has been successfully verified.</p>
                         <div style='border-left: 4px solid #198754; background: #f0fdf4; padding: 20px; border-radius: 0 12px 12px 0; margin-bottom: 30px;'>
-                            <table style='width: 100%;'>
+                            <table style='width: 100%; font-size: 14px;'>
                                 <tr><td><strong>Service:</strong></td><td style='text-align: right;'>{appointment.Service?.Name}</td></tr>
                                 <tr><td><strong>Date:</strong></td><td style='text-align: right;'>{appointment.StartUtc.ToLocalTime().ToString("dd.MM.yyyy")}</td></tr>
                                 <tr><td><strong>Time:</strong></td><td style='text-align: right;'>{appointment.StartUtc.ToLocalTime().ToString("HH:mm")}</td></tr>
@@ -308,7 +345,9 @@ namespace SimplyAppointWeb.Controllers
                             </table>
                         </div>
                         <div style='text-align: center;'>
-                            <a href='{googleUrl}' style='display: inline-block; padding: 12px 24px; border: 2px solid #198754; text-decoration: none; border-radius: 10px; font-weight: bold; color: #198754;'>📅 Add to Google Calendar</a>
+                            <p style='font-weight: bold; color: #666; margin-bottom: 15px;'>Add to your calendar:</p>
+                            <a href='{googleUrl}' target='_blank' style='display: inline-block; padding: 12px 25px; margin: 5px; border: 1px solid #db4437; text-decoration: none; border-radius: 8px; font-weight: bold; color: #db4437; background: #ffffff;'>Google</a>
+                            <a href='{appleUrl}' style='display: inline-block; padding: 12px 25px; margin: 5px; border: 1px solid #000000; text-decoration: none; border-radius: 8px; font-weight: bold; color: #000000; background: #ffffff;'>Apple / Outlook</a>
                         </div>
                     </div>
                 </div>
