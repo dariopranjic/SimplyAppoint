@@ -477,3 +477,47 @@ label.small.fw-black.text-muted {
     margin-left: 4px;
     display: block;
 }
+
+.cancel-card {
+    background-color: #1e1e1e; 
+    color: #f8f9fa;
+    border: 1px solid #333 !important;
+}
+
+.description-text {
+    color: #adb5bd;
+}
+
+.secondary-link {
+    color: #adb5bd;
+}
+
+.business-name {
+    color: #3d8bfd;
+}
+
+.title-text {
+    color: #ffffff;
+}
+
+.error-card {
+    background-color: #1e1e1e;
+    color: #f8f9fa;
+    border: 1px solid #333 !important;
+}
+
+.description-text {
+    color: #adb5bd;
+}
+
+.help-text {
+    color: #6c757d;
+}
+
+.title-text {
+    color: #ffffff;
+}
+
+.border-top-custom {
+    border-top: 1px solid #333;
+}

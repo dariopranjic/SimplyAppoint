@@ -1,0 +1,240 @@
+﻿@model IEnumerable<Business>
+@{
+    ViewData["Title"] = "Discover Services";
+    Layout = "_CustomerLayout";
+}
+
+<div class="index-wrapper py-5">
+    <header class="container text-center mb-5 pb-4">
+        <h1 class="display-3 fw-bolder mb-3 header-gradient">Find & Book</h1>
+        <p class="description-text fs-5 mx-auto" style="max-width: 600px;">
+            The easiest way to book your favorite local services.
+        </p>
+
+        <div class="row justify-content-center mt-5">
+            <div class="col-lg-7">
+                <div class="search-glass shadow-lg">
+                    <i class="bi bi-search ms-4 text-primary fs-5"></i>
+                    <input type="text" id="businessSearch" class="search-input" placeholder="Search for a business or service...">
+                    <div class="search-kbadge d-none d-md-flex">Search</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="row g-4 justify-content-center" id="businessGrid">
+            @foreach (var business in Model)
+            {
+                <div class="col-sm-12 col-md-6 col-lg-4 business-item" data-name="@business.Name.ToLower()">
+                    <div class="card business-card h-100">
+                        <div class="card-content">
+                            <div class="card-visual-top p-4">
+                                <div class="business-logo-wrapper">
+                                    <div class="business-initials">
+                                        @business.Name.Substring(0, 1)
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card-body px-4 pb-4">
+                                <div class="text-center mb-3">
+                                    <h4 class="fw-bold mb-1 business-title">@business.Name</h4>
+                                    <span class="location-tag">
+                                        <i class="bi bi-geo-alt-fill"></i> @(business.Slug ?? "Verified Partner")
+                                    </span>
+                                </div>
+
+                                <div class="service-pills mb-4 d-flex flex-wrap justify-content-center gap-2">
+                                    @foreach (var service in business.Services.Take(3))
+                                    {
+                                        <span class="pill">@service.Name</span>
+                                    }
+                                    @if (business.Services.Count() > 3)
+                                    {
+                                        <span class="pill-more">+@(business.Services.Count() - 3) more</span>
+                                    }
+                                </div>
+
+                                <a asp-action="Details" asp-route-slug="@business.Slug" class="btn-book">
+                                    <span>View Schedule</span>
+                                    <i class="bi bi-arrow-right-short"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </main>
+</div>
+
+@section Styles {
+    <style>
+        /* --- CORE THEME LOGIC --- */
+        .customer-light {
+            --bg-surface: #ffffff;
+            --text-main: #1a1a1a;
+            --text-sub: #636e72;
+            --glass-bg: rgba(255, 255, 255, 0.8);
+            --card-border: #f0f0f0;
+        }
+
+        .customer-dark {
+            --bg-surface: #121212;
+            --text-main: #ffffff;
+            --text-sub: #a0a0a0;
+            --glass-bg: rgba(30, 30, 30, 0.8);
+            --card-border: #2a2a2a;
+        }
+
+        .header-gradient {
+            background: linear-gradient(90deg, #0d6efd, #6610f2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* --- SEARCH BOX --- */
+        .search-glass {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            border-radius: 100px;
+            display: flex;
+            align-items: center;
+            padding: 8px;
+            border: 1px solid var(--card-border);
+            transition: all 0.3s ease;
+        }
+
+            .search-glass:focus-within {
+                transform: scale(1.02);
+                box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+                border-color: #0d6efd;
+            }
+
+        .search-input {
+            background: transparent;
+            border: none;
+            padding: 12px 20px;
+            width: 100%;
+            font-size: 1.1rem;
+            color: var(--text-main);
+            outline: none;
+        }
+
+        .search-kbadge {
+            background: #0d6efd;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-weight: 600;
+            margin-right: 10px;
+        }
+
+        /* --- CARDS --- */
+        .business-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--card-border) !important;
+            border-radius: 24px;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+            .business-card:hover {
+                transform: translateY(-12px);
+                box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+                border-color: #0d6efd !important;
+            }
+
+        .card-visual-top {
+            background: linear-gradient(180deg, rgba(13, 110, 253, 0.05) 0%, transparent 100%);
+            height: 140px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .business-logo-wrapper {
+            width: 90px;
+            height: 90px;
+            background: white;
+            border-radius: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+            border: 4px solid var(--bg-surface);
+        }
+
+        .business-initials {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(45deg, #0d6efd, #0dcaf0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* --- UI ELEMENTS --- */
+        .business-title {
+            color: var(--text-main);
+        }
+
+        .description-text {
+            color: var(--text-sub);
+        }
+
+        .location-tag {
+            color: #0d6efd;
+            font-size: 0.9rem;
+            font-weight: 500;
+            opacity: 0.8;
+        }
+
+        .pill {
+            background: rgba(13, 110, 253, 0.08);
+            color: #0d6efd;
+            padding: 4px 12px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .pill-more {
+            font-size: 0.8rem;
+            color: var(--text-sub);
+            padding-top: 4px;
+        }
+
+        .btn-book {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #0d6efd;
+            color: white;
+            text-decoration: none;
+            padding: 14px;
+            border-radius: 16px;
+            font-weight: 700;
+            transition: all 0.3s ease;
+        }
+
+            .btn-book:hover {
+                background: #0052cc;
+                text-decoration: none !important;
+                color: white;
+                gap: 10px;
+            }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        document.getElementById('businessSearch').addEventListener('input', function() {
+            const val = this.value.toLowerCase();
+            document.querySelectorAll('.business-item').forEach(el => {
+                const name = el.dataset.name;
+                el.style.display = name.includes(val) ? "block" : "none";
+            });
+        });
+    </script>
+}

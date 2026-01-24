@@ -1,0 +1,73 @@
+﻿@{
+    ViewData["Title"] = "Link Expired";
+    Layout = "_CustomerLayout";
+}
+
+<div class="container d-flex align-items-center justify-content-center" style="min-height: 80vh;">
+    <div class="card error-card shadow-lg border-0 text-center p-4 p-md-5">
+        <div class="card-body">
+            <div class="icon-box mb-4">
+                <i class="bi bi-exclamation-triangle-fill text-warning shadow-icon-warn"></i>
+            </div>
+
+            <h2 class="fw-bolder mb-3 title-text">Link Expired or Invalid</h2>
+
+            <p class="description-text mb-5 fs-5 px-md-3">
+                We couldn't find those appointment details.
+                <br><small class="opacity-75">It might be already cancelled, or the link has expired for security reasons.</small>
+            </p>
+
+            <div class="d-grid gap-3">
+                <a asp-area="Customer" asp-controller="Home" asp-action="Details"
+                   class="btn btn-primary btn-lg rounded-pill px-5 fw-bold shadow-sm hover-lift">
+                    <i class="bi bi-house-door me-2"></i>Back to Homepage
+                </a>
+            </div>
+
+            <div class="mt-4 pt-3 border-top-custom">
+                <p class="small help-text">
+                    Believe this is a mistake? Please contact the business directly to verify your booking.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .error-card {
+            max-width: 550px;
+            border-radius: 2rem;
+            transition: all 0.3s ease;
+        }
+
+        .icon-box i {
+            font-size: 6rem;
+            display: inline-block;
+            filter: drop-shadow(0 10px 15px rgba(255, 193, 7, 0.2));
+            animation: pulseWarning 2s infinite;
+        }
+
+        .hover-lift:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(13, 110, 253, 0.25) !important;
+        }
+
+        @@keyframes pulseWarning {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+
+            50% {
+                transform: scale(1.05);
+                opacity: 0.9;
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+    </style>
+}

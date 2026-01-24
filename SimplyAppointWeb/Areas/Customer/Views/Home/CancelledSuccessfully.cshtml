@@ -1,0 +1,68 @@
+﻿@model Business
+@{
+    ViewData["Title"] = "Booking Cancelled";
+    Layout = "_CustomerLayout";
+}
+
+<div class="container d-flex align-items-center justify-content-center" style="min-height: 80vh;">
+    <div class="card cancel-card shadow-lg border-0 text-center p-4 p-md-5">
+        <div class="card-body">
+            <div class="icon-box mb-4">
+                <i class="bi bi-calendar-x-fill text-danger shadow-icon"></i>
+            </div>
+
+            <h2 class="fw-bolder mb-3 title-text">Booking Cancelled</h2>
+
+            <p class="description-text mb-5 fs-5 px-md-3">
+                Your appointment at <span class="business-name">@Model.Name</span> has been successfully removed from our schedule.
+                <br><small class="opacity-75">We hope to see you another time!</small>
+            </p>
+
+            <div class="d-grid gap-3">
+                <a asp-area="Customer" asp-controller="Home" asp-action="Details" asp-route-slug="@Model.Slug"
+                   class="btn btn-primary btn-lg rounded-pill px-5 fw-bold shadow-sm hover-lift">
+                    <i class="bi bi-plus-lg me-2"></i>Book a New Appointment
+                </a>
+
+                <a asp-area="Customer" asp-controller="Home" asp-action="Index"
+                   class="btn btn-link text-decoration-none secondary-link mt-2">
+                    Back to Directory
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .cancel-card {
+            max-width: 550px;
+            border-radius: 2rem;
+            transition: all 0.3s ease;
+        }
+
+        .icon-box i {
+            font-size: 6rem;
+            display: inline-block;
+            filter: drop-shadow(0 10px 15px rgba(220, 53, 69, 0.3));
+            animation: scaleIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .hover-lift:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(13, 110, 253, 0.25) !important;
+        }
+
+        @@keyframes scaleIn {
+            0% {
+                transform: scale(0);
+                opacity: 0;
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+    </style>
+}

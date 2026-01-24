@@ -438,3 +438,37 @@ body {
 .customer-text {
     color: #64748b;
 }
+
+.cancel-card {
+    background-color: #ffffff;
+    color: #212529;
+}
+
+.description-text {
+    color: #6c757d;
+}
+
+.secondary-link {
+    color: #6c757d;
+}
+
+.business-name {
+    color: #0d6efd;
+}
+
+.error-card {
+    background-color: #ffffff;
+    color: #212529;
+}
+
+.description-text {
+    color: #6c757d;
+}
+
+.help-text {
+    color: #8a8d91;
+}
+
+.border-top-custom {
+    border-top: 1px solid #eee;
+}

@@ -48,16 +48,15 @@ app.MapStaticAssets();
 app.MapRazorPages();
 
 
-// Business Slug Route
 app.MapControllerRoute(
     name: "business_slug",
     pattern: "{slug}",
-    defaults: new { controller = "Home", action = "Details" });
+    defaults: new { area = "Customer", controller = "Home", action = "Details" });
+
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{area=Customer}/{controller=Home}/{action=Details}/{id?}") 
+    pattern: "{area=Customer}/{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
-
 
 app.Run();

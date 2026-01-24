@@ -131,7 +131,8 @@ namespace SimplyAppointWeb.Controllers
             var existingAppointment = _unitOfWork.Appointment.Get(u =>
                 u.BusinessId == business.Id &&
                 u.CustomerEmail == email &&
-                u.StartUtc == startUtc);
+                u.StartUtc == startUtc &&
+                u.Status != AppointmentStatus.Cancelled);
 
             if (existingAppointment != null)
             {
@@ -235,22 +236,42 @@ namespace SimplyAppointWeb.Controllers
                 return View("AlreadyConfirmed");
             }
 
-            appointment.Status = AppointmentStatus.Confirmed;
-            appointment.ConfirmationToken = null;
-
-            _unitOfWork.Appointment.Update(appointment);
-            _unitOfWork.Save();
-
-            try
+            if (appointment.Status == AppointmentStatus.Pending)
             {
-                await SendFinalConfirmationEmail(appointment);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Final Email Error: {ex.Message}");
+                appointment.Status = AppointmentStatus.Confirmed;
+                _unitOfWork.Appointment.Update(appointment);
+                _unitOfWork.Save();
+
+                try
+                {
+                    await SendFinalConfirmationEmail(appointment);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Final Email Error: {ex.Message}");
+                }
             }
 
             return View("FinalConfirmation", appointment.Business);
+        }
+
+        [HttpGet]
+        public IActionResult CancelAppointment(string token)
+        {
+            if (string.IsNullOrEmpty(token)) return RedirectToAction("Index");
+
+            var appointment = _unitOfWork.Appointment.Get(u => u.ConfirmationToken == token, includeProperties: "Business");
+
+            if (appointment == null || appointment.Status == AppointmentStatus.Cancelled)
+            {
+                return View("AppointmentNotFound");
+            }
+
+            appointment.Status = AppointmentStatus.Cancelled;
+            _unitOfWork.Appointment.Update(appointment);
+            _unitOfWork.Save();
+
+            return View("CancelledSuccessfully", appointment.Business);
         }
 
         [HttpGet]
@@ -281,7 +302,6 @@ namespace SimplyAppointWeb.Controllers
 
             var bytes = Encoding.UTF8.GetBytes(icsContent.ToString());
 
-            // Postavljamo "inline" kako bi iPhone pokušao odmah otvoriti kalendar umjesto preuzimanja datoteke
             Response.Headers.Add("Content-Disposition", "inline; filename=appointment.ics");
             return File(bytes, "text/calendar");
         }
@@ -322,9 +342,8 @@ namespace SimplyAppointWeb.Controllers
         private async Task SendFinalConfirmationEmail(Appointment appointment)
         {
             string googleUrl = GenerateGoogleCalendarLink(appointment);
-
-            // Koristimo standardni URL protokol. Jednom kad bude na serveru, bit će https://...
             string appleUrl = Url.Action("DownloadIcs", "Home", new { appointmentId = appointment.Id }, protocol: Request.Scheme) ?? "";
+            string cancelUrl = Url.Action("CancelAppointment", "Home", new { token = appointment.ConfirmationToken }, protocol: Request.Scheme) ?? "";
 
             string businessName = appointment.Business?.Name ?? "Business";
 
@@ -348,6 +367,10 @@ namespace SimplyAppointWeb.Controllers
                             <p style='font-weight: bold; color: #666; margin-bottom: 15px;'>Add to your calendar:</p>
                             <a href='{googleUrl}' target='_blank' style='display: inline-block; padding: 12px 25px; margin: 5px; border: 1px solid #db4437; text-decoration: none; border-radius: 8px; font-weight: bold; color: #db4437; background: #ffffff;'>Google</a>
                             <a href='{appleUrl}' style='display: inline-block; padding: 12px 25px; margin: 5px; border: 1px solid #000000; text-decoration: none; border-radius: 8px; font-weight: bold; color: #000000; background: #ffffff;'>Apple / Outlook</a>
+                        </div>
+                        <div style='text-align: center; margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px;'>
+                            <p style='font-size: 12px; color: #999; margin-bottom: 10px;'>Need to change plans?</p>
+                            <a href='{cancelUrl}' style='color: #dc3545; text-decoration: underline; font-size: 13px;'>Cancel Appointment</a>
                         </div>
                     </div>
                 </div>
