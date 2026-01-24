@@ -1,7 +1,7 @@
 ﻿@model Business
 
 @{
-    ViewData["Title"] = "Termin Potvrđen";
+    ViewData["Title"] = "Appointment Confirmed";
     Layout = "_CustomerLayout";
 }
 
@@ -9,7 +9,7 @@
     .confirmation-wrapper {
         position: relative;
         min-height: 100vh;
-        background: #f8fafc !important;
+        background: transparent !important;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -17,7 +17,6 @@
         font-family: 'Inter', sans-serif;
     }
 
-    /* Dinamična pozadina */
     .bg-circle {
         position: absolute;
         width: 500px;
@@ -66,6 +65,29 @@
         border: 1px solid #e2e8f0;
     }
 
+    /* New CSS for Calendar Button */
+    .btn-calendar {
+        background: #ffffff;
+        color: #198754;
+        border: 2px solid #198754;
+        padding: 12px 30px;
+        border-radius: 15px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        margin-bottom: 12px;
+    }
+
+        .btn-calendar:hover {
+            background: #198754;
+            color: white;
+            transform: translateY(-2px);
+        }
+
     .btn-return {
         background: #1e293b;
         color: white;
@@ -77,18 +99,30 @@
         text-decoration: none;
         display: inline-block;
         width: 100%;
+        text-align: center;
     }
 
-    .btn-return:hover {
-        background: #0f172a;
-        transform: translateY(-2px);
-        color: white;
-    }
+        .btn-return:hover {
+            background: #0f172a;
+            transform: translateY(-2px);
+            color: white;
+        }
 
     @@keyframes pulseCheck {
-        0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.4); }
-        70% { transform: scale(1.05); box-shadow: 0 0 0 15px rgba(255, 255, 255, 0); }
-        100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
+        0% {
+            transform: scale(1);
+            box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.4);
+        }
+
+        70% {
+            transform: scale(1.05);
+            box-shadow: 0 0 0 15px rgba(255, 255, 255, 0);
+        }
+
+        100% {
+            transform: scale(1);
+            box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+        }
     }
 </style>
 
@@ -100,29 +134,33 @@
             <div class="check-circle">
                 <i data-feather="check" style="width: 40px; height: 40px; stroke-width: 3;"></i>
             </div>
-            <h2 class="fw-bold m-0">Termin je potvrđen!</h2>
+            <h2 class="fw-bold m-0">Appointment Confirmed!</h2>
         </div>
 
         <div class="p-4 p-md-5 text-center">
-            <h5 class="text-secondary mb-1">Hvala vam na povjerenju.</h5>
-            <p class="text-muted">Vaša rezervacija kod <strong>@Model.Name</strong> je uspješno obrađena.</p>
+            <h5 class="text-secondary mb-1">Thank you for booking with us.</h5>
+            <p class="text-muted">Your reservation at <strong>@Model.Name</strong> has been successfully processed.</p>
 
             <div class="info-box">
                 <div class="d-flex align-items-center justify-content-center mb-2">
                     <i data-feather="mail" class="text-success me-2" style="width: 20px;"></i>
-                    <span class="fw-bold text-dark">Provjerite svoj e-mail</span>
+                    <span class="fw-bold text-dark">Check your email</span>
                 </div>
                 <p class="small text-muted mb-0">
-                    Poslali smo vam potvrdu sa svim detaljima termina, cijenom i lokacijom.
+                    We have sent a confirmation with all appointment details, price, and location.
                 </p>
             </div>
 
-            <a asp-action="Details" asp-route-slug="@Model.Slug" class="btn-return shadow-sm">
-                Vrati se na početnu
-            </a>
+            @if (ViewBag.GoogleCalendarUrl != null)
+            {
+                <a href="@ViewBag.GoogleCalendarUrl" target="_blank" class="btn-calendar shadow-sm">
+                    <i data-feather="calendar" class="me-2" style="width: 18px;"></i>
+                    Add to Google Calendar
+                </a>
+            }
 
             <div class="mt-4 d-flex justify-content-center gap-3 text-muted" style="font-size: 12px; opacity: 0.7;">
-                <span><i data-feather="shield" class="me-1" style="width: 12px;"></i> Verificirano</span>
+                <span><i data-feather="shield" class="me-1" style="width: 12px;"></i> Verified</span>
                 <span>•</span>
                 <span><i data-feather="clock" class="me-1" style="width: 12px;"></i> @DateTime.Now.ToString("HH:mm")</span>
             </div>

@@ -411,3 +411,69 @@ label.small.fw-black.text-muted {
         display: none !important;
     }
 }
+
+.status-wrapper {
+    background-color: #0f172a;
+}
+
+.customer-status-card {
+    background-color: #1e293b;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+}
+
+.customer-title {
+    color: #f8fafc;
+}
+
+.customer-text {
+    color: #94a3b8;
+}
+
+/* 4. Progress Tracker - Dark Mode */
+.step-item span {
+    color: #64748b; /* Prigušena siva za neaktivne korake */
+    font-size: 0.85rem;
+    transition: color 0.3s ease;
+}
+
+.step-item.active span {
+    color: #f8fafc !important; /* Svijetlo siva/bijela za aktivni korak */
+    font-weight: 800;
+}
+
+/* 6. Form Inputs - Dark Mode */
+.customer-input {
+    background-color: #1e293b !important; /* Tamna podloga inputa */
+    color: #f8fafc !important; /* Svijetlo siva boja teksta */
+    border: 2px solid #334155 !important; /* Definirana ivica za tamnu temu */
+    border-radius: 18px !important;
+    padding: 1.2rem 1.5rem !important;
+    height: auto !important;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+    .customer-input:focus {
+        background-color: #334155 !important; /* Malo svjetlije pri fokusu */
+        border-color: #3b82f6 !important; /* Plavi naglasak (accent) */
+        box-shadow: 0 0 0 5px rgba(59, 130, 246, 0.2) !important;
+        transform: translateY(-1px);
+    }
+
+    /* Placeholder tekst - Dark Mode */
+    .customer-input::placeholder {
+        color: #475569;
+    }
+
+/* Labels - Dark Mode */
+.input-label {
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #94a3b8; /* Svjetlija siva za labels */
+    margin-bottom: 8px;
+    margin-left: 4px;
+    display: block;
+}

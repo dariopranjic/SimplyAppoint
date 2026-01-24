@@ -14,11 +14,8 @@
 </div>
 
 <div class="container pb-5">
-    @* Changed method to POST and action to ConfirmBooking *@
-    <form asp-action="ConfirmBooking" method="post">
+    <form asp-action="ConfirmBooking" method="post" id="bookingForm">
         <input type="hidden" name="slug" value="@Model.Slug" />
-
-        @* Carry forward the user data from Step 1 / Login *@
         <input type="hidden" name="firstName" value="@ViewBag.FirstName" />
         <input type="hidden" name="lastName" value="@ViewBag.LastName" />
         <input type="hidden" name="email" value="@ViewBag.Email" />
@@ -51,29 +48,26 @@
                         <label class="small fw-black text-muted text-uppercase mb-2 d-block">Select Day</label>
                         <input type="date" name="appointmentDate" id="dateInput"
                                class="form-control p-3 border-0 rounded-4 fw-bold customer-input"
-                               min="@DateTime.Now.ToString("yyyy-MM-dd")" required onchange="showTimes()" disabled />
+                               min="@DateTime.Now.ToString("yyyy-MM-dd")" required onchange="fetchAvailableTimes()" disabled />
                     </div>
 
                     <div id="timeSelectionArea" style="display: none;">
                         <label class="small fw-black text-muted text-uppercase mb-3 d-block">Available Slots</label>
-                        <div class="row g-2">
-                            @* Note: In a real app, 'value' should ideally be a full time string like 09:00:00 *@
-                            @foreach (var t in new[] { "09:00", "10:00", "11:00", "13:00", "14:00", "15:00" })
-                            {
-                                <div class="col-4">
-                                    <input type="radio" name="time" id="time-@t" value="@t" class="time-input" required />
-                                    <label for="time-@t" class="time-label shadow-sm">@t</label>
-                                </div>
-                            }
+                        <div id="slotsContainer" class="row g-2">
                         </div>
 
-                        <button type="submit" class="btn btn-primary customer-primary w-100 py-3 mt-4 fw-black rounded-pill">
+                        <button type="submit" id="submitBtn" class="btn btn-primary customer-primary w-100 py-3 mt-4 fw-black rounded-pill">
                             Confirm Appointment
                         </button>
                     </div>
 
                     <div id="datePlaceholder" class="text-center py-5 border-2 border-dashed rounded-4">
                         <p id="placeholderText" class="text-muted small fw-bold mb-0">Select a service first</p>
+                    </div>
+
+                    <div id="loadingTimes" class="text-center py-4" style="display:none;">
+                        <div class="spinner-border text-primary" role="status"></div>
+                        <p class="small fw-bold mt-2">Finding available slots...</p>
                     </div>
                 </div>
             </div>
@@ -88,19 +82,79 @@
         const placeholderText = document.getElementById('placeholderText');
         const timeArea = document.getElementById('timeSelectionArea');
         const placeholderDiv = document.getElementById('datePlaceholder');
+        const submitBtn = document.getElementById('submitBtn');
+        const slotsContainer = document.getElementById('slotsContainer');
+        const loadingTimes = document.getElementById('loadingTimes');
 
         function enableStepTwo() {
             stepTwo.style.opacity = "1";
             stepTwo.style.pointerEvents = "auto";
             dateInput.disabled = false;
             placeholderText.innerText = "Please select a date to see times";
+
+            // Ako je datum već odabran, osvježi vremena za novu uslugu
+            if(dateInput.value) fetchAvailableTimes();
         }
 
-        function showTimes() {
-            if (dateInput.value) {
-                timeArea.style.display = 'block';
-                placeholderDiv.style.display = 'none';
+        async function fetchAvailableTimes() {
+            const serviceId = document.querySelector('input[name="serviceId"]:checked')?.value;
+            const date = dateInput.value;
+
+            if (!serviceId || !date) return;
+
+            // Prikaži loading, sakrij ostalo
+            loadingTimes.style.display = 'block';
+            timeArea.style.display = 'none';
+            placeholderDiv.style.display = 'none';
+            slotsContainer.innerHTML = '';
+
+            try {
+                const response = await fetch(`/Customer/Home/GetAvailableSlots?serviceId=${serviceId}&date=${date}`);
+                const slots = await response.json();
+
+                loadingTimes.style.display = 'none';
+
+                if (slots && slots.length > 0) {
+                    slots.forEach(time => {
+                        const col = document.createElement('div');
+                        col.className = 'col-4';
+                        col.innerHTML = `
+                            <input type="radio" name="time" id="time-${time}" value="${time}" class="time-input" required />
+                            <label for="time-${time}" class="time-label shadow-sm">${time}</label>
+                        `;
+                        slotsContainer.appendChild(col);
+                    });
+                    timeArea.style.display = 'block';
+                } else {
+                    placeholderDiv.style.display = 'block';
+                    placeholderText.innerText = "No available slots for this day. Try another.";
+                }
+            } catch (error) {
+                console.error("Error fetching slots:", error);
+                loadingTimes.style.display = 'none';
+                placeholderDiv.style.display = 'block';
+                placeholderText.innerText = "Error loading times. Please try again.";
             }
         }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            var checkedService = document.querySelector('input[name="serviceId"]:checked');
+            if (checkedService) enableStepTwo();
+            if (dateInput.value) fetchAvailableTimes();
+        });
+
+        window.addEventListener('pageshow', function(event) {
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = 'Confirm Appointment';
+            }
+        });
+
+        document.getElementById('bookingForm').addEventListener('submit', function (e) {
+            if (submitBtn) {
+                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processing...';
+                submitBtn.disabled = true;
+            }
+        });
     </script>
 }

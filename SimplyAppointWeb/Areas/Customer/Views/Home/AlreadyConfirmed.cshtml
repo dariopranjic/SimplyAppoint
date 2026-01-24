@@ -1,0 +1,78 @@
+﻿@{
+    ViewData["Title"] = "Action Already Completed";
+    Layout = "_CustomerLayout";
+}
+
+<style>
+    /* Base Container */
+    .status-wrapper {
+        min-height: 85vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        transition: all 0.3s ease;
+    }
+
+    /* The Card - Target this for backgrounds */
+    .customer-status-card {
+        max-width: 500px;
+        width: 100%;
+        padding: 3rem;
+        border-radius: 2rem;
+        text-align: center;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+        .customer-status-card:hover {
+            transform: translateY(-5px);
+        }
+
+    /* Icon Animation */
+    .status-icon-wrapper {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        margin-bottom: 1.5rem;
+        background-color: rgba(255, 193, 7, 0.1); /* Soft Yellow */
+        color: #ffc107;
+    }
+
+    /* Buttons */
+    .btn-customer-primary {
+        padding: 0.8rem 2.5rem;
+        font-weight: 700;
+        border-radius: 50px;
+        transition: all 0.3s ease;
+    }
+</style>
+
+<div class="status-wrapper">
+    <div class="customer-status-card">
+        <div class="status-icon-wrapper">
+            <i data-feather="info" style="width: 48px; height: 48px;"></i>
+        </div>
+
+        <h2 class="fw-black customer-title mb-3">Notice</h2>
+
+        <p class="customer-text fs-5 mb-4">
+            It looks like this appointment has <strong>already been confirmed</strong> or the verification link has expired.
+        </p>
+
+        <div class="p-3 rounded-4 mb-4" style="background: rgba(0,0,0,0.03); border: 1px dashed rgba(0,0,0,0.1);">
+            <p class="small customer-text mb-0">
+                If you just clicked the link twice, don't worry! Your booking is safe. Please check your inbox for the final confirmation email.
+            </p>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        feather.replace();
+    </script>
+}

@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using System.Linq;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using SimplyAppoint.Models;
@@ -7,6 +6,7 @@ using SimplyAppoint.DataAccess.Repository.IRepository;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using SimplyAppoint.Models.Enums;
+using Microsoft.EntityFrameworkCore;
 
 namespace SimplyAppointWeb.Controllers
 {
@@ -25,6 +25,64 @@ namespace SimplyAppointWeb.Controllers
             _unitOfWork = unitOfWork;
             _userManager = userManager;
             _emailSender = emailSender;
+        }
+
+        public IActionResult Index()
+        {
+            var businesses = _unitOfWork.Business.GetAll(includeProperties: "Services");
+            return View(businesses);
+        }
+
+        [HttpGet]
+        public IActionResult GetAvailableSlots(int serviceId, DateTime date)
+        {
+            var service = _unitOfWork.Service.Get(u => u.Id == serviceId);
+            if (service == null) return Json(new List<string>());
+
+            var business = _unitOfWork.Business.Get(u => u.Id == service.BusinessId, includeProperties: "WorkingHours");
+            var policy = _unitOfWork.BookingPolicy.Get(u => u.BusinessId == service.BusinessId);
+
+            if (business == null || policy == null) return Json(new List<string>());
+
+            int dayNum = (int)date.DayOfWeek;
+            if (dayNum == 0) dayNum = 7;
+
+            var workingDay = business.WorkingHours.FirstOrDefault(wh => (int)wh.Weekday == dayNum && !wh.IsClosed);
+
+            if (workingDay == null || !workingDay.OpenTime.HasValue || !workingDay.CloseTime.HasValue)
+                return Json(new List<string>());
+
+            var existingBookings = _unitOfWork.Appointment.GetAll(u =>
+                u.BusinessId == business.Id &&
+                u.StartUtc.Date == date.Date &&
+                u.Status != AppointmentStatus.Cancelled);
+
+            var availableSlots = new List<string>();
+
+            DateTime currentSlotStart = date.Date.Add(workingDay.OpenTime.Value.ToTimeSpan());
+            DateTime dayEnd = date.Date.Add(workingDay.CloseTime.Value.ToTimeSpan());
+            int interval = policy.SlotIntervalMinutes;
+
+            while (currentSlotStart.AddMinutes(service.DurationMinutes) <= dayEnd)
+            {
+                DateTime currentSlotEnd = currentSlotStart.AddMinutes(service.DurationMinutes);
+
+                bool isOccupied = existingBookings.Any(b =>
+                    currentSlotStart < b.StartUtc.AddMinutes(b.DurationMinutes + service.BufferAfter) &&
+                    currentSlotEnd > b.StartUtc.AddMinutes(-service.BufferBefore));
+
+                bool isPast = currentSlotStart < DateTime.Now;
+                bool satisfiesNotice = currentSlotStart >= DateTime.Now.AddMinutes(policy.AdvanceNoticeMinutes);
+
+                if (!isOccupied && !isPast && satisfiesNotice)
+                {
+                    availableSlots.Add(currentSlotStart.ToString("HH:mm"));
+                }
+
+                currentSlotStart = currentSlotStart.AddMinutes(interval);
+            }
+
+            return Json(availableSlots);
         }
 
         public IActionResult Details(string? slug)
@@ -63,8 +121,22 @@ namespace SimplyAppointWeb.Controllers
         public async Task<IActionResult> ConfirmBooking(string slug, int serviceId, string appointmentDate, string time, string firstName, string lastName, string email)
         {
             var business = GetBusiness(slug);
-            var service = business?.Services.FirstOrDefault(s => s.Id == serviceId);
+            var service = _unitOfWork.Service.Get(u => u.Id == serviceId);
+
             if (business == null || service == null) return RedirectToOnboarding();
+
+            DateTime startLocal = DateTime.Parse($"{appointmentDate} {time}");
+            DateTime startUtc = startLocal.ToUniversalTime();
+
+            var existingAppointment = _unitOfWork.Appointment.Get(u =>
+                u.BusinessId == business.Id &&
+                u.CustomerEmail == email &&
+                u.StartUtc == startUtc);
+
+            if (existingAppointment != null)
+            {
+                return RedirectToAction("Success", new { slug = slug });
+            }
 
             BusinessCustomer? customer = null;
             string? currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -94,16 +166,14 @@ namespace SimplyAppointWeb.Controllers
                 _unitOfWork.Save();
             }
 
-            DateTime startLocal = DateTime.Parse($"{appointmentDate} {time}");
-
             var appointment = new Appointment
             {
                 BusinessId = business.Id,
                 ServiceId = serviceId,
                 CustomerName = customer.FullName,
                 CustomerEmail = customer.Email,
-                StartUtc = startLocal,
-                EndUtc = startLocal.AddMinutes(service.DurationMinutes),
+                StartUtc = startUtc,
+                EndUtc = startUtc.AddMinutes(service.DurationMinutes),
                 Price = service.Price,
                 DurationMinutes = service.DurationMinutes,
                 Status = AppointmentStatus.Pending,
@@ -121,7 +191,7 @@ namespace SimplyAppointWeb.Controllers
             catch (Exception ex)
             {
                 Console.WriteLine($"Email Error: {ex.Message}");
-                TempData["error"] = "Greška kod slanja maila, ali termin je zaprimljen.";
+                TempData["error"] = "Appointment saved, but email could not be sent.";
             }
 
             return RedirectToAction("Success", new { slug = slug });
@@ -133,8 +203,7 @@ namespace SimplyAppointWeb.Controllers
             var business = GetBusiness(slug);
             if (business == null) return RedirectToAction("Index", "Home");
 
-            var appointment = _unitOfWork.Appointment.GetAll()
-                .Where(u => u.BusinessId == business.Id && u.Status == AppointmentStatus.Pending)
+            var appointment = _unitOfWork.Appointment.GetAll(u => u.BusinessId == business.Id && u.Status == AppointmentStatus.Pending)
                 .OrderByDescending(u => u.CreatedUtc)
                 .FirstOrDefault();
 
@@ -144,11 +213,11 @@ namespace SimplyAppointWeb.Controllers
                 {
                     string fName = appointment.CustomerName.Split(' ')[0];
                     await SendVerificationEmail(appointment, business, fName);
-                    TempData["success"] = "Novi verifikacijski mail je poslan!";
+                    TempData["success"] = "Verification email resent successfully!";
                 }
                 catch (Exception)
                 {
-                    TempData["error"] = "Greška pri ponovnom slanju.";
+                    TempData["error"] = "Error resending email.";
                 }
             }
             return RedirectToAction("Success", new { slug = slug });
@@ -163,8 +232,7 @@ namespace SimplyAppointWeb.Controllers
 
             if (appointment == null)
             {
-                TempData["success"] = "Termin je već ranije potvrđen!";
-                return RedirectToAction("Index", "Home");
+                return View("AlreadyConfirmed");
             }
 
             appointment.Status = AppointmentStatus.Confirmed;
@@ -199,65 +267,70 @@ namespace SimplyAppointWeb.Controllers
             var callbackUrl = Url.Action("ConfirmEmail", "Home", new { token = appointment.ConfirmationToken }, protocol: Request.Scheme);
 
             string htmlMessage = $@"
-            <div style='background-color: #f4f7fa; padding: 50px 20px; font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Roboto, Helvetica, Arial, sans-serif;'>
+            <div style='background-color: #f4f7fa; padding: 50px 20px; font-family: sans-serif;'>
                 <div style='max-width: 500px; margin: 0 auto; background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.08);'>
                     <div style='background: #0d6efd; padding: 30px; text-align: center; color: #ffffff;'>
-                        <h2 style='margin: 0; font-size: 24px;'>Potvrdite dolazak</h2>
+                        <h2 style='margin: 0;'>Confirm your Appointment</h2>
                     </div>
                     <div style='padding: 40px; text-align: center;'>
-                        <p style='font-size: 16px; color: #4b5563; margin-bottom: 25px;'>Pozdrav {firstName}, kliknite na gumb ispod kako biste potvrdili svoj termin u <strong>{business.Name}</strong>.</p>
+                        <p>Hello {firstName}, please confirm your booking at <strong>{business.Name}</strong>.</p>
                         <div style='margin-bottom: 30px; padding: 20px; background: #f8fafc; border-radius: 12px;'>
-                            <span style='display: block; font-size: 20px; font-weight: bold; color: #1e293b;'>{appointment.StartUtc.ToString("dd.MM.yyyy.")}</span>
-                            <span style='font-size: 18px; color: #64748b;'>u {appointment.StartUtc.ToString("HH:mm")} h</span>
+                            <span style='display: block; font-size: 20px; font-weight: bold;'>{appointment.StartUtc.ToLocalTime().ToString("dd.MM.yyyy")}</span>
+                            <span>at {appointment.StartUtc.ToLocalTime().ToString("HH:mm")}</span>
                         </div>
-                        <a href='{callbackUrl}' style='display: inline-block; background: #0d6efd; color: #ffffff; padding: 16px 32px; text-decoration: none; border-radius: 12px; font-weight: 600; font-size: 16px;'>POTVRDI TERMIN</a>
+                        <a href='{callbackUrl}' style='display: inline-block; background: #0d6efd; color: #ffffff; padding: 16px 32px; text-decoration: none; border-radius: 12px; font-weight: 600;'>CONFIRM BOOKING</a>
                     </div>
                 </div>
             </div>";
 
-            await _emailSender.SendEmailAsync(appointment.CustomerEmail, "Akcija potrebna: Potvrdite svoj termin", htmlMessage);
+            await _emailSender.SendEmailAsync(appointment.CustomerEmail, "Action Required: Confirm your appointment", htmlMessage);
         }
 
         private async Task SendFinalConfirmationEmail(Appointment appointment)
         {
             string googleUrl = GenerateGoogleCalendarLink(appointment);
+            string businessName = appointment.Business?.Name ?? "Business";
 
             string htmlMessage = $@"
-            <div style='background-color: #f4f7fa; padding: 50px 20px; font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Roboto, Helvetica, Arial, sans-serif;'>
-                <div style='max-width: 550px; margin: 0 auto; background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.1);'>
+            <div style='background-color: #f4f7fa; padding: 50px 20px; font-family: sans-serif;'>
+                <div style='max-width: 550px; margin: 0 auto; background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,1);'>
                     <div style='background: #198754; padding: 30px; text-align: center; color: #ffffff;'>
-                        <h2 style='margin: 0; font-size: 24px;'>Termin je potvrđen! ✅</h2>
+                        <h2 style='margin: 0;'>Appointment Confirmed!</h2>
                     </div>
                     <div style='padding: 40px;'>
-                        <p style='font-size: 16px; color: #334155; margin-bottom: 25px;'>Vaša rezervacija kod <strong>{appointment.Business.Name}</strong> je uspješno verificirana.</p>
-                        
+                        <p>Your booking at <strong>{businessName}</strong> has been successfully verified.</p>
                         <div style='border-left: 4px solid #198754; background: #f0fdf4; padding: 20px; border-radius: 0 12px 12px 0; margin-bottom: 30px;'>
-                            <table style='width: 100%; font-size: 15px; color: #475569;'>
-                                <tr><td style='padding-bottom: 8px;'><strong>Usluga:</strong></td><td style='text-align: right;'>{appointment.Service?.Name}</td></tr>
-                                <tr><td style='padding-bottom: 8px;'><strong>Datum:</strong></td><td style='text-align: right;'>{appointment.StartUtc.ToString("dd.MM.yyyy.")}</td></tr>
-                                <tr><td style='padding-bottom: 8px;'><strong>Vrijeme:</strong></td><td style='text-align: right;'>{appointment.StartUtc.ToString("HH:mm")} h</td></tr>
-                                <tr><td style='border-top: 1px solid #dcfce7; padding-top: 8px;'><strong>Cijena:</strong></td><td style='border-top: 1px solid #dcfce7; padding-top: 8px; text-align: right; font-weight: bold;'>{appointment.Price} €</td></tr>
+                            <table style='width: 100%;'>
+                                <tr><td><strong>Service:</strong></td><td style='text-align: right;'>{appointment.Service?.Name}</td></tr>
+                                <tr><td><strong>Date:</strong></td><td style='text-align: right;'>{appointment.StartUtc.ToLocalTime().ToString("dd.MM.yyyy")}</td></tr>
+                                <tr><td><strong>Time:</strong></td><td style='text-align: right;'>{appointment.StartUtc.ToLocalTime().ToString("HH:mm")}</td></tr>
+                                <tr><td><strong>Price:</strong></td><td style='text-align: right; font-weight: bold;'>{appointment.Price} €</td></tr>
                             </table>
                         </div>
-
-                        <div style='text-align: center; margin-bottom: 20px;'>
-                            <a href='{googleUrl}' style='display: inline-block; padding: 12px 24px; background: #ffffff; color: #198754; border: 2px solid #198754; text-decoration: none; border-radius: 10px; font-weight: bold; font-size: 14px;'>📅 Dodaj u Google Kalendar</a>
+                        <div style='text-align: center;'>
+                            <a href='{googleUrl}' style='display: inline-block; padding: 12px 24px; border: 2px solid #198754; text-decoration: none; border-radius: 10px; font-weight: bold; color: #198754;'>📅 Add to Google Calendar</a>
                         </div>
-                        
-                        <p style='font-size: 13px; color: #94a3b8; text-align: center; margin-top: 30px;'>Ovaj mail služi kao vaša službena potvrda. Vidimo se!</p>
                     </div>
                 </div>
             </div>";
 
-            await _emailSender.SendEmailAsync(appointment.CustomerEmail, "Potvrda rezervacije - " + appointment.Business.Name, htmlMessage);
+            await _emailSender.SendEmailAsync(appointment.CustomerEmail, $"Confirmed: {businessName}", htmlMessage);
         }
 
         private string GenerateGoogleCalendarLink(Appointment app)
         {
             var start = app.StartUtc.ToString("yyyyMMddTHHmmssZ");
             var end = app.EndUtc.ToString("yyyyMMddTHHmmssZ");
-            var details = $"Usluga: {app.Service?.Name}. Cijena: {app.Price} EUR.";
-            return $"https://www.google.com/calendar/render?action=TEMPLATE&text={Uri.EscapeDataString("Termin: " + app.Service?.Name)}&dates={start}/{end}&details={Uri.EscapeDataString(details)}&location={Uri.EscapeDataString(app.Business?.Name)}&sf=true&output=xml";
+
+            string serviceName = app.Service?.Name ?? "Appointment";
+            string businessName = app.Business?.Name ?? "Business";
+            var details = $"Service: {serviceName}. Price: {app.Price} EUR.";
+
+            return $"https://www.google.com/calendar/render?action=TEMPLATE" +
+                   $"&text={Uri.EscapeDataString("Booking: " + serviceName)}" +
+                   $"&dates={start}/{end}" +
+                   $"&details={Uri.EscapeDataString(details)}" +
+                   $"&location={Uri.EscapeDataString(businessName)}&sf=true&output=xml";
         }
 
         private Business? GetBusiness(string? slug)
