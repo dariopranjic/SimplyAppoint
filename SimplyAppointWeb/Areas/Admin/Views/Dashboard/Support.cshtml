@@ -1,96 +1,165 @@
 ﻿@{
-    ViewData["Title"] = "Support";
+    ViewData["Title"] = "Support Center";
     Layout = "_AdminLayout";
 }
 
-<div class="mb-3">
-    <h1 class="h3 d-inline align-middle">Help & Support</h1>
-    <p class="text-muted">How can we help you with SimplyAppoint today?</p>
-</div>
+<div class="support-wrapper pb-5">
 
-<div class="row">
-    <div class="col-12 col-lg-7">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="card-title mb-0">Frequently Asked Questions</h5>
-            </div>
-            <div class="card-body">
-                <div class="accordion" id="faqAccordion">
+    <div class="support-hero mb-5 pt-4">
+        <div class="row">
+            <div class="col-lg-10 col-xl-8">
+                <h1 class="support-main-title fw-bold text-white mb-3">How can we help?</h1>
+                <p class="support-subtitle mb-4">Search our knowledge base or reach out to our dedicated support team.</p>
 
-                    <div class="accordion-item border-secondary bg-transparent">
-                        <h2 class="accordion-header" id="headingOne">
-                            <button class="accordion-button collapsed bg-transparent text-white" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne">
-                                How do I add a new service?
-                            </button>
-                        </h2>
-                        <div id="collapseOne" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-                            <div class="accordion-body text-muted">
-                                Navigate to the <strong>Services</strong> tab in the sidebar and click the "Add New Service" button. You can set the duration, price, and description there.
-                            </div>
-                        </div>
+                <div class="search-container">
+                    <div class="search-glass-wrapper">
+                        <i data-feather="search" class="search-icon"></i>
+                        <input type="text" id="faqSearch" class="search-input" placeholder="Search for help (e.g., 'billing', 'calendar', 'hours')...">
                     </div>
-
-                    <div class="accordion-item border-secondary bg-transparent">
-                        <h2 class="accordion-header" id="headingTwo">
-                            <button class="accordion-button collapsed bg-transparent text-white" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo">
-                                Can I sync my calendar with Google?
-                            </button>
-                        </h2>
-                        <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-                            <div class="accordion-body text-muted">
-                                Currently, SimplyAppoint manages its own internal calendar. External sync features are planned for a future update.
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="accordion-item border-secondary bg-transparent">
-                        <h2 class="accordion-header" id="headingThree">
-                            <button class="accordion-button collapsed bg-transparent text-white" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree">
-                                How do I change my business hours?
-                            </button>
-                        </h2>
-                        <div id="collapseThree" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-                            <div class="accordion-body text-muted">
-                                Go to <strong>Settings</strong> and look for the "Business Hours" section to adjust your weekly availability.
-                            </div>
-                        </div>
-                    </div>
-
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="col-12 col-lg-5">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="card-title mb-0">Contact Our Team</h5>
+    <div class="row g-4">
+
+        <div class="col-xl-8">
+
+            <div class="row g-3 mb-5">
+                <div class="col-md-4">
+                    <div class="category-card p-4 text-center h-100">
+                        <div class="icon-circle mb-3 mx-auto bg-soft-primary">
+                            <i data-feather="zap" class="text-primary"></i>
+                        </div>
+                        <h6 class="fw-bold mb-2 text-white">Getting Started</h6>
+                        <p class="small text-muted-custom mb-0">Learn the core features and dashboard basics.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="category-card p-4 text-center h-100">
+                        <div class="icon-circle mb-3 mx-auto bg-soft-success">
+                            <i data-feather="credit-card" class="text-success"></i>
+                        </div>
+                        <h6 class="fw-bold mb-2 text-white">Billing & Plans</h6>
+                        <p class="small text-muted-custom mb-0">Manage your subscription, invoices, and payments.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="category-card p-4 text-center h-100">
+                        <div class="icon-circle mb-3 mx-auto bg-soft-warning">
+                            <i data-feather="settings" class="text-warning"></i>
+                        </div>
+                        <h6 class="fw-bold mb-2 text-white">Account Settings</h6>
+                        <p class="small text-muted-custom mb-0">Security, team permissions, and profile edits.</p>
+                    </div>
+                </div>
             </div>
-            <div class="card-body">
-                <form>
-                    <div class="mb-3">
-                        <label class="form-label">Subject</label>
-                        <select class="form-select border-secondary">
-                            <option>Technical Issue</option>
-                            <option>Billing Question</option>
-                            <option>Feature Request</option>
-                            <option>Other</option>
-                        </select>
+
+            <div class="faq-header-container mb-4">
+                <h4 class="fw-bold text-white mb-1">Frequently Asked Questions</h4>
+                <p class="small text-muted-custom">Quick answers to the most common queries.</p>
+            </div>
+
+            <div class="accordion modern-accordion" id="supportAccordion">
+
+                <div class="accordion-item mb-3 rounded-3 overflow-hidden border-0">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed px-4 py-4" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                            <span class="faq-number me-3">01</span> How do I add a new service?
+                        </button>
+                    </h2>
+                    <div id="faq1" class="accordion-collapse collapse" data-bs-parent="#supportAccordion">
+                        <div class="accordion-body px-5 pb-4 pt-0 text-muted-custom">
+                            Navigate to the <span class="badge bg-dark border border-secondary text-white">Services</span> tab in the sidebar and click the <strong>"Add New Service"</strong> button. You can customize the duration, price, and descriptive details for your clients.
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label">Message</label>
-                        <textarea class="form-control border-secondary" rows="5" placeholder="Describe your issue in detail..."></textarea>
+                </div>
+
+                <div class="accordion-item mb-3 rounded-3 overflow-hidden border-0">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed px-4 py-4" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                            <span class="faq-number me-3">02</span> Can I sync my calendar with Google?
+                        </button>
+                    </h2>
+                    <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#supportAccordion">
+                        <div class="accordion-body px-5 pb-4 pt-0 text-muted-custom">
+                            Currently, <strong>SimplyAppoint</strong> uses an optimized internal calendar. 2-way sync with Google and Outlook is on our roadmap for a future major release.
+                        </div>
                     </div>
-                    <div class="d-grid">
-                        <button type="submit" class="btn btn-primary">Send Message</button>
+                </div>
+
+                <div class="accordion-item mb-3 rounded-3 overflow-hidden border-0">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed px-4 py-4" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                            <span class="faq-number me-3">03</span> How do I change my business hours?
+                        </button>
+                    </h2>
+                    <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#supportAccordion">
+                        <div class="accordion-body px-5 pb-4 pt-0 text-muted-custom">
+                            Go to <span class="badge bg-dark border border-secondary text-white">Settings</span> and select <strong>"Business Hours."</strong> You can define intervals for each day or set specific days as "Closed."
+                        </div>
                     </div>
+                </div>
+
+                <div class="accordion-item mb-3 rounded-3 overflow-hidden border-0">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed px-4 py-4" type="button" data-bs-toggle="collapse" data-bs-target="#faq4">
+                            <span class="faq-number me-3">04</span> How do refunds work?
+                        </button>
+                    </h2>
+                    <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#supportAccordion">
+                        <div class="accordion-body px-5 pb-4 pt-0 text-muted-custom">
+                            Refunds should be processed via Stripe or PayPal directly. SimplyAppoint will update the appointment status automatically once finalized.
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="col-xl-4">
+            <div class="contact-sidebar p-4 p-md-5 rounded-4 shadow-lg h-100">
+                <div class="mb-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="icon-square bg-primary-soft me-3">
+                            <i data-feather="message-circle" class="text-primary"></i>
+                        </div>
+                        <h4 class="fw-bold text-white mb-0">Submit a Ticket</h4>
+                    </div>
+                    <p class="text-white-50 small mb-0">Response time: <strong class="text-success">Under 45m</strong></p>
+                </div>
+
+                <form id="supportForm">
+                    <div class="mb-4">
+                        <label class="form-label small text-white-50 text-uppercase fw-bold ls-1">Issue Category</label>
+                        <input list="topicOptions" class="form-control custom-input py-3" placeholder="Select or type a topic...">
+                        <datalist id="topicOptions">
+                            <option value="Technical Issue"></option>
+                            <option value="Billing Question"></option>
+                            <option value="Feature Request"></option>
+                            <option value="Account Access"></option>
+                            <option value="Bug Report"></option>
+                        </datalist>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label small text-white-50 text-uppercase fw-bold ls-1">Message Details</label>
+                        <textarea class="form-control custom-input" rows="7" placeholder="Provide details about your issue..."></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-lg w-100 mb-4 py-3 fw-bold ticket-btn shadow-sm">
+                        <i data-feather="send" class="me-2"></i> Send Message
+                    </button>
                 </form>
 
-                <hr class="my-4" />
+                <div class="divider text-center mb-4">
+                    <span class="px-3 text-white-50 small fw-bold">OR DIRECT CONTACT</span>
+                </div>
 
-                <div class="text-center">
-                    <p class="mb-2 text-muted">Or email us directly at:</p>
-                    <a href="mailto:support@simplyappoint.com" class="h5 text-primary">support@simplyappoint.com</a>
+                <div class="email-box p-3 rounded-3 text-center border border-secondary border-opacity-10">
+                    <a href="mailto:support@simplyappoint.com" class="text-decoration-none d-block text-white fw-bold">
+                        support@simplyappoint.com
+                    </a>
                 </div>
             </div>
         </div>
@@ -99,19 +168,222 @@
 
 @section Styles {
     <style>
-        /* Styling the accordion for the Dark Theme */
-        .accordion-button:not(.collapsed) {
-            background-color: rgba(59, 125, 221, 0.1);
+        :root {
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --primary-glow: rgba(59, 125, 221, 0.35);
+            --transition-main: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* TEXT VISIBILITY FIXES */
+        .text-muted-custom {
+            color: #a5acb3;
+        }
+
+        .ls-1 {
+            letter-spacing: 0.5px;
+        }
+
+        .support-main-title {
+            font-size: 2.75rem;
+            letter-spacing: -1px;
+            color: #ffffff !important;
+        }
+
+        .support-subtitle {
+            font-size: 1.15rem;
+            color: #d1d4d7;
+            max-width: 600px;
+        }
+
+        /* SEARCH BAR: Precise layout and focus logic */
+        .search-glass-wrapper {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            padding: 4px 22px;
+            transition: var(--transition-main);
+            max-width: 580px; /* Constrained size to prevent "too big" feel */
+        }
+
+            .search-glass-wrapper:focus-within {
+                border-color: #3b7ddd;
+                background: rgba(59, 125, 221, 0.05);
+                box-shadow: 0 0 20px var(--primary-glow);
+            }
+
+        .search-icon {
             color: #3b7ddd;
-            box-shadow: none;
+            width: 18px;
+            margin-right: 15px;
         }
 
-        .accordion-button::after {
-            filter: invert(1); /* Makes the arrow white */
+        .search-input {
+            background: transparent !important;
+            border: none !important;
+            color: #ffffff !important;
+            width: 100%;
+            padding: 14px 0;
+            outline: none !important;
+            box-shadow: none !important; /* FIXED: Removes browser double-glow */
+            font-size: 1.05rem;
         }
 
-        .accordion-item {
-            border-bottom: 1px solid #3d4957 !important;
+        /* CARDS & ACCORDION */
+        .category-card {
+            background: #222e3c;
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            transition: var(--transition-main);
+            cursor: pointer;
         }
+
+            .category-card:hover {
+                transform: translateY(-5px);
+                border-color: #3b7ddd;
+                background: rgba(59, 125, 221, 0.02);
+            }
+
+        .icon-circle {
+            width: 52px;
+            height: 52px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .bg-soft-primary {
+            background: rgba(59, 125, 221, 0.12);
+        }
+
+        .bg-soft-success {
+            background: rgba(28, 187, 140, 0.12);
+        }
+
+        .bg-soft-warning {
+            background: rgba(252, 185, 44, 0.12);
+        }
+
+        .modern-accordion .accordion-item {
+            background: #222e3c;
+            border: 1px solid var(--glass-border) !important;
+        }
+
+        .modern-accordion .accordion-button {
+            background: transparent !important;
+            color: #f8f9fa !important;
+            font-weight: 500;
+            box-shadow: none !important;
+        }
+
+            .modern-accordion .accordion-button:not(.collapsed) {
+                color: #3b7ddd !important;
+            }
+
+        .faq-number {
+            font-size: 0.8rem;
+            opacity: 0.4;
+            font-family: monospace;
+        }
+
+        /* SIDEBAR POLISHING */
+        .contact-sidebar {
+            background: linear-gradient(165deg, #222e3c 0%, #1a232d 100%);
+            border: 1px solid var(--glass-border);
+        }
+
+        .icon-square {
+            width: 42px;
+            height: 42px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+        }
+
+        .custom-input {
+            background: #1a232d !important;
+            border: 1px solid var(--glass-border) !important;
+            color: #fff !important;
+            transition: var(--transition-main);
+        }
+
+            .custom-input:focus {
+                border-color: #3b7ddd !important;
+                box-shadow: 0 0 0 4px rgba(59, 125, 221, 0.15) !important;
+            }
+
+        .ticket-btn {
+            background: #3b7ddd;
+            border: none;
+            transition: var(--transition-main);
+        }
+
+            .ticket-btn:hover {
+                background: #2e66b8;
+                transform: translateY(-2px);
+                box-shadow: 0 8px 20px rgba(59, 125, 221, 0.4);
+            }
+
+        .bg-primary-soft {
+            background: rgba(59, 125, 221, 0.1);
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+        }
+
+            .divider::before, .divider::after {
+                content: "";
+                flex: 1;
+                height: 1px;
+                background: var(--glass-border);
+            }
+
+        .email-box {
+            background: rgba(0,0,0,0.15);
+            transition: var(--transition-main);
+        }
+
+            .email-box:hover {
+                border-color: #3b7ddd !important;
+                background: rgba(59, 125, 221, 0.05);
+            }
     </style>
+}
+
+@section Scripts {
+    <script>
+        // Real-time FAQ Search Engine
+        document.getElementById('faqSearch').addEventListener('keyup', function() {
+            let filter = this.value.toLowerCase();
+            let items = document.querySelectorAll('.modern-accordion .accordion-item');
+
+            items.forEach(item => {
+                let text = item.innerText.toLowerCase();
+                item.style.display = text.includes(filter) ? "" : "none";
+            });
+        });
+
+        // Ticket Submission Simulation
+        document.getElementById('supportForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const btn = e.target.querySelector('button');
+            const originalHtml = btn.innerHTML;
+
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Sending...';
+            btn.disabled = true;
+
+            setTimeout(() => {
+                alert('Your support ticket has been sent. We will contact you shortly!');
+                btn.innerHTML = originalHtml;
+                btn.disabled = false;
+                e.target.reset();
+            }, 1800);
+        });
+    </script>
 }
