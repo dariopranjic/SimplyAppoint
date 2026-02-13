@@ -1,119 +1,185 @@
-﻿<!DOCTYPE html>
+﻿@using Microsoft.AspNetCore.Identity
+@inject UserManager<IdentityUser> UserManager
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-
     <title>@ViewData["Title"] - SimplyAppoint</title>
 
     <link rel="shortcut icon" href="~/AdminKit/img/icons/icon-48x48.png" />
-
-    <!-- AdminKit theme (NO settings.js, NO js-stylesheet) -->
     <link rel="stylesheet" href="~/AdminKit/css/dark.css" asp-append-version="true" />
 
+    <style>
+        /* Flat, Professional Circular Avatar */
+        .owner-avatar {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background-color: #3b7ddd;
+            color: #ffffff;
+            font-weight: 600;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+        }
+
+        /* Sidebar Alignment */
+        .sidebar-user {
+            padding: 1.5rem 1.5rem 1.5rem 0.75rem !important;
+        }
+
+        .sidebar-nav {
+            padding-left: 0;
+        }
+
+        /* Top Navbar User Link */
+        .navbar-user-link {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            padding: 0.25rem;
+        }
+
+        .navbar-avatar {
+            width: 36px;
+            height: 36px;
+            font-size: 0.95rem;
+        }
+
+        /* Modern, Simple Dropdown */
+        .dropdown-menu-modern {
+            border: 1px solid #3d4957;
+            background-color: #222e3c;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.4);
+            border-radius: 4px;
+            padding: 0;
+            overflow: hidden;
+            margin-top: 10px !important;
+        }
+
+        /* Logout Button - Full width hover effect */
+        .dropdown-item.logout-link {
+            color: #fc544b !important;
+            font-weight: 500;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            width: 100%;
+            border: none;
+            background: transparent;
+            transition: background 0.2s ease;
+        }
+
+            .dropdown-item.logout-link:hover {
+                background-color: rgba(252, 84, 75, 0.1) !important;
+            }
+
+        .sidebar-user-subtitle {
+            font-size: 0.75rem;
+            color: #adb5bd;
+            display: block;
+            margin-top: 2px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 150px;
+        }
+
+        /* Footer Styling */
+        .footer {
+            padding: 1.5rem 0;
+            background: transparent;
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .footer-link {
+            color: #adb5bd;
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: color 0.2s;
+        }
+
+            .footer-link:hover {
+                color: #3b7ddd;
+            }
+    </style>
     @await RenderSectionAsync("Styles", required: false)
 </head>
 
+@{
+        var currentUser = await UserManager.GetUserAsync(User);
+        var email = currentUser?.Email ?? "Owner";
+        var initial = email.Substring(0, 1).ToUpper();
+}
+
 <body data-theme="dark" data-layout="fluid" data-sidebar-position="left" data-sidebar-layout="default">
     <div class="wrapper">
-
         <nav id="sidebar" class="sidebar js-sidebar">
             <div class="sidebar-content js-simplebar">
-
-                <a class="sidebar-brand" asp-area="" asp-controller="Dashboard" asp-action="Index">
+                <a class="sidebar-brand" asp-area="Admin" asp-controller="Dashboard" asp-action="Index">
                     <span class="align-middle">SimplyAppoint</span>
-
-                    <svg class="sidebar-brand-icon align-middle" width="32px" height="32px" viewBox="0 0 24 24" fill="none"
-                         stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter" color="#FFFFFF"
-                         style="margin-left: -3px">
-                        <path d="M12 4L20 8.00004L12 12L4 8.00004L12 4Z"></path>
-                        <path d="M20 12L12 16L4 12"></path>
-                        <path d="M20 16L12 20L4 16"></path>
-                    </svg>
                 </a>
 
                 <div class="sidebar-user">
-                    <div class="d-flex justify-content-center">
+                    <div class="d-flex align-items-center">
                         <div class="flex-shrink-0">
-                            <img src="~/AdminKit/img/avatars/avatar.jpg" class="avatar img-fluid rounded me-1" alt="User" />
+                            <div class="owner-avatar">@initial</div>
                         </div>
-                        <div class="flex-grow-1 ps-2">
+                        <div class="flex-grow-1 ps-3">
                             <a class="sidebar-user-title dropdown-toggle" href="#" data-bs-toggle="dropdown">
-                                Demo User
+                                Business Owner
                             </a>
-                            <div class="dropdown-menu dropdown-menu-start">
-                                <a class="dropdown-item" href="#">
-                                    <i class="align-middle me-1" data-feather="user"></i> Profile
-                                </a>
-                                <a class="dropdown-item" asp-area="Admin" asp-controller="Settings" asp-action="Index">
-                                    <i class="align-middle me-1" data-feather="settings"></i> Settings
-                                </a>
-                                <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
-                                    <i class="align-middle me-1" data-feather="log-out"></i> Logout
-                                </a>
+                            <div class="dropdown-menu dropdown-menu-start dropdown-menu-modern">
+                                <form asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })" method="post" class="m-0">
+                                    <button type="submit" class="dropdown-item logout-link">
+                                        <i class="align-middle me-2" data-feather="log-out"></i> Log out
+                                    </button>
+                                </form>
                             </div>
-                            <div class="sidebar-user-subtitle">Owner / Manager</div>
+                            <span class="sidebar-user-subtitle">@email</span>
                         </div>
                     </div>
                 </div>
 
                 <ul class="sidebar-nav">
                     <li class="sidebar-header">Management</li>
-
                     <li class="sidebar-item">
                         <a class="sidebar-link" asp-area="Admin" asp-controller="Dashboard" asp-action="Index">
-                            <i class="align-middle" data-feather="home"></i>
-                            <span class="align-middle">Dashboard</span>
+                            <i class="align-middle" data-feather="home"></i> <span class="align-middle">Dashboard</span>
                         </a>
                     </li>
-
                     <li class="sidebar-item">
                         <a class="sidebar-link" asp-area="Admin" asp-controller="Calendar" asp-action="Index">
-                            <i class="align-middle" data-feather="calendar"></i>
-                            <span class="align-middle">Calendar</span>
+                            <i class="align-middle" data-feather="calendar"></i> <span class="align-middle">Calendar</span>
                         </a>
                     </li>
-
                     <li class="sidebar-item">
                         <a class="sidebar-link" asp-area="Admin" asp-controller="Appointments" asp-action="Index">
-                            <i class="align-middle" data-feather="clock"></i>
-                            <span class="align-middle">Appointments</span>
+                            <i class="align-middle" data-feather="clock"></i> <span class="align-middle">Appointments</span>
                         </a>
                     </li>
-
                     <li class="sidebar-item">
                         <a class="sidebar-link" asp-area="Admin" asp-controller="Services" asp-action="Index">
-                            <i class="align-middle" data-feather="scissors"></i>
-                            <span class="align-middle">Services</span>
+                            <i class="align-middle" data-feather="scissors"></i> <span class="align-middle">Services</span>
                         </a>
                     </li>
-
                     <li class="sidebar-item">
                         <a class="sidebar-link" asp-area="Admin" asp-controller="Customers" asp-action="Index">
-                            <i class="align-middle" data-feather="user"></i>
-                            <span class="align-middle">Customers</span>
+                            <i class="align-middle" data-feather="user"></i> <span class="align-middle">Customers</span>
                         </a>
                     </li>
 
                     <li class="sidebar-header">System</li>
-
                     <li class="sidebar-item">
                         <a class="sidebar-link" asp-area="Admin" asp-controller="Settings" asp-action="Index">
-                            <i class="align-middle" data-feather="settings"></i>
-                            <span class="align-middle">Settings</span>
-                        </a>
-                    </li>
-
-                    <li class="sidebar-item">
-                        <a class="sidebar-link" href="#">
-                            <i class="align-middle" data-feather="log-out"></i>
-                            <span class="align-middle">Logout</span>
+                            <i class="align-middle" data-feather="settings"></i> <span class="align-middle">Settings</span>
                         </a>
                     </li>
                 </ul>
-
             </div>
         </nav>
 
@@ -135,48 +201,16 @@
                 <div class="navbar-collapse collapse">
                     <ul class="navbar-nav navbar-align">
                         <li class="nav-item dropdown">
-                            <a class="nav-icon dropdown-toggle" href="#" id="alertsDropdown" data-bs-toggle="dropdown">
-                                <div class="position-relative">
-                                    <i class="align-middle" data-feather="bell"></i>
-                                    <span class="indicator">3</span>
-                                </div>
+                            <a class="nav-link dropdown-toggle navbar-user-link" href="#" data-bs-toggle="dropdown">
+                                <div class="owner-avatar navbar-avatar">@initial</div>
+                                <span class="text-dark ms-2 d-none d-lg-inline-block">Business Owner</span>
                             </a>
-                            <div class="dropdown-menu dropdown-menu-lg dropdown-menu-end py-0" aria-labelledby="alertsDropdown">
-                                <div class="dropdown-menu-header">Notifications</div>
-                                <div class="list-group">
-                                    <a class="list-group-item" href="#">
-                                        <div class="row g-0 align-items-center">
-                                            <div class="col-2"><i class="text-warning" data-feather="alert-circle"></i></div>
-                                            <div class="col-10">
-                                                <div class="text-dark">Cancellation</div>
-                                                <div class="text-muted small mt-1">An appointment was cancelled.</div>
-                                                <div class="text-muted small mt-1">5m ago</div>
-                                            </div>
-                                        </div>
-                                    </a>
-                                </div>
-                                <div class="dropdown-menu-footer">
-                                    <a class="text-muted" href="#">View all</a>
-                                </div>
-                            </div>
-                        </li>
-
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle d-none d-sm-inline-block" href="#" data-bs-toggle="dropdown">
-                                <img src="~/AdminKit/img/avatars/avatar.jpg" class="avatar img-fluid rounded me-1" alt="User" />
-                                <span class="text-dark">Demo User</span>
-                            </a>
-                            <div class="dropdown-menu dropdown-menu-end">
-                                <a class="dropdown-item" href="#">
-                                    <i class="align-middle me-1" data-feather="user"></i> Profile
-                                </a>
-                                <a class="dropdown-item" asp-area="Admin" asp-controller="Settings" asp-action="Index">
-                                    <i class="align-middle me-1" data-feather="settings"></i> Settings
-                                </a>
-                                <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="#">
-                                    <i class="align-middle me-1" data-feather="log-out"></i> Logout
-                                </a>
+                            <div class="dropdown-menu dropdown-menu-end dropdown-menu-modern">
+                                <form asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })" method="post" class="m-0">
+                                    <button type="submit" class="dropdown-item logout-link">
+                                        <i class="align-middle me-2" data-feather="log-out"></i> Log out
+                                    </button>
+                                </form>
                             </div>
                         </li>
                     </ul>
@@ -194,11 +228,20 @@
                     <div class="row text-muted">
                         <div class="col-6 text-start">
                             <p class="mb-0">
-                                <strong>SimplyAppoint</strong> &copy; @DateTime.Now.Year
+                                <span class="text-muted">© @DateTime.Now.Year - </span>
+                                <strong>SimplyAppoint</strong>
                             </p>
                         </div>
                         <div class="col-6 text-end">
-                            <p class="mb-0">Admin panel</p>
+                            <ul class="list-inline mb-0">
+                                <li class="list-inline-item">
+                                    <a class="footer-link text-decoration-none" asp-area="Admin" asp-controller="Dashboard" asp-action="Privacy">Privacy Policy</a>
+                                </li>
+                                <li class="list-inline-item mx-2 text-muted">|</li>
+                                <li class="list-inline-item">
+                                    <a class="footer-link text-decoration-none" asp-area="Admin" asp-controller="Dashboard" asp-action="Support">Support</a>
+                                </li>
+                            </ul>
                         </div>
                     </div>
                 </div>

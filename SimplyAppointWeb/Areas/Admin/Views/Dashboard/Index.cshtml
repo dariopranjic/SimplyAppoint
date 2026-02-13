@@ -1,4 +1,8 @@
-﻿@{
+﻿@using SimplyAppoint.Models.ViewModels
+@using SimplyAppoint.Models.Enums
+@model DashboardVM
+
+@{
     ViewData["Title"] = "Dashboard";
     Layout = "_AdminLayout";
 }
@@ -9,194 +13,100 @@
     </div>
 
     <div class="col-auto ms-auto text-end mt-n1">
-        <a asp-area="Admin" asp-controller="Calendar" asp-action="Index" class="btn btn-light bg-white me-2">
-            Open Calendar
-        </a>
-        <a asp-area="Admin" asp-controller="Appointments" asp-action="Index" class="btn btn-primary">
-            View Appointments
-        </a>
+        <a asp-area="Admin" asp-controller="Calendar" asp-action="Index" class="btn btn-light bg-white me-2">Open Calendar</a>
+        <a asp-area="Admin" asp-controller="Appointments" asp-action="Index" class="btn btn-primary">View Appointments</a>
     </div>
 </div>
 
+@* --- STAT CARDS --- *@
 <div class="row">
     <div class="col-sm-6 col-xl-3">
         <div class="card">
             <div class="card-body">
                 <div class="row">
-                    <div class="col mt-0">
-                        <h5 class="card-title">Today’s Appointments</h5>
-                    </div>
-                    <div class="col-auto">
-                        <div class="stat text-primary">
-                            <i class="align-middle" data-feather="clock"></i>
-                        </div>
-                    </div>
+                    <div class="col mt-0"><h5 class="card-title">Today’s Appointments</h5></div>
+                    <div class="col-auto"><div class="stat text-primary"><i data-feather="clock"></i></div></div>
                 </div>
-                <h1 class="mt-1 mb-3">8</h1>
-                <div class="mb-0">
-                    <span class="badge badge-success-light">+2</span>
-                    <span class="text-muted">vs yesterday</span>
-                </div>
+                <h1 class="mt-1 mb-3">@Model.TodayAppointmentsCount</h1>
             </div>
         </div>
     </div>
-
     <div class="col-sm-6 col-xl-3">
         <div class="card">
             <div class="card-body">
                 <div class="row">
-                    <div class="col mt-0">
-                        <h5 class="card-title">Upcoming (7 days)</h5>
-                    </div>
-                    <div class="col-auto">
-                        <div class="stat text-primary">
-                            <i class="align-middle" data-feather="calendar"></i>
-                        </div>
-                    </div>
+                    <div class="col mt-0"><h5 class="card-title">Upcoming (7 days)</h5></div>
+                    <div class="col-auto"><div class="stat text-primary"><i data-feather="calendar"></i></div></div>
                 </div>
-                <h1 class="mt-1 mb-3">42</h1>
-                <div class="mb-0">
-                    <span class="badge badge-success-light">+6%</span>
-                    <span class="text-muted">vs last week</span>
-                </div>
+                <h1 class="mt-1 mb-3">@Model.UpcomingSevenDaysCount</h1>
             </div>
         </div>
     </div>
-
     <div class="col-sm-6 col-xl-3">
         <div class="card">
             <div class="card-body">
                 <div class="row">
-                    <div class="col mt-0">
-                        <h5 class="card-title">Cancellations (7 days)</h5>
-                    </div>
-                    <div class="col-auto">
-                        <div class="stat text-primary">
-                            <i class="align-middle" data-feather="x-circle"></i>
-                        </div>
-                    </div>
+                    <div class="col mt-0"><h5 class="card-title">Cancellations (7 days)</h5></div>
+                    <div class="col-auto"><div class="stat text-primary"><i data-feather="x-circle"></i></div></div>
                 </div>
-                <h1 class="mt-1 mb-3">3</h1>
-                <div class="mb-0">
-                    <span class="badge badge-danger-light">+1</span>
-                    <span class="text-muted">needs attention</span>
-                </div>
+                <h1 class="mt-1 mb-3">@Model.CancellationsSevenDays</h1>
             </div>
         </div>
     </div>
-
     <div class="col-sm-6 col-xl-3">
         <div class="card">
             <div class="card-body">
                 <div class="row">
-                    <div class="col mt-0">
-                        <h5 class="card-title">New Customers (30 days)</h5>
-                    </div>
-                    <div class="col-auto">
-                        <div class="stat text-primary">
-                            <i class="align-middle" data-feather="user-plus"></i>
-                        </div>
-                    </div>
+                    <div class="col mt-0"><h5 class="card-title">New Customers (30 days)</h5></div>
+                    <div class="col-auto"><div class="stat text-primary"><i data-feather="user-plus"></i></div></div>
                 </div>
-                <h1 class="mt-1 mb-3">27</h1>
-                <div class="mb-0">
-                    <span class="badge badge-success-light">+12%</span>
-                    <span class="text-muted">growth</span>
-                </div>
+                <h1 class="mt-1 mb-3">@Model.NewCustomersThirtyDays</h1>
             </div>
         </div>
     </div>
 </div>
 
-<!-- CHART + QUICK ACTIONS -->
 <div class="row">
+    @* --- CHART --- *@
     <div class="col-12 col-lg-8 d-flex">
         <div class="card flex-fill w-100">
             <div class="card-header">
                 <div class="float-end">
-                    <form class="row g-2">
-                        <div class="col-auto">
-                            <select class="form-select form-select-sm bg-light border-0">
-                                <option selected>Last 7 days</option>
-                                <option>Last 30 days</option>
-                                <option>This year</option>
-                            </select>
-                        </div>
-                    </form>
+                    <select id="chartFilter" class="form-select form-select-sm bg-light border-0">
+                        <option value="7" selected>Last 7 days</option>
+                        <option value="30">Last 30 days</option>
+                    </select>
                 </div>
                 <h5 class="card-title mb-0">Bookings Trend</h5>
             </div>
             <div class="card-body pt-2 pb-3">
-                <div class="chart chart-md">
-                    <canvas id="chart-bookings-trend"></canvas>
-                </div>
+                <div class="chart chart-md"><canvas id="chart-bookings-trend"></canvas></div>
             </div>
         </div>
     </div>
 
+    @* --- QUICK ACTIONS --- *@
     <div class="col-12 col-lg-4 d-flex">
         <div class="card flex-fill w-100">
-            <div class="card-header">
-                <h5 class="card-title mb-0">Quick Actions</h5>
-            </div>
-
+            <div class="card-header"><h5 class="card-title mb-0">Quick Actions</h5></div>
             <div class="card-body pt-2">
                 <div class="row g-2">
-                    <div class="col-6">
-                        <a asp-area="Admin" asp-controller="Appointments" asp-action="Index"
-                           class="btn btn-outline-primary w-100 d-flex align-items-center justify-content-center py-2">
-                            <i class="align-middle me-2" data-feather="calendar"></i>
-                            <span class="fw-semibold">Appointments</span>
-                        </a>
-                    </div>
-
-                    <div class="col-6">
-                        <a asp-area="Admin" asp-controller="Customers" asp-action="Index"
-                           class="btn btn-outline-primary w-100 d-flex align-items-center justify-content-center py-2">
-                            <i class="align-middle me-2" data-feather="users"></i>
-                            <span class="fw-semibold">Customers</span>
-                        </a>
-                    </div>
-
-                    <div class="col-6">
-                        <a asp-area="Admin" asp-controller="Services" asp-action="Index"
-                           class="btn btn-outline-primary w-100 d-flex align-items-center justify-content-center py-2">
-                            <i class="align-middle me-2" data-feather="briefcase"></i>
-                            <span class="fw-semibold">Services</span>
-                        </a>
-                    </div>
-
-                    <div class="col-6">
-                        <a asp-area="Admin" asp-controller="Settings" asp-action="Index"
-                           class="btn btn-outline-primary w-100 d-flex align-items-center justify-content-center py-2">
-                            <i class="align-middle me-2" data-feather="settings"></i>
-                            <span class="fw-semibold">Settings</span>
-                        </a>
-                    </div>
+                    <div class="col-6"><a asp-area="Admin" asp-controller="Appointments" asp-action="Index" class="btn btn-outline-primary w-100 py-2"><i class="me-2" data-feather="calendar"></i> Appointments</a></div>
+                    <div class="col-6"><a asp-area="Admin" asp-controller="Customers" asp-action="Index" class="btn btn-outline-primary w-100 py-2"><i class="me-2" data-feather="users"></i> Customers</a></div>
+                    <div class="col-6"><a asp-area="Admin" asp-controller="Services" asp-action="Index" class="btn btn-outline-primary w-100 py-2"><i class="me-2" data-feather="briefcase"></i> Services</a></div>
+                    <div class="col-6"><a asp-area="Admin" asp-controller="Settings" asp-action="Index" class="btn btn-outline-primary w-100 py-2"><i class="me-2" data-feather="settings"></i> Settings</a></div>
                 </div>
-
-                <hr class="my-3">
-
-                <div class="d-grid">
-                    <a asp-area="Admin" asp-controller="Calendar" asp-action="Index"
-                       class="btn btn-primary">
-                        <i class="align-middle me-2" data-feather="clock"></i>
-                        Open Today
-                    </a>
-                </div>
+                <hr class="my-3"><div class="d-grid"><a asp-area="Admin" asp-controller="Calendar" asp-action="Index" class="btn btn-primary">Open Today</a></div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- TABLE + SCHEDULE -->
 <div class="row">
+    @* --- NEXT APPOINTMENTS --- *@
     <div class="col-12 col-lg-8 d-flex">
         <div class="card flex-fill">
-            <div class="card-header">
-                <h5 class="card-title mb-0">Next Appointments</h5>
-            </div>
-
+            <div class="card-header"><h5 class="card-title mb-0">Next Appointments</h5></div>
             <table class="table table-hover my-0">
                 <thead>
                     <tr>
@@ -208,93 +118,49 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td>09:00</td>
-                        <td>Anna K.</td>
-                        <td class="d-none d-xl-table-cell">Haircut</td>
-                        <td class="d-none d-xl-table-cell">
-                            <span class="badge badge-success-light">Confirmed</span>
-                        </td>
-                        <td class="text-end">
-                            <a asp-area="Admin" asp-controller="Appointments" asp-action="Index" class="btn btn-light btn-sm">Open</a>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>10:30</td>
-                        <td>Marko P.</td>
-                        <td class="d-none d-xl-table-cell">Beard trim</td>
-                        <td class="d-none d-xl-table-cell">
-                            <span class="badge badge-warning-light">Pending</span>
-                        </td>
-                        <td class="text-end">
-                            <a asp-area="Admin" asp-controller="Appointments" asp-action="Index" class="btn btn-light btn-sm">Open</a>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>12:00</td>
-                        <td>Sara L.</td>
-                        <td class="d-none d-xl-table-cell">Nails</td>
-                        <td class="d-none d-xl-table-cell">
-                            <span class="badge badge-success-light">Confirmed</span>
-                        </td>
-                        <td class="text-end">
-                            <a asp-area="Admin" asp-controller="Appointments" asp-action="Index" class="btn btn-light btn-sm">Open</a>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>14:00</td>
-                        <td>Ivan M.</td>
-                        <td class="d-none d-xl-table-cell">Dog grooming</td>
-                        <td class="d-none d-xl-table-cell">
-                            <span class="badge badge-danger-light">Cancelled</span>
-                        </td>
-                        <td class="text-end">
-                            <a asp-area="Admin" asp-controller="Appointments" asp-action="Index" class="btn btn-light btn-sm">Open</a>
-                        </td>
-                    </tr>
+                    @foreach (var appt in Model.NextAppointments)
+                    {
+                        <tr>
+                            <td>@appt.Time</td>
+                            <td>@appt.CustomerName</td>
+                            <td class="d-none d-xl-table-cell">@appt.ServiceName</td>
+                            <td class="d-none d-xl-table-cell"><span class="badge @(appt.Status == AppointmentStatus.Confirmed ? "badge-success-light" : "badge-warning-light")">@appt.Status</span></td>
+                            <td class="text-end"><a asp-area="Admin" asp-controller="Appointments" asp-action="Details" asp-route-id="@appt.Id" class="btn btn-light btn-sm">Open</a></td>
+                        </tr>
+                    }
                 </tbody>
             </table>
-
         </div>
     </div>
 
+    @* --- TODAY'S SCHEDULE (FIXED CS1503) --- *@
     <div class="col-12 col-lg-4 d-flex">
         <div class="card flex-fill w-100">
-            <div class="card-header">
-                <h5 class="card-title mb-0">Today's Schedule</h5>
-            </div>
+            <div class="card-header"><h5 class="card-title mb-0">Today's Schedule</h5></div>
             <div class="card-body">
+                @{
+                    void RenderScheduleBar(string timeLabel, int percentage)
+                    {
+                        string status = percentage >= 90 ? "Busy" : (percentage >= 50 ? "Almost full" : "Available");
+                        string badgeClass = percentage >= 90 ? "badge-danger-light" : (percentage >= 50 ? "badge-warning-light" : "badge-success-light");
+                        string progressClass = percentage >= 90 ? "bg-danger" : (percentage >= 50 ? "bg-warning" : "bg-success");
 
-                <div class="mb-3">
-                    <div class="d-flex justify-content-between">
-                        <span>09:00 – 12:00</span>
-                        <span class="badge badge-success-light">Busy</span>
-                    </div>
-                    <div class="progress progress-sm mt-1">
-                        <div class="progress-bar bg-success" style="width: 100%"></div>
-                    </div>
-                </div>
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between">
+                                <span>@timeLabel</span>
+                                <span class="badge @badgeClass">@status</span>
+                            </div>
+                            <div class="progress progress-sm mt-1">
+                                <div class="progress-bar @progressClass" style="width: @percentage%"></div>
+                            </div>
+                        </div>
+                    }
 
-                <div class="mb-3">
-                    <div class="d-flex justify-content-between">
-                        <span>12:00 – 15:00</span>
-                        <span class="badge badge-warning-light">Almost full</span>
-                    </div>
-                    <div class="progress progress-sm mt-1">
-                        <div class="progress-bar bg-warning" style="width: 80%"></div>
-                    </div>
-                </div>
-
-                <div class="mb-3">
-                    <div class="d-flex justify-content-between">
-                        <span>15:00 – 18:00</span>
-                        <span class="badge badge-primary-light">Available</span>
-                    </div>
-                    <div class="progress progress-sm mt-1">
-                        <div class="progress-bar bg-primary" style="width: 40%"></div>
-                    </div>
-                </div>
-
+                    // FIX: Use code blocks {} to call void local functions instead of @
+                    RenderScheduleBar("09:00 – 12:00", Model.MorningOccupancy);
+                    RenderScheduleBar("12:00 – 15:00", Model.AfternoonOccupancy);
+                    RenderScheduleBar("15:00 – 18:00", Model.EveningOccupancy);
+                }
             </div>
         </div>
     </div>
@@ -303,21 +169,29 @@
 @section Scripts {
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            var canvas = document.getElementById("chart-bookings-trend");
-            if (!canvas) return;
+            const ctx = document.getElementById("chart-bookings-trend");
+            const datasets = {
+                "7": { labels: @Json.Serialize(Model.ChartLabels7Days), data: @Json.Serialize(Model.ChartValues7Days) },
+                "30": { labels: @Json.Serialize(Model.ChartLabels30Days), data: @Json.Serialize(Model.ChartValues30Days) }
+            };
 
-            new Chart(canvas, {
+            const myChart = new Chart(ctx, {
                 type: "line",
                 data: {
-                    labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+                    labels: datasets["30"].labels,
                     datasets: [{
                         label: "Bookings",
                         fill: true,
-                        borderColor: window.theme.primary,
-                        backgroundColor: "rgba(0, 0, 0, 0)",
-                        data: [6, 8, 5, 10, 12, 7, 9],
-                        tension: 0.35,
-                        pointRadius: 3
+                        backgroundColor: "rgba(59, 125, 221, 0.05)",
+                        borderColor: "#3b7ddd",
+                        data: datasets["30"].data,
+
+                        // CLEAN GRAPH SETTINGS:
+                        tension: 0.4,
+                        cubicInterpolationMode: 'monotone', // Makes lines smooth, not jagged
+                        pointRadius: 2,                     // Smaller points for a cleaner look
+                        pointHoverRadius: 5,
+                        borderWidth: 3
                     }]
                 },
                 options: {
@@ -325,18 +199,23 @@
                     plugins: { legend: { display: false } },
                     scales: {
                         y: {
-                            ticks: { stepSize: 2 }
+                            beginAtZero: true,
+                            ticks: { stepSize: 1, precision: 0 },
+                            grid: { borderDash: [5, 5] }
                         },
-                        x: {
-                            grid: { display: false }
-                        }
+                        x: { grid: { display: false } }
                     }
                 }
             });
 
-            if (window.feather) {
-                window.feather.replace();
-            }
+            document.getElementById("chartFilter").addEventListener("change", function() {
+                const newData = datasets[this.value];
+                myChart.data.labels = newData.labels;
+                myChart.data.datasets[0].data = newData.data;
+                myChart.update();
+            });
+
+            if (window.feather) { window.feather.replace(); }
         });
     </script>
 }

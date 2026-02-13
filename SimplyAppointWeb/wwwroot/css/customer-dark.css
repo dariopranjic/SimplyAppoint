@@ -250,6 +250,8 @@ body {
     transition: transform .08s ease, background .12s ease, border-color .12s ease;
 }
 
+
+
     .customer-pill:hover {
         transform: translateY(-1px);
         background: rgba(255, 255, 255, 0.15);

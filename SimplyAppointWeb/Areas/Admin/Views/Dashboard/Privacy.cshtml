@@ -1,6 +1,71 @@
 ﻿@{
     ViewData["Title"] = "Privacy Policy";
+    Layout = "_AdminLayout";
 }
-<h1>@ViewData["Title"]</h1>
 
-<p>Use this page to detail your site's privacy policy.</p>
+<div class="mb-3">
+    <h1 class="h3 d-inline align-middle">Privacy Policy</h1>
+    <p class="text-muted">Last updated: @DateTime.Now.ToString("MMMM dd, yyyy")</p>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Introduction</h5>
+            </div>
+            <div class="card-body">
+                <p>Welcome to <strong>SimplyAppoint</strong>. We value your privacy and the security of your data. This Privacy Policy explains how we collect, use, and protect your information when you use our appointment management system.</p>
+
+                <hr />
+
+                <h5 class="fw-bold">1. Information We Collect</h5>
+                <p>To provide our services, we collect the following types of information:</p>
+                <ul>
+                    <li><strong>Account Information:</strong> Business name, email address, and login credentials.</li>
+                    <li><strong>Customer Data:</strong> Name, phone numbers, and appointment history of your clients.</li>
+                    <li><strong>Usage Data:</strong> Information on how you interact with the dashboard to help us improve performance.</li>
+                </ul>
+
+                <h5 class="fw-bold mt-4">2. How We Use Your Information</h5>
+                <p>We use the collected data to:</p>
+                <ul>
+                    <li>Facilitate the scheduling and management of appointments.</li>
+                    <li>Send automated notifications to customers (if enabled).</li>
+                    <li>Provide technical support and ensure system security.</li>
+                </ul>
+
+                <h5 class="fw-bold mt-4">3. Data Storage and Security</h5>
+                <p>Your data is stored securely using industry-standard encryption. We do not sell your personal or customer data to third parties. Access to your data is restricted to authorized personnel only for the purpose of maintaining the service.</p>
+
+                <h5 class="fw-bold mt-4">4. Cookies</h5>
+                <p>SimplyAppoint uses cookies to keep you logged in and to remember your dashboard preferences. You can disable cookies in your browser settings, but some features of the app may stop working.</p>
+
+                <h5 class="fw-bold mt-4">5. Your Rights</h5>
+                <p>You have the right to access, export, or delete your account and all associated customer data at any time through the <strong>Settings</strong> panel or by contacting support.</p>
+
+                <h5 class="fw-bold mt-4">6. Contact Us</h5>
+                <p>If you have any questions regarding this policy, please reach out to our team at support@simplyappoint.com.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        /* Custom spacing for policy readability */
+        .card-body p {
+            line-height: 1.6;
+            color: #adb5bd;
+        }
+
+        .card-body ul li {
+            margin-bottom: 8px;
+            color: #adb5bd;
+        }
+
+        .fw-bold {
+            color: #e9ecef;
+        }
+    </style>
+}

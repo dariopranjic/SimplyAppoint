@@ -1,0 +1,117 @@
+﻿@{
+    ViewData["Title"] = "Support";
+    Layout = "_AdminLayout";
+}
+
+<div class="mb-3">
+    <h1 class="h3 d-inline align-middle">Help & Support</h1>
+    <p class="text-muted">How can we help you with SimplyAppoint today?</p>
+</div>
+
+<div class="row">
+    <div class="col-12 col-lg-7">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Frequently Asked Questions</h5>
+            </div>
+            <div class="card-body">
+                <div class="accordion" id="faqAccordion">
+
+                    <div class="accordion-item border-secondary bg-transparent">
+                        <h2 class="accordion-header" id="headingOne">
+                            <button class="accordion-button collapsed bg-transparent text-white" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne">
+                                How do I add a new service?
+                            </button>
+                        </h2>
+                        <div id="collapseOne" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body text-muted">
+                                Navigate to the <strong>Services</strong> tab in the sidebar and click the "Add New Service" button. You can set the duration, price, and description there.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item border-secondary bg-transparent">
+                        <h2 class="accordion-header" id="headingTwo">
+                            <button class="accordion-button collapsed bg-transparent text-white" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo">
+                                Can I sync my calendar with Google?
+                            </button>
+                        </h2>
+                        <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body text-muted">
+                                Currently, SimplyAppoint manages its own internal calendar. External sync features are planned for a future update.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item border-secondary bg-transparent">
+                        <h2 class="accordion-header" id="headingThree">
+                            <button class="accordion-button collapsed bg-transparent text-white" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree">
+                                How do I change my business hours?
+                            </button>
+                        </h2>
+                        <div id="collapseThree" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body text-muted">
+                                Go to <strong>Settings</strong> and look for the "Business Hours" section to adjust your weekly availability.
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-lg-5">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Contact Our Team</h5>
+            </div>
+            <div class="card-body">
+                <form>
+                    <div class="mb-3">
+                        <label class="form-label">Subject</label>
+                        <select class="form-select border-secondary">
+                            <option>Technical Issue</option>
+                            <option>Billing Question</option>
+                            <option>Feature Request</option>
+                            <option>Other</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Message</label>
+                        <textarea class="form-control border-secondary" rows="5" placeholder="Describe your issue in detail..."></textarea>
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">Send Message</button>
+                    </div>
+                </form>
+
+                <hr class="my-4" />
+
+                <div class="text-center">
+                    <p class="mb-2 text-muted">Or email us directly at:</p>
+                    <a href="mailto:support@simplyappoint.com" class="h5 text-primary">support@simplyappoint.com</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        /* Styling the accordion for the Dark Theme */
+        .accordion-button:not(.collapsed) {
+            background-color: rgba(59, 125, 221, 0.1);
+            color: #3b7ddd;
+            box-shadow: none;
+        }
+
+        .accordion-button::after {
+            filter: invert(1); /* Makes the arrow white */
+        }
+
+        .accordion-item {
+            border-bottom: 1px solid #3d4957 !important;
+        }
+    </style>
+}
