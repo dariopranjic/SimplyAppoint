@@ -44,5 +44,6 @@ namespace SimplyAppoint.Models
         public ICollection<Service> Services { get; set; } = new List<Service>();
         public ICollection<WorkingHours> WorkingHours { get; set; } = new List<WorkingHours>();
         public BookingPolicy? BookingPolicy { get; set; }
+        public ICollection<TimeOff> TimeOffs { get; set; } = new List<TimeOff>();
     }
 }

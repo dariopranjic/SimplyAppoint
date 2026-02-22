@@ -29,8 +29,6 @@ namespace SimplyAppointWeb.Controllers
 
             var appointments = _unitOfWork.Appointment.GetAll(includeProperties: "Service").ToList();
 
-            // FIXED: Removed the EF.Property check that caused the Exception in your image.
-            // This now gets the total count safely.
             var totalUsersCount = await _userManager.Users.CountAsync();
 
             var model = new DashboardVM
