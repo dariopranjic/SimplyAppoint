@@ -73,7 +73,7 @@
             <div class="card-header">
                 <div class="float-end">
                     <select id="chartFilter" class="form-select form-select-sm bg-light border-0">
-                        <option value="7" selected>Last 7 days</option>
+                        <option value="7" selected="selected">Last 7 days</option>
                         <option value="30">Last 30 days</option>
                     </select>
                 </div>
@@ -133,7 +133,7 @@
         </div>
     </div>
 
-    @* --- TODAY'S SCHEDULE (FIXED CS1503) --- *@
+    @* --- TODAY'S SCHEDULE --- *@
     <div class="col-12 col-lg-4 d-flex">
         <div class="card flex-fill w-100">
             <div class="card-header"><h5 class="card-title mb-0">Today's Schedule</h5></div>
@@ -156,7 +156,6 @@
                         </div>
                     }
 
-                    // FIX: Use code blocks {} to call void local functions instead of @
                     RenderScheduleBar("09:00 – 12:00", Model.MorningOccupancy);
                     RenderScheduleBar("12:00 – 15:00", Model.AfternoonOccupancy);
                     RenderScheduleBar("15:00 – 18:00", Model.EveningOccupancy);
@@ -168,8 +167,10 @@
 
 @section Scripts {
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
+        document.addEventListener("DOMContentLoaded", function() {
             const ctx = document.getElementById("chart-bookings-trend");
+
+            // Fixed: Standardizing on 7 days as the initial state
             const datasets = {
                 "7": { labels: @Json.Serialize(Model.ChartLabels7Days), data: @Json.Serialize(Model.ChartValues7Days) },
                 "30": { labels: @Json.Serialize(Model.ChartLabels30Days), data: @Json.Serialize(Model.ChartValues30Days) }
@@ -178,18 +179,16 @@
             const myChart = new Chart(ctx, {
                 type: "line",
                 data: {
-                    labels: datasets["30"].labels,
+                    labels: datasets["7"].labels,
                     datasets: [{
                         label: "Bookings",
                         fill: true,
                         backgroundColor: "rgba(59, 125, 221, 0.05)",
                         borderColor: "#3b7ddd",
-                        data: datasets["30"].data,
-
-                        // CLEAN GRAPH SETTINGS:
+                        data: datasets["7"].data,
                         tension: 0.4,
-                        cubicInterpolationMode: 'monotone', // Makes lines smooth, not jagged
-                        pointRadius: 2,                     // Smaller points for a cleaner look
+                        cubicInterpolationMode: 'monotone',
+                        pointRadius: 3,
                         pointHoverRadius: 5,
                         borderWidth: 3
                     }]
@@ -200,7 +199,11 @@
                     scales: {
                         y: {
                             beginAtZero: true,
-                            ticks: { stepSize: 1, precision: 0 },
+                            min: 0, 
+                            ticks: {
+                                stepSize: 1,
+                                precision: 0
+                            },
                             grid: { borderDash: [5, 5] }
                         },
                         x: { grid: { display: false } }
