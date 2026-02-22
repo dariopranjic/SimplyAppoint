@@ -3,163 +3,104 @@
     Layout = "_AdminLayout";
 }
 
-<div class="support-wrapper pb-5">
-
-    <div class="support-hero mb-5 pt-4">
-        <div class="row">
-            <div class="col-lg-10 col-xl-8">
-                <h1 class="support-main-title fw-bold text-white mb-3">How can we help?</h1>
-                <p class="support-subtitle mb-4">Search our knowledge base or reach out to our dedicated support team.</p>
-
-                <div class="search-container">
-                    <div class="search-glass-wrapper">
-                        <i data-feather="search" class="search-icon"></i>
-                        <input type="text" id="faqSearch" class="search-input" placeholder="Search for help (e.g., 'billing', 'calendar', 'hours')...">
-                    </div>
-                </div>
+<div class="support-dashboard">
+    <div class="row align-items-center mb-5">
+        <div class="col-lg-7 mb-4 mb-lg-0">
+            <h1 class="support-h1">Support Center</h1>
+            <p class="support-subtitle">How can our team assist you today?</p>
+        </div>
+        <div class="col-lg-5">
+            <div class="pro-search">
+                <i data-feather="search" class="search-icon"></i>
+                <input type="text" id="faqSearch" class="pro-search-input" placeholder="Search knowledge base...">
             </div>
         </div>
     </div>
 
-    <div class="row g-4">
-
-        <div class="col-xl-8">
-
-            <div class="row g-3 mb-5">
-                <div class="col-md-4">
-                    <div class="category-card p-4 text-center h-100">
-                        <div class="icon-circle mb-3 mx-auto bg-soft-primary">
-                            <i data-feather="zap" class="text-primary"></i>
-                        </div>
-                        <h6 class="fw-bold mb-2 text-white">Getting Started</h6>
-                        <p class="small text-muted-custom mb-0">Learn the core features and dashboard basics.</p>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="category-card p-4 text-center h-100">
-                        <div class="icon-circle mb-3 mx-auto bg-soft-success">
-                            <i data-feather="credit-card" class="text-success"></i>
-                        </div>
-                        <h6 class="fw-bold mb-2 text-white">Billing & Plans</h6>
-                        <p class="small text-muted-custom mb-0">Manage your subscription, invoices, and payments.</p>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="category-card p-4 text-center h-100">
-                        <div class="icon-circle mb-3 mx-auto bg-soft-warning">
-                            <i data-feather="settings" class="text-warning"></i>
-                        </div>
-                        <h6 class="fw-bold mb-2 text-white">Account Settings</h6>
-                        <p class="small text-muted-custom mb-0">Security, team permissions, and profile edits.</p>
-                    </div>
-                </div>
+    <div class="row g-4 g-xl-5">
+        <div class="col-xl-7">
+            <div class="mb-4">
+                <span class="support-badge">Knowledge Base</span>
+                <h3 class="support-h3 mt-2">Common Questions</h3>
             </div>
 
-            <div class="faq-header-container mb-4">
-                <h4 class="fw-bold text-white mb-1">Frequently Asked Questions</h4>
-                <p class="small text-muted-custom">Quick answers to the most common queries.</p>
-            </div>
-
-            <div class="accordion modern-accordion" id="supportAccordion">
-
-                <div class="accordion-item mb-3 rounded-3 overflow-hidden border-0">
+            <div class="accordion pro-accordion" id="faqAccordion">
+                <div class="accordion-item pro-accordion-item">
                     <h2 class="accordion-header">
-                        <button class="accordion-button collapsed px-4 py-4" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
-                            <span class="faq-number me-3">01</span> How do I add a new service?
+                        <button class="accordion-button pro-accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#f1">
+                            <span class="faq-num">01</span> How do I add a new service?
                         </button>
                     </h2>
-                    <div id="faq1" class="accordion-collapse collapse" data-bs-parent="#supportAccordion">
-                        <div class="accordion-body px-5 pb-4 pt-0 text-muted-custom">
-                            Navigate to the <span class="badge bg-dark border border-secondary text-white">Services</span> tab in the sidebar and click the <strong>"Add New Service"</strong> button. You can customize the duration, price, and descriptive details for your clients.
+                    <div id="f1" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body pro-accordion-body">
+                            Navigate to the <strong>Services</strong> tab on your dashboard. Click the "Add New" button to set up your pricing, duration, and staff assignments.
                         </div>
                     </div>
                 </div>
 
-                <div class="accordion-item mb-3 rounded-3 overflow-hidden border-0">
+                <div class="accordion-item pro-accordion-item">
                     <h2 class="accordion-header">
-                        <button class="accordion-button collapsed px-4 py-4" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
-                            <span class="faq-number me-3">02</span> Can I sync my calendar with Google?
+                        <button class="accordion-button pro-accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#f2">
+                            <span class="faq-num">02</span> Is Google Calendar synchronization available?
                         </button>
                     </h2>
-                    <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#supportAccordion">
-                        <div class="accordion-body px-5 pb-4 pt-0 text-muted-custom">
-                            Currently, <strong>SimplyAppoint</strong> uses an optimized internal calendar. 2-way sync with Google and Outlook is on our roadmap for a future major release.
+                    <div id="f2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body pro-accordion-body">
+                            We are currently finalizing our 2-way sync with <strong>Google and Outlook</strong>. This feature is expected to roll out in the next major update.
                         </div>
                     </div>
                 </div>
 
-                <div class="accordion-item mb-3 rounded-3 overflow-hidden border-0">
+                <div class="accordion-item pro-accordion-item">
                     <h2 class="accordion-header">
-                        <button class="accordion-button collapsed px-4 py-4" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
-                            <span class="faq-number me-3">03</span> How do I change my business hours?
+                        <button class="accordion-button pro-accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#f3">
+                            <span class="faq-num">03</span> How can I update my business hours?
                         </button>
                     </h2>
-                    <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#supportAccordion">
-                        <div class="accordion-body px-5 pb-4 pt-0 text-muted-custom">
-                            Go to <span class="badge bg-dark border border-secondary text-white">Settings</span> and select <strong>"Business Hours."</strong> You can define intervals for each day or set specific days as "Closed."
+                    <div id="f3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body pro-accordion-body">
+                            Go to <strong>Settings > Business Profile</strong>. You can set daily opening/closing times and even add specific "Break Times" for your staff.
                         </div>
                     </div>
                 </div>
-
-                <div class="accordion-item mb-3 rounded-3 overflow-hidden border-0">
-                    <h2 class="accordion-header">
-                        <button class="accordion-button collapsed px-4 py-4" type="button" data-bs-toggle="collapse" data-bs-target="#faq4">
-                            <span class="faq-number me-3">04</span> How do refunds work?
-                        </button>
-                    </h2>
-                    <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#supportAccordion">
-                        <div class="accordion-body px-5 pb-4 pt-0 text-muted-custom">
-                            Refunds should be processed via Stripe or PayPal directly. SimplyAppoint will update the appointment status automatically once finalized.
-                        </div>
-                    </div>
-                </div>
-
             </div>
         </div>
 
-        <div class="col-xl-4">
-            <div class="contact-sidebar p-4 p-md-5 rounded-4 shadow-lg h-100">
-                <div class="mb-4">
-                    <div class="d-flex align-items-center mb-3">
-                        <div class="icon-square bg-primary-soft me-3">
-                            <i data-feather="message-circle" class="text-primary"></i>
-                        </div>
-                        <h4 class="fw-bold text-white mb-0">Submit a Ticket</h4>
+        <div class="col-xl-5">
+            <div class="pro-ticket-card">
+                <div class="d-flex align-items-center mb-1">
+                    <div class="ticket-icon me-3">
+                        <i data-feather="message-square"></i>
                     </div>
-                    <p class="text-white-50 small mb-0">Response time: <strong class="text-success">Under 45m</strong></p>
+                    <h3 class="support-h3 mb-0">Submit a Ticket</h3>
                 </div>
+                <p class="support-success-text mb-4">Average response time: &lt; 45 minutes</p>
 
                 <form id="supportForm">
-                    <div class="mb-4">
-                        <label class="form-label small text-white-50 text-uppercase fw-bold ls-1">Issue Category</label>
-                        <input list="topicOptions" class="form-control custom-input py-3" placeholder="Select or type a topic...">
-                        <datalist id="topicOptions">
-                            <option value="Technical Issue"></option>
-                            <option value="Billing Question"></option>
-                            <option value="Feature Request"></option>
-                            <option value="Account Access"></option>
-                            <option value="Bug Report"></option>
-                        </datalist>
+                    <div class="mb-3">
+                        <label class="pro-label">ISSUE CATEGORY</label>
+                        <select class="form-select pro-input">
+                            <!option selected disabled>Choose a topic...</!option>
+                            <!option value="tech">Technical Support</!option>
+                            <!option value="billing">Billing Inquiry</!option>
+                            <!option value="feature">Feature Request</!option>
+                            <!option value="other">General Question</!option>
+                        </select>
                     </div>
 
                     <div class="mb-4">
-                        <label class="form-label small text-white-50 text-uppercase fw-bold ls-1">Message Details</label>
-                        <textarea class="form-control custom-input" rows="7" placeholder="Provide details about your issue..."></textarea>
+                        <label class="pro-label">MESSAGE DETAILS</label>
+                        <textarea class="form-control pro-input" rows="5" placeholder="Describe your problem in detail..."></textarea>
                     </div>
 
-                    <button type="submit" class="btn btn-primary btn-lg w-100 mb-4 py-3 fw-bold ticket-btn shadow-sm">
-                        <i data-feather="send" class="me-2"></i> Send Message
+                    <button type="submit" class="pro-btn-primary w-100">
+                        <i data-feather="send" class="me-2" style="width: 16px;"></i> Dispatch Ticket
                     </button>
                 </form>
 
-                <div class="divider text-center mb-4">
-                    <span class="px-3 text-white-50 small fw-bold">OR DIRECT CONTACT</span>
-                </div>
-
-                <div class="email-box p-3 rounded-3 text-center border border-secondary border-opacity-10">
-                    <a href="mailto:support@simplyappoint.com" class="text-decoration-none d-block text-white fw-bold">
-                        support@simplyappoint.com
-                    </a>
+                <div class="text-center mt-4 pt-3 border-top pro-border">
+                    <span class="support-muted d-block small mb-1">Urgent matter? Reach out directly:</span>
+                    <a href="mailto:support@simplyappoint.com" class="pro-link">support@simplyappoint.com</a>
                 </div>
             </div>
         </div>
@@ -168,222 +109,219 @@
 
 @section Styles {
     <style>
-        :root {
-            --glass-bg: rgba(255, 255, 255, 0.03);
-            --glass-border: rgba(255, 255, 255, 0.1);
-            --primary-glow: rgba(59, 125, 221, 0.35);
-            --transition-main: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        .support-dashboard {
+            background-color: transparent;
+            padding: 1rem;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
         }
 
-        /* TEXT VISIBILITY FIXES */
-        .text-muted-custom {
-            color: #a5acb3;
+            .support-dashboard .support-h1 {
+                color: #ffffff !important;
+                font-size: 2.5rem;
+                font-weight: 800;
+                margin: 0;
+                letter-spacing: -0.5px;
+            }
+
+            .support-dashboard .support-h3 {
+                color: #ffffff !important;
+                font-size: 1.5rem;
+                font-weight: 700;
+                margin: 0;
+            }
+
+            .support-dashboard .support-subtitle {
+                color: #38bdf8 !important;
+                font-size: 1.1rem;
+                margin-top: 5px;
+                font-weight: 500;
+            }
+
+            .support-dashboard .support-success-text {
+                color: #10b981 !important;
+                font-size: 0.85rem;
+                font-weight: 600;
+                margin-left: 55px;
+            }
+
+            .support-dashboard .support-muted {
+                color: #94a3b8 !important;
+            }
+
+        .support-badge {
+            display: inline-block;
+            background: rgba(56, 189, 248, 0.1);
+            color: #38bdf8;
+            padding: 4px 12px;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
         }
 
-        .ls-1 {
-            letter-spacing: 0.5px;
-        }
-
-        .support-main-title {
-            font-size: 2.75rem;
-            letter-spacing: -1px;
-            color: #ffffff !important;
-        }
-
-        .support-subtitle {
-            font-size: 1.15rem;
-            color: #d1d4d7;
-            max-width: 600px;
-        }
-
-        /* SEARCH BAR: Precise layout and focus logic */
-        .search-glass-wrapper {
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
+        .pro-search {
+            background-color: #1e293b;
+            border: 1px solid #334155;
             border-radius: 12px;
             display: flex;
             align-items: center;
-            padding: 4px 22px;
-            transition: var(--transition-main);
-            max-width: 580px; /* Constrained size to prevent "too big" feel */
+            padding: 0 16px;
+            height: 50px;
+            transition: all 0.2s ease;
         }
 
-            .search-glass-wrapper:focus-within {
-                border-color: #3b7ddd;
-                background: rgba(59, 125, 221, 0.05);
-                box-shadow: 0 0 20px var(--primary-glow);
+            .pro-search:focus-within {
+                border-color: #3b82f6;
+                box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
             }
 
-        .search-icon {
-            color: #3b7ddd;
-            width: 18px;
-            margin-right: 15px;
-        }
+            .pro-search .search-icon {
+                color: #94a3b8;
+                width: 18px;
+            }
 
-        .search-input {
-            background: transparent !important;
-            border: none !important;
-            color: #ffffff !important;
+        .pro-search-input {
+            background: transparent;
+            border: none;
+            color: #ffffff;
             width: 100%;
-            padding: 14px 0;
-            outline: none !important;
-            box-shadow: none !important; /* FIXED: Removes browser double-glow */
-            font-size: 1.05rem;
+            padding-left: 12px;
+            font-size: 0.95rem;
+            outline: none;
         }
 
-        /* CARDS & ACCORDION */
-        .category-card {
-            background: #222e3c;
-            border: 1px solid var(--glass-border);
-            border-radius: 16px;
-            transition: var(--transition-main);
-            cursor: pointer;
-        }
-
-            .category-card:hover {
-                transform: translateY(-5px);
-                border-color: #3b7ddd;
-                background: rgba(59, 125, 221, 0.02);
+            .pro-search-input::placeholder {
+                color: #64748b;
             }
 
-        .icon-circle {
-            width: 52px;
-            height: 52px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        .pro-accordion-item {
+            background-color: #1e293b !important;
+            border: 1px solid #334155 !important;
+            border-radius: 12px !important;
+            margin-bottom: 12px;
+            overflow: hidden;
         }
 
-        .bg-soft-primary {
-            background: rgba(59, 125, 221, 0.12);
-        }
-
-        .bg-soft-success {
-            background: rgba(28, 187, 140, 0.12);
-        }
-
-        .bg-soft-warning {
-            background: rgba(252, 185, 44, 0.12);
-        }
-
-        .modern-accordion .accordion-item {
-            background: #222e3c;
-            border: 1px solid var(--glass-border) !important;
-        }
-
-        .modern-accordion .accordion-button {
-            background: transparent !important;
-            color: #f8f9fa !important;
-            font-weight: 500;
+        .pro-accordion-button {
+            background-color: transparent !important;
+            color: #f8fafc !important;
+            font-weight: 600;
+            padding: 18px 24px;
             box-shadow: none !important;
         }
 
-            .modern-accordion .accordion-button:not(.collapsed) {
-                color: #3b7ddd !important;
+            .pro-accordion-button:not(.collapsed) {
+                color: #3b82f6 !important;
+                background-color: rgba(59, 130, 246, 0.05) !important;
+                border-bottom: 1px solid #334155;
             }
 
-        .faq-number {
-            font-size: 0.8rem;
-            opacity: 0.4;
+        .faq-num {
+            color: #3b82f6;
             font-family: monospace;
+            font-size: 1.1rem;
+            margin-right: 12px;
+            opacity: 0.8;
         }
 
-        /* SIDEBAR POLISHING */
-        .contact-sidebar {
-            background: linear-gradient(165deg, #222e3c 0%, #1a232d 100%);
-            border: 1px solid var(--glass-border);
+        .pro-accordion-body {
+            color: #cbd5e1 !important;
+            padding: 20px 24px;
+            line-height: 1.6;
+            font-size: 0.95rem;
         }
 
-        .icon-square {
-            width: 42px;
-            height: 42px;
+            .pro-accordion-body strong {
+                color: #ffffff !important;
+            }
+
+
+        .pro-ticket-card {
+            background-color: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .ticket-icon {
+            background-color: #3b82f6;
+            color: #ffffff;
+            width: 40px;
+            height: 40px;
             display: flex;
             align-items: center;
             justify-content: center;
             border-radius: 10px;
         }
 
-        .custom-input {
-            background: #1a232d !important;
-            border: 1px solid var(--glass-border) !important;
-            color: #fff !important;
-            transition: var(--transition-main);
+        .pro-label {
+            color: #94a3b8;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            display: block;
         }
 
-            .custom-input:focus {
-                border-color: #3b7ddd !important;
-                box-shadow: 0 0 0 4px rgba(59, 125, 221, 0.15) !important;
+        .pro-input {
+            background-color: #0f172a !important;
+            border: 1px solid #334155 !important;
+            color: #ffffff !important;
+            border-radius: 8px;
+            padding: 12px 16px;
+            font-size: 0.95rem;
+        }
+
+            .pro-input:focus {
+                border-color: #3b82f6 !important;
+                box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2) !important;
+                outline: none;
             }
 
-        .ticket-btn {
-            background: #3b7ddd;
+        .pro-btn-primary {
+            background-color: #3b82f6;
+            color: #ffffff;
             border: none;
-            transition: var(--transition-main);
+            border-radius: 8px;
+            padding: 14px;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: background-color 0.2s;
         }
 
-            .ticket-btn:hover {
-                background: #2e66b8;
-                transform: translateY(-2px);
-                box-shadow: 0 8px 20px rgba(59, 125, 221, 0.4);
+            .pro-btn-primary:hover {
+                background-color: #2563eb;
             }
 
-        .bg-primary-soft {
-            background: rgba(59, 125, 221, 0.1);
+        .pro-border {
+            border-color: #334155 !important;
         }
 
-        .divider {
-            display: flex;
-            align-items: center;
+        .pro-link {
+            color: #3b82f6;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.05rem;
         }
 
-            .divider::before, .divider::after {
-                content: "";
-                flex: 1;
-                height: 1px;
-                background: var(--glass-border);
-            }
-
-        .email-box {
-            background: rgba(0,0,0,0.15);
-            transition: var(--transition-main);
-        }
-
-            .email-box:hover {
-                border-color: #3b7ddd !important;
-                background: rgba(59, 125, 221, 0.05);
+            .pro-link:hover {
+                color: #60a5fa;
+                text-decoration: underline;
             }
     </style>
 }
 
 @section Scripts {
     <script>
-        // Real-time FAQ Search Engine
         document.getElementById('faqSearch').addEventListener('keyup', function() {
             let filter = this.value.toLowerCase();
-            let items = document.querySelectorAll('.modern-accordion .accordion-item');
-
+            let items = document.querySelectorAll('.pro-accordion-item');
             items.forEach(item => {
                 let text = item.innerText.toLowerCase();
-                item.style.display = text.includes(filter) ? "" : "none";
+                item.style.display = text.includes(filter) ? "block" : "none";
             });
-        });
-
-        // Ticket Submission Simulation
-        document.getElementById('supportForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const btn = e.target.querySelector('button');
-            const originalHtml = btn.innerHTML;
-
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Sending...';
-            btn.disabled = true;
-
-            setTimeout(() => {
-                alert('Your support ticket has been sent. We will contact you shortly!');
-                btn.innerHTML = originalHtml;
-                btn.disabled = false;
-                e.target.reset();
-            }, 1800);
         });
     </script>
 }
