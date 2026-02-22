@@ -1,4 +1,6 @@
-﻿@{
+﻿@using SimplyAppoint.Models.ViewModels
+@model CalendarVM
+@{
     ViewData["Title"] = "Calendar";
     Layout = "_AdminLayout";
 }
@@ -13,6 +15,8 @@
         font-size: .95rem;
     }
 
+
+
         .fc .fc-scrollgrid,
         .fc .fc-scrollgrid-section > td,
         .fc .fc-timegrid-divider,
@@ -24,11 +28,15 @@
             border-color: rgba(255,255,255,.08) !important;
         }
 
+
+
         .fc .fc-toolbar {
             margin-bottom: 1rem !important;
             gap: .75rem;
             flex-wrap: wrap;
         }
+
+
 
         .fc .fc-toolbar-title {
             font-size: 1.35rem;
@@ -36,6 +44,8 @@
             color: rgba(255,255,255,.92);
             letter-spacing: .2px;
         }
+
+
 
         .fc .fc-button {
             border-radius: 12px !important;
@@ -48,15 +58,21 @@
             transition: transform .10s ease, background .15s ease, border-color .15s ease;
         }
 
+
+
             .fc .fc-button:hover {
                 background: rgba(255,255,255,.10) !important;
                 border-color: rgba(255,255,255,.16) !important;
                 transform: translateY(-1px);
             }
 
+
+
             .fc .fc-button:active {
                 transform: translateY(0);
             }
+
+
 
         .fc .fc-button-primary:not(:disabled).fc-button-active {
             background: rgba(59, 130, 246, .22) !important;
@@ -64,9 +80,13 @@
             color: rgba(255,255,255,.96) !important;
         }
 
+
+
         .fc .fc-col-header-cell {
             background: rgba(255,255,255,.03);
         }
+
+
 
         .fc .fc-col-header-cell-cushion {
             padding: .75rem .6rem;
@@ -75,10 +95,14 @@
             text-decoration: none;
         }
 
+
+
         .fc .fc-timegrid-slot-label,
         .fc .fc-timegrid-axis {
             background: rgba(255,255,255,.02);
         }
+
+
 
         .fc .fc-timegrid-slot-label-cushion,
         .fc .fc-timegrid-axis-cushion {
@@ -88,22 +112,32 @@
             letter-spacing: .2px;
         }
 
+
+
         .fc .fc-timegrid-slot {
             background: rgba(255,255,255,.012);
         }
+
+
 
         .fc .fc-timegrid-slot-minor {
             border-top-style: dashed !important;
             border-top-color: rgba(255,255,255,.06) !important;
         }
 
+
+
         .fc .fc-day-today {
             background: rgba(59, 130, 246, .10) !important;
         }
 
+
+
         .fc .fc-timegrid-col.fc-day-today {
             box-shadow: inset 0 0 0 1px rgba(59, 130, 246, .20);
         }
+
+
 
         .fc .fc-timegrid-event,
         .fc .fc-daygrid-event {
@@ -113,9 +147,13 @@
             box-shadow: 0 12px 24px rgba(0,0,0,.28);
         }
 
+
+
         .fc .fc-timegrid-event {
             min-height: 44px;
         }
+
+
 
         .fc .fc-event-main {
             padding: .6rem .7rem !important;
@@ -124,6 +162,8 @@
             justify-content: center;
             height: 100%;
         }
+
+
 
     .sa-timeonly {
         font-weight: 800;
@@ -136,22 +176,32 @@
         text-overflow: ellipsis;
     }
 
+
+
     .fc .fc-event-title,
     .fc .fc-event-title-container {
         display: none !important;
     }
 
+
+
     .fc .fc-event-resizer {
         opacity: .35;
     }
+
+
 
     .fc .fc-timegrid-now-indicator-line {
         border-top-width: 3px !important;
     }
 
+
+
     .fc .fc-timegrid-axis .fc-timegrid-now-indicator-arrow {
         display: none !important;
     }
+
+
 
     .fc .fc-daygrid-day-number {
         padding: .55rem .55rem 0 .55rem;
@@ -160,26 +210,59 @@
         text-decoration: none;
     }
 
+
+
     .fc .fc-daygrid-day-frame {
         padding: .15rem .35rem .35rem;
     }
 
+
+
     .fc .fc-timegrid-event-harness-inset .fc-timegrid-event {
         margin: 2px 6px !important;
     }
+
+
 
     .fc ::-webkit-scrollbar {
         width: 10px;
         height: 10px;
     }
 
+
+
     .fc ::-webkit-scrollbar-thumb {
         background: rgba(255,255,255,.10);
         border-radius: 999px;
     }
 
+
+
     .fc ::-webkit-scrollbar-track {
         background: rgba(255,255,255,.03);
+    }
+
+    .modal-content {
+        border-radius: 15px;
+        border: none;
+        background: #222e3c; 
+        color: #ffffff;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+    }
+
+    .modal-header {
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .modal-footer {
+        border-top: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .text-muted-custom {
+        color: rgba(255,255,255,0.5) !important;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
     }
 </style>
 
@@ -199,7 +282,6 @@
 </div>
 
 <div class="row">
-    <!-- Calendar -->
     <div class="col-12 col-lg-8 d-flex">
         <div class="card flex-fill w-100">
             <div class="card-header">
@@ -211,12 +293,10 @@
         </div>
     </div>
 
-    <!-- Right column widgets -->
     <div class="col-12 col-lg-4 d-flex">
         <div class="d-flex flex-column w-100">
 
-            <!-- Today overview -->
-            <div class="card flex-fill">
+            <div class="card mb-3">
                 <div class="card-header">
                     <h5 class="card-title mb-0">Today Overview</h5>
                 </div>
@@ -225,17 +305,14 @@
                         <span class="text-muted">Date</span>
                         <span class="fw-semibold">@DateTime.Today.ToString("ddd, dd MMM")</span>
                     </div>
-
                     <div class="d-flex justify-content-between align-items-center mb-2">
                         <span class="text-muted">Appointments</span>
-                        <span class="badge badge-primary-light">8</span>
+                        <span class="badge badge-primary-light">@Model.TodayCount</span>
                     </div>
-
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <span class="text-muted">Open slots</span>
-                        <span class="badge badge-success-light">5</span>
+                        <span class="badge badge-success-light">@Model.OpenSlotsCount</span>
                     </div>
-
                     <div class="d-grid">
                         <a asp-area="Admin" asp-controller="Appointments" asp-action="Create" class="btn btn-primary">
                             <i class="align-middle me-2" data-feather="calendar"></i> Book Appointment
@@ -244,45 +321,33 @@
                 </div>
             </div>
 
-            <!-- Upcoming -->
-            <div class="card flex-fill">
+            <div class="card mb-3">
                 <div class="card-header">
                     <h5 class="card-title mb-0">Upcoming (Next 3)</h5>
                 </div>
                 <div class="card-body pt-2">
-                    <div class="list-group">
-                        <a href="#" class="list-group-item list-group-item-action">
-                            <div class="d-flex justify-content-between">
-                                <strong>09:00</strong>
-                                <span class="badge badge-success-light">Confirmed</span>
-                            </div>
-                            <div class="text-muted">Anna K. - Haircut</div>
-                        </a>
-                        <a href="#" class="list-group-item list-group-item-action">
-                            <div class="d-flex justify-content-between">
-                                <strong>10:30</strong>
-                                <span class="badge badge-warning-light">Pending</span>
-                            </div>
-                            <div class="text-muted">Marko P. - Beard trim</div>
-                        </a>
-                        <a href="#" class="list-group-item list-group-item-action">
-                            <div class="d-flex justify-content-between">
-                                <strong>12:00</strong>
-                                <span class="badge badge-success-light">Confirmed</span>
-                            </div>
-                            <div class="text-muted">Sara L. - Nails</div>
-                        </a>
-                    </div>
-
-                    <div class="d-grid mt-3">
-                        <a asp-area="Admin" asp-controller="Appointments" asp-action="Index" class="btn btn-light bg-white">
-                            View all upcoming
-                        </a>
+                    <div class="list-group list-group-flush">
+                        @if (Model.UpcomingAppointments.Any())
+                        {
+                            foreach (var appt in Model.UpcomingAppointments)
+                            {
+                                <div class="list-group-item bg-transparent px-0">
+                                    <div class="d-flex justify-content-between">
+                                        <strong>@appt.Time</strong>
+                                        <span class="badge @(appt.Status == "Confirmed" ? "badge-success-light" : "badge-warning-light")">@appt.Status</span>
+                                    </div>
+                                    <div class="text-muted small">@appt.CustomerName - @appt.ServiceName</div>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="text-center py-3 text-muted">No upcoming appointments.</div>
+                        }
                     </div>
                 </div>
             </div>
 
-            <!-- Quick actions -->
             <div class="card flex-fill">
                 <div class="card-header">
                     <h5 class="card-title mb-0">Quick Actions</h5>
@@ -290,37 +355,64 @@
                 <div class="card-body pt-2">
                     <div class="row g-2">
                         <div class="col-6">
-                            <a asp-area="Admin" asp-controller="Customers" asp-action="Index"
-                               class="btn btn-outline-primary w-100 d-flex align-items-center justify-content-center py-2">
-                                <i class="align-middle me-2" data-feather="users"></i>
-                                <span class="fw-semibold">Customers</span>
+                            <a asp-area="Admin" asp-controller="Customers" asp-action="Index" class="btn btn-outline-primary w-100 py-3">
+                                <i class="mb-2" data-feather="users"></i><br />Customers
                             </a>
                         </div>
                         <div class="col-6">
-                            <a asp-area="Admin" asp-controller="Services" asp-action="Index"
-                               class="btn btn-outline-primary w-100 d-flex align-items-center justify-content-center py-2">
-                                <i class="align-middle me-2" data-feather="briefcase"></i>
-                                <span class="fw-semibold">Services</span>
-                            </a>
-                        </div>
-                        <div class="col-6">
-                            <a asp-area="Admin" asp-controller="Appointments" asp-action="Index"
-                               class="btn btn-outline-primary w-100 d-flex align-items-center justify-content-center py-2">
-                                <i class="align-middle me-2" data-feather="list"></i>
-                                <span class="fw-semibold">Appointments</span>
-                            </a>
-                        </div>
-                        <div class="col-6">
-                            <a asp-area="Admin" asp-controller="Dashboard" asp-action="Index"
-                               class="btn btn-outline-primary w-100 d-flex align-items-center justify-content-center py-2">
-                                <i class="align-middle me-2" data-feather="bar-chart-2"></i>
-                                <span class="fw-semibold">Dashboard</span>
+                            <a asp-area="Admin" asp-controller="Services" asp-action="Index" class="btn btn-outline-primary w-100 py-3">
+                                <i class="mb-2" data-feather="briefcase"></i><br />Services
                             </a>
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+</div>
 
+<div class="modal fade" id="apptModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i data-feather="info" class="me-2 text-primary"></i> Appointment Details</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-4">
+                    <label class="text-muted-custom">Customer Name</label>
+                    <h3 id="mCustomer" class="mb-0 text-white"></h3>
+                </div>
+                <div class="row mb-4">
+                    <div class="col-6">
+                        <label class="text-muted-custom">Service Type</label>
+                        <div id="mService" class="fw-bold"></div>
+                    </div>
+                    <div class="col-6">
+                        <label class="text-muted-custom">Status</label>
+                        <div><span id="mStatus" class="badge"></span></div>
+                    </div>
+                </div>
+                <div class="row mb-4">
+                    <div class="col-6">
+                        <label class="text-muted-custom">Phone Number</label>
+                        <div id="mPhone" class="text-white"></div>
+                    </div>
+                    <div class="col-6">
+                        <label class="text-muted-custom">Total Price</label>
+                        <div id="mPrice" class="fw-bold text-success"></div>
+                    </div>
+                </div>
+                <div class="mb-0">
+                    <label class="text-muted-custom">Admin Notes</label>
+                    <p id="mNotes" class="small text-white-50 fst-italic"></p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <a id="mEditLink" href="#" class="btn btn-primary w-100 py-2 fw-bold">
+                    <i data-feather="edit-2" class="me-2"></i> Edit Appointment
+                </a>
+            </div>
         </div>
     </div>
 </div>
@@ -329,48 +421,35 @@
     <script src="~/AdminKit/js/fullcalendar.js"></script>
 
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
+        document.addEventListener("DOMContentLoaded", function() {
             var calendarEl = document.getElementById("fullcalendar");
             if (!calendarEl || typeof FullCalendar === "undefined") return;
 
+            // Load real data from ViewModel
+            var eventData = @Html.Raw(Model.EventsJson);
             var todayStr = "@DateTime.Today.ToString("yyyy-MM-dd")";
-
-            function fmtTime(dateObj) {
-                return new Intl.DateTimeFormat([], { hour: "2-digit", minute: "2-digit" }).format(dateObj);
-            }
 
             var calendar = new FullCalendar.Calendar(calendarEl, {
                 themeSystem: "bootstrap",
                 initialView: "timeGridWeek",
                 initialDate: todayStr,
-
-                allDaySlot: false,          
+                allDaySlot: false,
                 nowIndicator: true,
-                selectable: true,
-                editable: false,
-
                 height: "auto",
-                expandRows: true,
-
-                slotDuration: "00:30:00",
-                slotLabelInterval: "01:00",
                 slotMinTime: "07:00:00",
                 slotMaxTime: "20:00:00",
-                scrollTime: "08:00:00",
-
                 headerToolbar: {
                     left: "prev,next today",
                     center: "title",
                     right: "dayGridMonth,timeGridWeek,timeGridDay"
                 },
                 buttonText: { today: "Today", month: "Month", week: "Week", day: "Day" },
+                events: eventData,
 
-                eventDisplay: "block",
-
-                eventContent: function (arg) {
+                // Custom look for events (Time only)
+                eventContent: function(arg) {
                     var start = arg.event.start;
-                    var end = arg.event.end;
-                    var timeText = end ? (fmtTime(start) + " – " + fmtTime(end)) : fmtTime(start);
+                    var timeText = start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
                     var wrap = document.createElement("div");
                     wrap.className = "sa-timeonly";
@@ -379,20 +458,35 @@
                     return { domNodes: [wrap] };
                 },
 
-                eventDidMount: function (info) {
-                    info.el.removeAttribute("title");
-                },
+                // CLICK EVENT - Open Popup Modal
+                eventClick: function(info) {
+                    const props = info.event.extendedProps;
 
-                // Dummy events (replace later)
-                events: [
-                    { start: todayStr + "T09:00:00", end: todayStr + "T09:45:00", backgroundColor: "#3b82f6", borderColor: "#3b82f6" },
-                    { start: todayStr + "T10:30:00", end: todayStr + "T11:00:00", backgroundColor: "#10b981", borderColor: "#10b981" },
-                    { start: todayStr + "T12:00:00", end: todayStr + "T13:00:00", backgroundColor: "#f59e0b", borderColor: "#f59e0b" }
-                ]
+                    // Populate Modal Fields
+                    document.getElementById("mCustomer").innerText = props.customerName;
+                    document.getElementById("mService").innerText = props.serviceName;
+                    document.getElementById("mPhone").innerText = props.phone;
+                    document.getElementById("mPrice").innerText = props.price;
+                    document.getElementById("mNotes").innerText = props.notes;
+
+                    const statusEl = document.getElementById("mStatus");
+                    statusEl.innerText = props.status;
+                    statusEl.className = "badge " + (props.status === "Confirmed" ? "bg-success" : "bg-warning");
+
+                    // Set Edit URL
+                    document.getElementById("mEditLink").href = "/Admin/Appointments/Edit/" + info.event.id;
+
+                    // Trigger Bootstrap Modal
+                    var myModal = new bootstrap.Modal(document.getElementById('apptModal'));
+                    myModal.show();
+                }
             });
 
-            setTimeout(function () { calendar.render(); }, 150);
-            if (window.feather) window.feather.replace();
+            calendar.render();
+
+            if (window.feather) {
+                window.feather.replace();
+            }
         });
     </script>
 }
