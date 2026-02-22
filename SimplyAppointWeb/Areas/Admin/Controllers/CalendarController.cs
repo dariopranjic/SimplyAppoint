@@ -104,7 +104,7 @@ namespace SimplyAppointWeb.Controllers
                 .Select(a => new CalendarVM.UpcomingAppt
                 {
                     Time = TimeZoneInfo.ConvertTime(a.StartUtc, tz).ToString("HH:mm"),
-                    CustomerName = a.CustomerName,
+                    CustomerName = !string.IsNullOrWhiteSpace(a.CustomerName) ? a.CustomerName : a.CustomerEmail,
                     ServiceName = a.Service?.Name ?? "Service",
                     Status = a.Status.ToString()
                 })
@@ -138,7 +138,7 @@ namespace SimplyAppointWeb.Controllers
                     borderColor = GetStatusColor(a.Status),
 
                     // extendedProps (modal)
-                    customerName = a.CustomerName,
+                    customerName = !string.IsNullOrWhiteSpace(a.CustomerName) ? a.CustomerName : a.CustomerEmail,
                     serviceName = a.Service?.Name ?? "Service",
                     status = a.Status.ToString(),
                     phone = a.CustomerPhone ?? "N/A",

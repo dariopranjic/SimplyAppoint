@@ -183,7 +183,7 @@
         background: rgba(255,255,255,.03);
     }
 
-    /* ===== Fix: make Upcoming list text readable on dark UI ===== */
+    /* Upcoming list readable on dark UI */
     .list-group-item {
         background: transparent !important;
         color: rgba(255,255,255,.92) !important;
@@ -198,7 +198,7 @@
             color: rgba(255,255,255,.60) !important;
         }
 
-    /* ===== Modal styling (dark) ===== */
+    /* Modal styling */
     .modal-content {
         border-radius: 15px;
         border: none;
@@ -222,7 +222,6 @@
         letter-spacing: 1px;
     }
 
-    /* Fix: ensure modal values are clearly visible */
     #mService, #mPhone, #mCustomer {
         color: rgba(255,255,255,.95) !important;
     }
@@ -304,7 +303,6 @@
                         {
                             foreach (var appt in Model.UpcomingAppointments.Take(3))
                             {
-                                <!-- FIX: no appt.Id exists -> render as non-link list item -->
                                 <div class="list-group-item">
                                     <div class="d-flex justify-content-between">
                                         <strong>@appt.Time</strong>
@@ -433,13 +431,25 @@
             var calendarEl = document.getElementById("fullcalendar");
             if (!calendarEl || typeof FullCalendar === "undefined") return;
 
-            // Real data from ViewModel
-            var eventData = @Html.Raw(Model.EventsJson);
+            var eventData = @Html.Raw(Model.EventsJson ?? "[]");
             var todayStr = "@DateTime.Today.ToString("yyyy-MM-dd")";
 
             function fmtTime(dateObj) {
                 return new Intl.DateTimeFormat([], { hour: "2-digit", minute: "2-digit" }).format(dateObj);
             }
+
+            // Calendar config driven by CalendarVM
+            var slotMinTime = "@(string.IsNullOrWhiteSpace(Model.SlotMinTime) ? "07:00:00" : Model.SlotMinTime)";
+            var slotMaxTime = "@(string.IsNullOrWhiteSpace(Model.SlotMaxTime) ? "20:00:00" : Model.SlotMaxTime)";
+            var slotDuration = "@(string.IsNullOrWhiteSpace(Model.SlotDuration) ? "00:30:00" : Model.SlotDuration)";
+            var snapDuration = "@(string.IsNullOrWhiteSpace(Model.SnapDuration) ? (string.IsNullOrWhiteSpace(Model.SlotDuration) ? "00:30:00" : Model.SlotDuration) : Model.SnapDuration)";
+
+            var businessHours = @Html.Raw(string.IsNullOrWhiteSpace(Model.BusinessHoursJson) ? "[]" : Model.BusinessHoursJson);
+            var hiddenDays = @Html.Raw(string.IsNullOrWhiteSpace(Model.HiddenDaysJson) ? "[]" : Model.HiddenDaysJson);
+
+            var bookableStart = "@Model.BookableStartDateIso";
+            var bookableEnd = "@Model.BookableEndDateIso";
+            var minBookableIso = "@Model.MinBookableStartIso";
 
             var calendar = new FullCalendar.Calendar(calendarEl, {
                 themeSystem: "bootstrap",
@@ -454,11 +464,25 @@
                 height: "auto",
                 expandRows: true,
 
-                slotDuration: "00:30:00",
+                slotDuration: slotDuration,
+                snapDuration: snapDuration,
                 slotLabelInterval: "01:00",
-                slotMinTime: "07:00:00",
-                slotMaxTime: "20:00:00",
-                scrollTime: "08:00:00",
+                slotMinTime: slotMinTime,
+                slotMaxTime: slotMaxTime,
+                scrollTime: slotMinTime,
+
+                businessHours: businessHours,
+                hiddenDays: hiddenDays,
+
+                // Booking window (MaxAdvanceDays) - FullCalendar end is exclusive
+                validRange: (bookableStart && bookableEnd) ? { start: bookableStart, end: bookableEnd } : undefined,
+
+                // Advance notice selection block
+                selectAllow: function(selectInfo) {
+                    if (!minBookableIso) return true;
+                    var minStart = new Date(minBookableIso);
+                    return selectInfo.start >= minStart;
+                },
 
                 headerToolbar: {
                     left: "prev,next today",
@@ -470,8 +494,10 @@
                 eventDisplay: "block",
                 events: eventData,
 
-                // Show time range (start – end)
+                // Show time range (start – end) for normal appointments only
                 eventContent: function(arg) {
+                    if (arg.event.display === "background") return;
+
                     var start = arg.event.start;
                     var end = arg.event.end;
                     var timeText = end ? (fmtTime(start) + " – " + fmtTime(end)) : fmtTime(start);
@@ -487,8 +513,10 @@
                     info.el.removeAttribute("title");
                 },
 
-                // Click => open modal with extendedProps
+                // Click => open modal (ignore background time off)
                 eventClick: function(info) {
+                    if (info.event.display === "background") return;
+
                     const props = info.event.extendedProps || {};
 
                     document.getElementById("mCustomer").innerText = props.customerName ?? "";
