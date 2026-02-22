@@ -226,8 +226,7 @@ namespace SimplyAppointWeb.Controllers
             vm.SlotMinTime = minOpen.ToString("HH:mm:ss");
             vm.SlotMaxTime = maxClose.ToString("HH:mm:ss");
 
-            // FullCalendar: 0=Sunday ... 6=Saturday
-            // Assumption: Weekday enum has Monday..Sunday members
+
             int ToFcDay(Weekday d) => d switch
             {
                 Weekday.Monday => 1,
