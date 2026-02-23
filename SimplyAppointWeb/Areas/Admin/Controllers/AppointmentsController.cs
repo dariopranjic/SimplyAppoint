@@ -43,14 +43,14 @@ namespace SimplyAppointWeb.Controllers
             // Filters
             appts = ApplyFilters(appts, tz, range, status, q);
 
-            // Stats (use all appointments of business, not filtered list)
+            // Stats 
             var allAppts = _unitOfWork.Appointment
                 .GetAll(a => a.BusinessId == business.Id, includeProperties: "Service")
                 .ToList();
 
             var stats = BuildStats(allAppts, tz);
 
-            // Upcoming next 3 (business scoped)
+            // Upcoming next 3
             var upcoming = allAppts
                 .Where(a => a.Status != AppointmentStatus.Cancelled && a.CancelledUtc == null)
                 .Where(a => a.StartUtc >= nowUtc)
@@ -103,7 +103,6 @@ namespace SimplyAppointWeb.Controllers
                     })
                     .ToList(),
 
-                // Optional: keep it simple for now (you already compute open slots on Calendar page)
                 OpenSlotsCount = 0,
                 Upcoming = upcoming
             };
@@ -378,7 +377,6 @@ namespace SimplyAppointWeb.Controllers
 
         private static DateTimeOffset ToUtc(DateTime localBiz, TimeZoneInfo tz)
         {
-            // treat localBiz as "business local"
             var unspecified = DateTime.SpecifyKind(localBiz, DateTimeKind.Unspecified);
             var utc = TimeZoneInfo.ConvertTimeToUtc(unspecified, tz);
             return new DateTimeOffset(utc, TimeSpan.Zero);
@@ -393,7 +391,7 @@ namespace SimplyAppointWeb.Controllers
 
         private static List<Appointment> ApplyFilters(List<Appointment> appts, TimeZoneInfo tz, string range, string status, string? q)
         {
-            // date range filter (business local)
+            // date range filter 
             if (!string.Equals(range, "all", StringComparison.OrdinalIgnoreCase))
             {
                 DateTime startBiz;
@@ -493,16 +491,14 @@ namespace SimplyAppointWeb.Controllers
             Service service,
             int? excludeAppointmentId)
         {
-            // Basic sanity
             if (endBiz <= startBiz)
                 return "End time must be after start time.";
 
-            // If you want to prevent creating past appointments in admin, keep this:
             var nowBiz = TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, tz).DateTime;
             if (startBiz < nowBiz.AddMinutes(-1))
                 return "Start time must be in the future.";
 
-            // Working hours check (if configured)
+            // Working hours check 
             var weekday = startBiz.DayOfWeek switch
             {
                 DayOfWeek.Monday => Weekday.Monday,
@@ -525,7 +521,7 @@ namespace SimplyAppointWeb.Controllers
                     return $"Outside working hours ({open:HH:mm}–{close:HH:mm}).";
             }
 
-            // TimeOff overlap (business tz)
+            // TimeOff overlap 
             var timeOffs = _unitOfWork.TimeOff.GetAll(t => t.BusinessId == businessId).ToList();
             foreach (var t in timeOffs)
             {
