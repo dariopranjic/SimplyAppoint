@@ -1,10 +1,12 @@
 using System.Diagnostics;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SimplyAppoint.Models;
 
 namespace SimplyAppointWeb.Controllers
 {
     [Area("Admin")]
+    [Authorize]
     public class AppointmentsController : Controller
     {
         public IActionResult Index()
