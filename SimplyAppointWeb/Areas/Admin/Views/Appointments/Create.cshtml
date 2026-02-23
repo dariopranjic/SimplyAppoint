@@ -1,10 +1,17 @@
-﻿@{
+﻿@using SimplyAppoint.Models.Enums
+@using SimplyAppoint.Models.ViewModels
+@model AppointmentsVM
+@{
     ViewData["Title"] = "New Appointment";
     Layout = "_AdminLayout";
+
+    // safe defaults (Create GET should already populate these)
+    var safeDate = !string.IsNullOrWhiteSpace(Model.Date) ? Model.Date : DateTime.Today.ToString("yyyy-MM-dd");
+    var safeStart = !string.IsNullOrWhiteSpace(Model.StartTime) ? Model.StartTime : "";
 }
 
 <style>
-    /* small helper styles (still AdminKit/Bootstrap based) */
+    /* helper styles (AdminKit/Bootstrap based) */
     .sa-chip {
         border: 1px solid rgba(255,255,255,.10);
         background: rgba(255,255,255,.05);
@@ -18,23 +25,23 @@
         text-align: center;
     }
 
-        .sa-chip:hover {
-            transform: translateY(-1px);
-            background: rgba(255,255,255,.08);
-            border-color: rgba(255,255,255,.16);
-        }
+    .sa-chip:hover {
+        transform: translateY(-1px);
+        background: rgba(255,255,255,.08);
+        border-color: rgba(255,255,255,.16);
+    }
 
-        .sa-chip.sa-chip-active {
-            background: rgba(59,130,246,.22);
-            border-color: rgba(59,130,246,.35);
-            color: rgba(255,255,255,.95);
-        }
+    .sa-chip.sa-chip-active {
+        background: rgba(59,130,246,.22);
+        border-color: rgba(59,130,246,.35);
+        color: rgba(255,255,255,.95);
+    }
 
-        .sa-chip.sa-chip-disabled {
-            opacity: .35;
-            cursor: not-allowed;
-            transform: none !important;
-        }
+    .sa-chip.sa-chip-disabled {
+        opacity: .35;
+        cursor: not-allowed;
+        transform: none !important;
+    }
 
     .sa-summary-pill {
         border: 1px solid rgba(255,255,255,.10);
@@ -47,6 +54,38 @@
         height: 1px;
         background: rgba(255,255,255,.08);
         margin: .75rem 0;
+    }
+
+    /* validation readable on dark */
+    .field-validation-error {
+        color: #ffb4b4;
+        font-size: .85rem;
+        font-weight: 600;
+        display: block;
+        margin-top: .35rem;
+    }
+
+    .validation-summary-errors {
+        color: #ffb4b4;
+    }
+
+    /* inputs readable on dark cards */
+    .card .form-select,
+    .card .form-control {
+        background-color: rgba(255,255,255,.04);
+        border-color: rgba(255,255,255,.10);
+        color: rgba(255,255,255,.92);
+    }
+
+    .card .form-select option {
+        background: #222e3c;
+        color: rgba(255,255,255,.92);
+    }
+
+    .input-group-text {
+        border-color: rgba(255,255,255,.10);
+        background: rgba(255,255,255,.04);
+        color: rgba(255,255,255,.75);
     }
 </style>
 
@@ -81,30 +120,56 @@
             </div>
 
             <div class="card-body">
-                <form method="post" novalidate>
+                <form id="saCreateForm"
+                      method="post"
+                      asp-area="Admin"
+                      asp-controller="Appointments"
+                      asp-action="Create"
+                      novalidate>
+
+                    @Html.AntiForgeryToken()
+
+                    <div asp-validation-summary="ModelOnly" class="mb-3"></div>
+
                     <!-- Customer -->
                     <div class="row">
-                        <div class="col-md-8">
-                            <label class="form-label">Customer</label>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Customer name</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="align-middle" data-feather="user"></i></span>
-                                <select class="form-select" required>
-                                    <option value="" selected disabled>Select customer…</option>
-                                    <option value="Anna K.">Anna K.</option>
-                                    <option value="Marko P.">Marko P.</option>
-                                    <option value="Sara L.">Sara L.</option>
-                                </select>
+                                <input asp-for="CustomerName" class="form-control" placeholder="e.g. Anna K." />
                             </div>
-                            <div class="form-text">Add “New Customer” later when you build the flow.</div>
+                            <span asp-validation-for="CustomerName"></span>
                         </div>
 
-                        <div class="col-md-4">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Customer email</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="align-middle" data-feather="mail"></i></span>
+                                @* IMPORTANT: escape @ in Razor by using @@ *@
+                                <input asp-for="CustomerEmail" class="form-control" placeholder="name@@domain.com" />
+                            </div>
+                            <span asp-validation-for="CustomerEmail"></span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Phone (optional)</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="align-middle" data-feather="phone"></i></span>
+                                <input asp-for="CustomerPhone" class="form-control" placeholder="+385 ..." />
+                            </div>
+                            <span asp-validation-for="CustomerPhone"></span>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
                             <label class="form-label">Status</label>
-                            <select class="form-select">
-                                <option value="Confirmed" selected>Confirmed</option>
-                                <option value="Pending">Pending</option>
-                                <option value="Cancelled">Cancelled</option>
+                            <select asp-for="Status"
+                                    class="form-select"
+                                    asp-items="Html.GetEnumSelectList<AppointmentStatus>()">
                             </select>
+                            <span asp-validation-for="Status"></span>
                         </div>
                     </div>
 
@@ -112,58 +177,60 @@
 
                     <!-- Service -->
                     <div class="row">
-                        <div class="col-md-8">
+                        <div class="col-md-8 mb-3">
                             <label class="form-label">Service</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="align-middle" data-feather="briefcase"></i></span>
-                                <select class="form-select" required>
-                                    <option value="" selected disabled>Select service…</option>
-                                    <option value="Haircut" data-duration="45" data-price="25">Haircut (45 min)</option>
-                                    <option value="Beard Trim" data-duration="30" data-price="15">Beard Trim (30 min)</option>
-                                    <option value="Color" data-duration="90" data-price="60">Color (90 min)</option>
+                                <select asp-for="ServiceId"
+                                        class="form-select"
+                                        asp-items="Model.ServiceOptions"
+                                        id="svcSelect">
+                                    <option value="">Select service…</option>
                                 </select>
                             </div>
+                            <span asp-validation-for="ServiceId"></span>
                         </div>
 
-                        <div class="col-md-4">
-                            <label class="form-label">Price</label>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Price override (optional)</label>
                             <div class="input-group">
                                 <span class="input-group-text">€</span>
-                                <input type="number" step="0.01" min="0" class="form-control" placeholder="0.00" />
+                                <input asp-for="PriceOverride" class="form-control" type="number" step="0.01" min="0" id="priceInput" />
                             </div>
+                            <span asp-validation-for="PriceOverride"></span>
+                            <div class="form-text">Leave empty to use service price.</div>
                         </div>
                     </div>
 
-                    <div class="row mt-3">
-                        <div class="col-md-4">
+                    <!-- Scheduling -->
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
                             <label class="form-label">Date</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="align-middle" data-feather="calendar"></i></span>
-                                <input type="date" class="form-control" value="@DateTime.Today.ToString("yyyy-MM-dd")" required />
+                                <input asp-for="Date" class="form-control" type="date" id="dateInput" value="@safeDate" />
                             </div>
+                            <span asp-validation-for="Date"></span>
                         </div>
 
-                        <div class="col-md-4">
+                        <div class="col-md-4 mb-3">
                             <label class="form-label">Start time</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="align-middle" data-feather="clock"></i></span>
-                                <input type="time" class="form-control" required />
+                                <input asp-for="StartTime" class="form-control" type="time" id="startTimeInput" value="@safeStart" />
                             </div>
-                            <div class="form-text">Pick from Available Times on the right.</div>
+                            <span asp-validation-for="StartTime"></span>
+                            <div class="form-text">Click a slot on the right to fill this.</div>
                         </div>
 
-                        <div class="col-md-4">
-                            <label class="form-label">Duration</label>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Duration (minutes)</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="align-middle" data-feather="hash"></i></span>
-                                <select class="form-select">
-                                    <option value="15">15 min</option>
-                                    <option value="30">30 min</option>
-                                    <option value="45" selected>45 min</option>
-                                    <option value="60">60 min</option>
-                                    <option value="90">90 min</option>
-                                </select>
+                                <input asp-for="DurationMinutes" class="form-control" type="number" min="1" max="1440" id="durInput" />
                             </div>
+                            <span asp-validation-for="DurationMinutes"></span>
+                            <div class="form-text">If empty, controller can fallback to service duration.</div>
                         </div>
                     </div>
 
@@ -171,9 +238,14 @@
 
                     <!-- Notes -->
                     <div class="row">
-                        <div class="col-12">
+                        <div class="col-12 mb-2">
                             <label class="form-label">Notes (optional)</label>
-                            <textarea class="form-control" rows="4" placeholder="e.g., customer preference, special request, internal note…"></textarea>
+                            <textarea asp-for="Notes"
+                                      class="form-control"
+                                      rows="4"
+                                      placeholder="e.g., customer preference, special request, internal note…"
+                                      id="notesInput"></textarea>
+                            <span asp-validation-for="Notes"></span>
                         </div>
                     </div>
 
@@ -183,12 +255,9 @@
                         </a>
 
                         <div class="d-flex gap-2">
-                            <button type="button" class="btn btn-light bg-white">
-                                <i class="align-middle me-1" data-feather="copy"></i> Save as Draft
-                            </button>
-                            <a asp-area="Admin" asp-controller="Services" asp-action="Index" class="btn btn-primary">
+                            <button type="submit" class="btn btn-primary">
                                 <i class="align-middle me-1" data-feather="check"></i> Create Appointment
-                            </a>
+                            </button>
                         </div>
                     </div>
                 </form>
@@ -201,7 +270,7 @@
         <div class="d-flex flex-column w-100">
 
             <!-- Summary -->
-            <div class="card flex-fill">
+            <div class="card flex-fill mb-3">
                 <div class="card-header">
                     <h5 class="card-title mb-0">Summary</h5>
                 </div>
@@ -209,23 +278,23 @@
                     <div class="sa-summary-pill">
                         <div class="d-flex justify-content-between">
                             <span class="text-muted">Customer</span>
-                            <span class="fw-semibold">—</span>
+                            <span class="fw-semibold" id="sumCustomer">—</span>
                         </div>
                         <div class="d-flex justify-content-between mt-2">
                             <span class="text-muted">Service</span>
-                            <span class="fw-semibold">—</span>
+                            <span class="fw-semibold" id="sumService">—</span>
                         </div>
                         <div class="d-flex justify-content-between mt-2">
                             <span class="text-muted">When</span>
-                            <span class="fw-semibold">—</span>
+                            <span class="fw-semibold" id="sumWhen">—</span>
                         </div>
                         <div class="d-flex justify-content-between mt-2">
                             <span class="text-muted">Duration</span>
-                            <span class="fw-semibold">—</span>
+                            <span class="fw-semibold" id="sumDuration">—</span>
                         </div>
                         <div class="d-flex justify-content-between mt-2">
                             <span class="text-muted">Price</span>
-                            <span class="fw-semibold">—</span>
+                            <span class="fw-semibold" id="sumPrice">—</span>
                         </div>
                     </div>
 
@@ -237,19 +306,19 @@
                 </div>
             </div>
 
-            <!-- Available times -->
-            <div class="card flex-fill">
+            <!-- Available times (UI helper only) -->
+            <div class="card flex-fill mb-3">
                 <div class="card-header">
                     <div class="d-flex justify-content-between align-items-center">
                         <h5 class="card-title mb-0">Available Times</h5>
-                        <span class="badge badge-success-light">Today</span>
+                        <span class="badge badge-success-light" id="slotsBadge">Pick date</span>
                     </div>
                 </div>
 
                 <div class="card-body pt-2">
                     <div class="text-muted small mb-2">Click a slot to fill Start time.</div>
 
-                    <div class="row g-2">
+                    <div class="row g-2" id="slotsGrid">
                         <div class="col-4"><div class="sa-chip" data-time="09:00">09:00</div></div>
                         <div class="col-4"><div class="sa-chip" data-time="09:30">09:30</div></div>
                         <div class="col-4"><div class="sa-chip sa-chip-disabled">10:00</div></div>
@@ -264,12 +333,12 @@
                     </div>
 
                     <div class="text-muted small mt-3">
-                        Disabled slots are already booked.
+                        Disabled slots are already booked (placeholder UI).
                     </div>
                 </div>
             </div>
 
-            <!-- Policies / reminders (replaces “tips”) -->
+            <!-- Booking rules (UI only for now) -->
             <div class="card flex-fill">
                 <div class="card-header">
                     <h5 class="card-title mb-0">Booking Rules</h5>
@@ -278,8 +347,8 @@
                     <div class="d-flex align-items-start mb-3">
                         <i class="align-middle me-2 text-primary" data-feather="info"></i>
                         <div>
-                            <div class="fw-semibold">Buffer time</div>
-                            <div class="text-muted small">Keep 10 minutes between bookings for cleanup/prep.</div>
+                            <div class="fw-semibold">Advance notice</div>
+                            <div class="text-muted small">If your policy requires it, bookings too soon will be rejected.</div>
                         </div>
                     </div>
 
@@ -295,7 +364,7 @@
                         <i class="align-middle me-2 text-primary" data-feather="shield"></i>
                         <div>
                             <div class="fw-semibold">Cancellation policy</div>
-                            <div class="text-muted small">Same-day cancellations should be marked and tracked.</div>
+                            <div class="text-muted small">You can enforce cancellation windows in controller logic.</div>
                         </div>
                     </div>
                 </div>
@@ -304,3 +373,102 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        (function () {
+            const customerName = document.getElementById("CustomerName");
+            const customerEmail = document.getElementById("CustomerEmail");
+            const svcSelect = document.getElementById("svcSelect");
+            const dateInput = document.getElementById("dateInput");
+            const startTimeInput = document.getElementById("startTimeInput");
+            const durInput = document.getElementById("durInput");
+            const priceInput = document.getElementById("priceInput");
+
+            const sumCustomer = document.getElementById("sumCustomer");
+            const sumService = document.getElementById("sumService");
+            const sumWhen = document.getElementById("sumWhen");
+            const sumDuration = document.getElementById("sumDuration");
+            const sumPrice = document.getElementById("sumPrice");
+
+            const slotsBadge = document.getElementById("slotsBadge");
+            const slotsGrid = document.getElementById("slotsGrid");
+
+            function formatWhen() {
+                const d = (dateInput && dateInput.value) ? dateInput.value : "";
+                const t = (startTimeInput && startTimeInput.value) ? startTimeInput.value : "";
+                if (!d && !t) return "—";
+                if (d && t) return d + " @@ " + t;
+                return d || t;
+            }
+
+            function selectedServiceText() {
+                if (!svcSelect) return "—";
+                const opt = svcSelect.options[svcSelect.selectedIndex];
+                if (!opt || !opt.value) return "—";
+                return opt.text;
+            }
+
+            function refreshSummary() {
+                const cname = customerName && customerName.value ? customerName.value.trim() : "";
+                const cemail = customerEmail && customerEmail.value ? customerEmail.value.trim() : "";
+
+                if (cname) sumCustomer.textContent = cname;
+                else if (cemail) sumCustomer.textContent = cemail;
+                else sumCustomer.textContent = "—";
+
+                sumService.textContent = selectedServiceText();
+                sumWhen.textContent = formatWhen();
+
+                const dur = durInput && durInput.value ? durInput.value.trim() : "";
+                sumDuration.textContent = dur ? (dur + " min") : "—";
+
+                const price = priceInput && priceInput.value ? priceInput.value.trim() : "";
+                sumPrice.textContent = price ? ("€ " + price) : "—";
+            }
+
+            // Chips -> fill start time
+            if (slotsGrid) {
+                slotsGrid.addEventListener("click", function (e) {
+                    const chip = e.target.closest(".sa-chip");
+                    if (!chip || chip.classList.contains("sa-chip-disabled")) return;
+
+                    const time = chip.getAttribute("data-time");
+                    if (!time || !startTimeInput) return;
+
+                    startTimeInput.value = time;
+
+                    slotsGrid.querySelectorAll(".sa-chip").forEach(x => x.classList.remove("sa-chip-active"));
+                    chip.classList.add("sa-chip-active");
+
+                    refreshSummary();
+                });
+            }
+
+            function refreshBadge() {
+                if (!slotsBadge) return;
+                slotsBadge.textContent = (dateInput && dateInput.value) ? "Selected" : "Pick date";
+            }
+
+            // Hook changes
+            ["input", "change"].forEach(evt => {
+                if (customerName) customerName.addEventListener(evt, refreshSummary);
+                if (customerEmail) customerEmail.addEventListener(evt, refreshSummary);
+                if (svcSelect) svcSelect.addEventListener(evt, refreshSummary);
+                if (dateInput) dateInput.addEventListener(evt, function () { refreshBadge(); refreshSummary(); });
+                if (startTimeInput) startTimeInput.addEventListener(evt, refreshSummary);
+                if (durInput) durInput.addEventListener(evt, refreshSummary);
+                if (priceInput) priceInput.addEventListener(evt, refreshSummary);
+            });
+
+            // Initial
+            refreshBadge();
+            refreshSummary();
+
+            // Feather
+            if (window.feather) window.feather.replace();
+        })();
+    </script>
+}
