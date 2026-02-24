@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using SimplyAppoint.DataAccess.Repository.IRepository;
@@ -8,6 +9,7 @@ using SimplyAppoint.Models.Enums;
 using SimplyAppoint.Models.ViewModels;
 using System.Diagnostics;
 using System.Globalization;
+using System.Net;
 
 namespace SimplyAppointWeb.Controllers
 {
@@ -17,11 +19,16 @@ namespace SimplyAppointWeb.Controllers
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly UserManager<IdentityUser> _userManager;
+        private readonly IEmailSender _emailSender;
 
-        public AppointmentsController(IUnitOfWork unitOfWork, UserManager<IdentityUser> userManager)
+        public AppointmentsController(
+            IUnitOfWork unitOfWork,
+            UserManager<IdentityUser> userManager,
+            IEmailSender emailSender)
         {
             _unitOfWork = unitOfWork;
             _userManager = userManager;
+            _emailSender = emailSender;
         }
 
         // -------------------- INDEX --------------------
@@ -31,26 +38,15 @@ namespace SimplyAppointWeb.Controllers
             if (business == null) return View(new AppointmentsIndexVM());
 
             var nowUtc = DateTimeOffset.UtcNow;
-            var nowBiz = TimeZoneInfo.ConvertTime(nowUtc, tz);
-            var todayBiz = nowBiz.Date;
-            var weekAgoUtc = nowUtc.AddDays(-7);
 
-            // Load appointments for THIS business
-            var appts = _unitOfWork.Appointment
-                .GetAll(a => a.BusinessId == business.Id, includeProperties: "Service")
-                .ToList();
-
-            // Filters
-            appts = ApplyFilters(appts, tz, range, status, q);
-
-            // Stats 
             var allAppts = _unitOfWork.Appointment
                 .GetAll(a => a.BusinessId == business.Id, includeProperties: "Service")
                 .ToList();
 
+            var filtered = ApplyFilters(allAppts, tz, range, status, q);
+
             var stats = BuildStats(allAppts, tz);
 
-            // Upcoming next 3
             var upcoming = allAppts
                 .Where(a => a.Status != AppointmentStatus.Cancelled && a.CancelledUtc == null)
                 .Where(a => a.StartUtc >= nowUtc)
@@ -81,9 +77,9 @@ namespace SimplyAppointWeb.Controllers
                 RevenueWeek = stats.RevenueWeek,
                 CancellationsWeek = stats.CancellationsWeek,
 
-                TotalShown = appts.Count,
+                TotalShown = filtered.Count,
 
-                Rows = appts
+                Rows = filtered
                     .OrderBy(a => a.StartUtc)
                     .Select(a =>
                     {
@@ -142,7 +138,6 @@ namespace SimplyAppointWeb.Controllers
             if (!ModelState.IsValid)
                 return View(vm);
 
-            // Load service (required)
             var service = _unitOfWork.Service.Get(s => s.BusinessId == business.Id && s.Id == vm.ServiceId);
             if (service == null)
             {
@@ -160,7 +155,6 @@ namespace SimplyAppointWeb.Controllers
             var startUtc = ToUtc(startBiz, tz);
             var endUtc = startUtc.AddMinutes(duration);
 
-            // Validate schedule constraints
             var validationError = ValidateSlot(
                 businessId: business.Id,
                 tz: tz,
@@ -198,6 +192,24 @@ namespace SimplyAppointWeb.Controllers
             _unitOfWork.Appointment.Add(appt);
             _unitOfWork.Save();
 
+            if (appt.Status == AppointmentStatus.Confirmed && !string.IsNullOrWhiteSpace(appt.CustomerEmail))
+            {
+                try
+                {
+                    var apptWithNav = _unitOfWork.Appointment.Get(
+                        a => a.Id == appt.Id,
+                        includeProperties: "Business,Service"
+                    );
+
+                    if (apptWithNav != null)
+                        await SendAdminCreatedAppointmentEmail(apptWithNav, tz);
+                }
+                catch
+                {
+                    TempData["error"] = "Appointment saved, but email could not be sent.";
+                }
+            }
+
             return RedirectToAction(nameof(Edit), new { id = appt.Id });
         }
 
@@ -212,6 +224,7 @@ namespace SimplyAppointWeb.Controllers
             if (appt == null) return NotFound();
 
             var startBiz = TimeZoneInfo.ConvertTime(appt.StartUtc, tz);
+
             var vm = new AppointmentsVM
             {
                 Id = appt.Id,
@@ -279,7 +292,6 @@ namespace SimplyAppointWeb.Controllers
                 return View(vm);
             }
 
-            // Update
             appt.ServiceId = service.Id;
             appt.CustomerName = vm.CustomerName?.Trim() ?? "";
             appt.CustomerEmail = vm.CustomerEmail?.Trim() ?? "";
@@ -293,7 +305,6 @@ namespace SimplyAppointWeb.Controllers
             appt.Status = vm.Status;
             appt.Notes = string.IsNullOrWhiteSpace(vm.Notes) ? null : vm.Notes.Trim();
 
-            // cancellation timestamp convention
             if (appt.Status == AppointmentStatus.Cancelled && appt.CancelledUtc == null)
                 appt.CancelledUtc = DateTimeOffset.UtcNow;
 
@@ -305,6 +316,72 @@ namespace SimplyAppointWeb.Controllers
 
             TempData["success"] = "Appointment updated.";
             return RedirectToAction(nameof(Edit), new { id = appt.Id });
+        }
+
+        // -------------------- EMAIL HELPERS --------------------
+
+        private async Task SendAdminCreatedAppointmentEmail(Appointment appt, TimeZoneInfo tz)
+        {
+            var businessName = appt.Business?.Name ?? "Business";
+            var serviceName = appt.Service?.Name ?? "Service";
+
+            var startBiz = TimeZoneInfo.ConvertTime(appt.StartUtc, tz);
+            var endBiz = TimeZoneInfo.ConvertTime(appt.EndUtc, tz);
+
+            string googleUrl = GenerateGoogleCalendarLink(appt);
+            string appleUrl = Url.Action("DownloadIcs", "Home", new { area = "Customer", appointmentId = appt.Id }, protocol: Request.Scheme) ?? "";
+
+            var subject = $"New appointment at {businessName}";
+
+            string html = $@"
+<div style='background-color:#f4f7fa;padding:40px 20px;font-family:sans-serif;'>
+  <div style='max-width:560px;margin:0 auto;background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.10);'>
+    <div style='background:#0d6efd;padding:26px;text-align:center;color:#ffffff;'>
+      <h2 style='margin:0;'>Appointment booked</h2>
+    </div>
+    <div style='padding:30px;'>
+      <p style='margin-top:0;'>Hello {WebUtility.HtmlEncode(appt.CustomerName)},</p>
+      <p>A new appointment has been scheduled for you at <strong>{WebUtility.HtmlEncode(businessName)}</strong>.</p>
+
+      <div style='border-left:4px solid #0d6efd;background:#f8fafc;padding:18px;border-radius:0 12px 12px 0;margin:18px 0;'>
+        <table style='width:100%;font-size:14px;'>
+          <tr><td><strong>Service:</strong></td><td style='text-align:right;'>{WebUtility.HtmlEncode(serviceName)}</td></tr>
+          <tr><td><strong>Date:</strong></td><td style='text-align:right;'>{startBiz:dd.MM.yyyy}</td></tr>
+          <tr><td><strong>Time:</strong></td><td style='text-align:right;'>{startBiz:HH:mm} – {endBiz:HH:mm}</td></tr>
+          <tr><td><strong>Price:</strong></td><td style='text-align:right;font-weight:bold;'>{appt.Price:0.00} €</td></tr>
+        </table>
+      </div>
+
+      <div style='text-align:center;margin-top:18px;'>
+        <p style='font-weight:bold;color:#666;margin-bottom:12px;'>Add to your calendar:</p>
+        <a href='{googleUrl}' target='_blank' style='display:inline-block;padding:12px 22px;margin:5px;border:1px solid #db4437;text-decoration:none;border-radius:8px;font-weight:bold;color:#db4437;background:#fff;'>Google</a>
+        <a href='{appleUrl}' style='display:inline-block;padding:12px 22px;margin:5px;border:1px solid #000;text-decoration:none;border-radius:8px;font-weight:bold;color:#000;background:#fff;'>Apple / Outlook</a>
+      </div>
+
+      <p style='margin:22px 0 0;color:#999;font-size:12px;text-align:center;'>
+        If you need to change or cancel, please contact the business.
+      </p>
+    </div>
+  </div>
+</div>";
+
+            await _emailSender.SendEmailAsync(appt.CustomerEmail, subject, html);
+        }
+
+        private string GenerateGoogleCalendarLink(Appointment app)
+        {
+            var start = app.StartUtc.ToString("yyyyMMddTHHmmssZ");
+            var end = app.EndUtc.ToString("yyyyMMddTHHmmssZ");
+
+            string serviceName = app.Service?.Name ?? "Appointment";
+            string businessName = app.Business?.Name ?? "Business";
+            var details = $"Service: {serviceName}. Price: {app.Price:0.00} EUR.";
+
+            return $"https://www.google.com/calendar/render?action=TEMPLATE" +
+                   $"&text={Uri.EscapeDataString("Booking: " + serviceName)}" +
+                   $"&dates={start}/{end}" +
+                   $"&details={Uri.EscapeDataString(details)}" +
+                   $"&location={Uri.EscapeDataString(businessName)}&sf=true&output=xml";
         }
 
         // -------------------- HELPERS --------------------
@@ -343,7 +420,6 @@ namespace SimplyAppointWeb.Controllers
                 })
                 .ToList();
 
-            // prevent empty select from breaking UI
             if (!vm.ServiceOptions.Any())
             {
                 vm.ServiceOptions.Add(new SelectListItem
@@ -359,7 +435,6 @@ namespace SimplyAppointWeb.Controllers
 
         private static bool TryParseLocalDateTime(string date, string time, out DateTime local)
         {
-            // date: yyyy-MM-dd, time: HH:mm
             local = default;
 
             if (string.IsNullOrWhiteSpace(date) || string.IsNullOrWhiteSpace(time))
@@ -391,7 +466,6 @@ namespace SimplyAppointWeb.Controllers
 
         private static List<Appointment> ApplyFilters(List<Appointment> appts, TimeZoneInfo tz, string range, string status, string? q)
         {
-            // date range filter 
             if (!string.Equals(range, "all", StringComparison.OrdinalIgnoreCase))
             {
                 DateTime startBiz;
@@ -410,7 +484,7 @@ namespace SimplyAppointWeb.Controllers
                         startBiz = new DateTime(todayBiz.Year, todayBiz.Month, 1);
                         endBiz = startBiz.AddMonths(1);
                         break;
-                    default: // week
+                    default:
                         startBiz = todayBiz.AddDays(-(int)todayBiz.DayOfWeek + (int)DayOfWeek.Monday);
                         endBiz = startBiz.AddDays(7);
                         break;
@@ -423,16 +497,12 @@ namespace SimplyAppointWeb.Controllers
                 }).ToList();
             }
 
-            // status filter
             if (!string.Equals(status, "all", StringComparison.OrdinalIgnoreCase))
             {
                 if (Enum.TryParse<AppointmentStatus>(status, true, out var st))
-                {
                     appts = appts.Where(a => a.Status == st).ToList();
-                }
             }
 
-            // search filter
             if (!string.IsNullOrWhiteSpace(q))
             {
                 q = q.Trim();
@@ -466,19 +536,27 @@ namespace SimplyAppointWeb.Controllers
                 return a.Status != AppointmentStatus.Cancelled && a.CancelledUtc == null && sBiz >= todayBiz && sBiz < next7BizEnd;
             });
 
-            // revenue (week) - confirmed only, non-cancelled
+            var weekStartBiz = todayBiz.AddDays(-(int)todayBiz.DayOfWeek + (int)DayOfWeek.Monday);
+            var weekEndBiz = weekStartBiz.AddDays(7);
+
             decimal revenueWeek = appts
                 .Where(a => a.Status == AppointmentStatus.Confirmed && a.CancelledUtc == null)
                 .Where(a =>
                 {
-                    var sBiz = TimeZoneInfo.ConvertTime(a.StartUtc, tz).DateTime;
-                    return sBiz >= todayBiz && sBiz < next7BizEnd;
+                    var startBiz = TimeZoneInfo.ConvertTime(a.StartUtc, tz).DateTime;
+                    if (startBiz < weekStartBiz || startBiz >= weekEndBiz) return false;
+                    return a.EndUtc <= nowUtc;
                 })
                 .Sum(a => a.Price);
 
             int cancellationsWeek = appts.Count(a =>
-                a.Status == AppointmentStatus.Cancelled || a.CancelledUtc != null
-            );
+            {
+                if (a.Status != AppointmentStatus.Cancelled && a.CancelledUtc == null) return false;
+
+                var cUtc = a.CancelledUtc ?? a.CreatedUtc;
+                var cBiz = TimeZoneInfo.ConvertTime(cUtc, tz).DateTime;
+                return cBiz >= weekStartBiz && cBiz < weekEndBiz;
+            });
 
             return (todayCount, next7, revenueWeek, cancellationsWeek);
         }
@@ -498,7 +576,6 @@ namespace SimplyAppointWeb.Controllers
             if (startBiz < nowBiz.AddMinutes(-1))
                 return "Start time must be in the future.";
 
-            // Working hours check 
             var weekday = startBiz.DayOfWeek switch
             {
                 DayOfWeek.Monday => Weekday.Monday,
@@ -521,7 +598,6 @@ namespace SimplyAppointWeb.Controllers
                     return $"Outside working hours ({open:HH:mm}–{close:HH:mm}).";
             }
 
-            // TimeOff overlap 
             var timeOffs = _unitOfWork.TimeOff.GetAll(t => t.BusinessId == businessId).ToList();
             foreach (var t in timeOffs)
             {
@@ -531,7 +607,6 @@ namespace SimplyAppointWeb.Controllers
                     return "This time overlaps with Time Off.";
             }
 
-            // Appointment overlap with buffers
             var before = service.BufferBefore;
             var after = service.BufferAfter;
 
