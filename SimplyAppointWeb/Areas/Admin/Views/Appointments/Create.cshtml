@@ -5,13 +5,12 @@
     ViewData["Title"] = "New Appointment";
     Layout = "_AdminLayout";
 
-    // safe defaults (Create GET should already populate these)
+    // safe defaults
     var safeDate = !string.IsNullOrWhiteSpace(Model.Date) ? Model.Date : DateTime.Today.ToString("yyyy-MM-dd");
     var safeStart = !string.IsNullOrWhiteSpace(Model.StartTime) ? Model.StartTime : "";
 }
 
 <style>
-    /* helper styles (AdminKit/Bootstrap based) */
     .sa-chip {
         border: 1px solid rgba(255,255,255,.10);
         background: rgba(255,255,255,.05);
@@ -56,7 +55,6 @@
         margin: .75rem 0;
     }
 
-    /* validation readable on dark */
     .field-validation-error {
         color: #ffb4b4;
         font-size: .85rem;
@@ -69,7 +67,6 @@
         color: #ffb4b4;
     }
 
-    /* inputs readable on dark cards */
     .card .form-select,
     .card .form-control {
         background-color: rgba(255,255,255,.04);
@@ -86,6 +83,14 @@
         border-color: rgba(255,255,255,.10);
         background: rgba(255,255,255,.04);
         color: rgba(255,255,255,.75);
+    }
+
+    .sa-slot-empty {
+        border: 1px dashed rgba(255,255,255,.18);
+        border-radius: 12px;
+        padding: .8rem;
+        color: rgba(255,255,255,.75);
+        text-align: center;
     }
 </style>
 
@@ -146,7 +151,6 @@
                             <label class="form-label">Customer email</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="align-middle" data-feather="mail"></i></span>
-                                @* IMPORTANT: escape @ in Razor by using @@ *@
                                 <input asp-for="CustomerEmail" class="form-control" placeholder="name@@domain.com" />
                             </div>
                             <span asp-validation-for="CustomerEmail"></span>
@@ -189,6 +193,7 @@
                                 </select>
                             </div>
                             <span asp-validation-for="ServiceId"></span>
+                            <div class="form-text">Pick a service first to load available times.</div>
                         </div>
 
                         <div class="col-md-4 mb-3">
@@ -230,7 +235,7 @@
                                 <input asp-for="DurationMinutes" class="form-control" type="number" min="1" max="1440" id="durInput" />
                             </div>
                             <span asp-validation-for="DurationMinutes"></span>
-                            <div class="form-text">If empty, controller can fallback to service duration.</div>
+                            <div class="form-text">If empty, controller will fallback to service duration.</div>
                         </div>
                     </div>
 
@@ -306,39 +311,30 @@
                 </div>
             </div>
 
-            <!-- Available times (UI helper only) -->
+            <!-- Available times -->
             <div class="card flex-fill mb-3">
                 <div class="card-header">
                     <div class="d-flex justify-content-between align-items-center">
                         <h5 class="card-title mb-0">Available Times</h5>
-                        <span class="badge badge-success-light" id="slotsBadge">Pick date</span>
+                        <span class="badge badge-success-light" id="slotsBadge">Select service</span>
                     </div>
                 </div>
 
                 <div class="card-body pt-2">
-                    <div class="text-muted small mb-2">Click a slot to fill Start time.</div>
+                    <div class="text-muted small mb-2">Pick a service + date. Then click a slot to fill Start time.</div>
 
-                    <div class="row g-2" id="slotsGrid">
-                        <div class="col-4"><div class="sa-chip" data-time="09:00">09:00</div></div>
-                        <div class="col-4"><div class="sa-chip" data-time="09:30">09:30</div></div>
-                        <div class="col-4"><div class="sa-chip sa-chip-disabled">10:00</div></div>
-
-                        <div class="col-4"><div class="sa-chip" data-time="10:30">10:30</div></div>
-                        <div class="col-4"><div class="sa-chip" data-time="11:00">11:00</div></div>
-                        <div class="col-4"><div class="sa-chip sa-chip-disabled">11:30</div></div>
-
-                        <div class="col-4"><div class="sa-chip" data-time="12:00">12:00</div></div>
-                        <div class="col-4"><div class="sa-chip" data-time="12:30">12:30</div></div>
-                        <div class="col-4"><div class="sa-chip" data-time="13:00">13:00</div></div>
+                    <div id="slotsEmpty" class="sa-slot-empty d-none">
+                        No available slots for this date.
                     </div>
 
-                    <div class="text-muted small mt-3">
-                        Disabled slots are already booked (placeholder UI).
+                    <div class="row g-2" id="slotsGrid"></div>
+
+                    <div class="text-muted small mt-3" id="slotsHint">
+                        Slots are loaded from your existing booking logic.
                     </div>
                 </div>
             </div>
 
-            <!-- Booking rules (UI only for now) -->
             <div class="card flex-fill">
                 <div class="card-header">
                     <h5 class="card-title mb-0">Booking Rules</h5>
@@ -348,7 +344,7 @@
                         <i class="align-middle me-2 text-primary" data-feather="info"></i>
                         <div>
                             <div class="fw-semibold">Advance notice</div>
-                            <div class="text-muted small">If your policy requires it, bookings too soon will be rejected.</div>
+                            <div class="text-muted small">Bookings too soon may be rejected by your policy.</div>
                         </div>
                     </div>
 
@@ -356,15 +352,15 @@
                         <i class="align-middle me-2 text-primary" data-feather="bell"></i>
                         <div>
                             <div class="fw-semibold">Confirmation</div>
-                            <div class="text-muted small">Set status to Pending if you still need to confirm.</div>
+                            <div class="text-muted small">Use Pending if you still need to confirm with the customer.</div>
                         </div>
                     </div>
 
                     <div class="d-flex align-items-start">
                         <i class="align-middle me-2 text-primary" data-feather="shield"></i>
                         <div>
-                            <div class="fw-semibold">Cancellation policy</div>
-                            <div class="text-muted small">You can enforce cancellation windows in controller logic.</div>
+                            <div class="fw-semibold">Overlaps</div>
+                            <div class="text-muted small">Working hours, time off, and buffers are enforced.</div>
                         </div>
                     </div>
                 </div>
@@ -395,77 +391,146 @@
 
             const slotsBadge = document.getElementById("slotsBadge");
             const slotsGrid = document.getElementById("slotsGrid");
+            const slotsEmpty = document.getElementById("slotsEmpty");
 
-            function formatWhen() {
-                const d = (dateInput && dateInput.value) ? dateInput.value : "";
-                const t = (startTimeInput && startTimeInput.value) ? startTimeInput.value : "";
+            const endpoint = '@Url.Action("GetAvailableSlots", "Home", new { area = "Customer" })';
+
+            function fmtWhenLabel() {
+                const d = dateInput?.value || "";
+                const t = startTimeInput?.value || "";
                 if (!d && !t) return "—";
                 if (d && t) return d + " @@ " + t;
                 return d || t;
             }
 
             function selectedServiceText() {
-                if (!svcSelect) return "—";
-                const opt = svcSelect.options[svcSelect.selectedIndex];
+                const opt = svcSelect?.options?.[svcSelect.selectedIndex];
                 if (!opt || !opt.value) return "—";
                 return opt.text;
             }
 
             function refreshSummary() {
-                const cname = customerName && customerName.value ? customerName.value.trim() : "";
-                const cemail = customerEmail && customerEmail.value ? customerEmail.value.trim() : "";
+                const cname = customerName?.value?.trim() || "";
+                const cemail = customerEmail?.value?.trim() || "";
 
                 if (cname) sumCustomer.textContent = cname;
                 else if (cemail) sumCustomer.textContent = cemail;
                 else sumCustomer.textContent = "—";
 
                 sumService.textContent = selectedServiceText();
-                sumWhen.textContent = formatWhen();
+                sumWhen.textContent = fmtWhenLabel();
 
-                const dur = durInput && durInput.value ? durInput.value.trim() : "";
+                const dur = durInput?.value?.trim() || "";
                 sumDuration.textContent = dur ? (dur + " min") : "—";
 
-                const price = priceInput && priceInput.value ? priceInput.value.trim() : "";
+                const price = priceInput?.value?.trim() || "";
                 sumPrice.textContent = price ? ("€ " + price) : "—";
             }
 
-            // Chips -> fill start time
-            if (slotsGrid) {
-                slotsGrid.addEventListener("click", function (e) {
-                    const chip = e.target.closest(".sa-chip");
-                    if (!chip || chip.classList.contains("sa-chip-disabled")) return;
-
-                    const time = chip.getAttribute("data-time");
-                    if (!time || !startTimeInput) return;
-
-                    startTimeInput.value = time;
-
-                    slotsGrid.querySelectorAll(".sa-chip").forEach(x => x.classList.remove("sa-chip-active"));
-                    chip.classList.add("sa-chip-active");
-
-                    refreshSummary();
-                });
+            function setBadge(text) {
+                if (slotsBadge) slotsBadge.textContent = text;
             }
 
-            function refreshBadge() {
-                if (!slotsBadge) return;
-                slotsBadge.textContent = (dateInput && dateInput.value) ? "Selected" : "Pick date";
+            function clearSlots(activeTime) {
+                if (!slotsGrid) return;
+                slotsGrid.innerHTML = "";
+                slotsGrid.querySelectorAll?.(".sa-chip")?.forEach(x => x.classList.remove("sa-chip-active"));
+                if (activeTime && startTimeInput) startTimeInput.value = activeTime;
             }
 
-            // Hook changes
+            function renderSlots(times) {
+                if (!slotsGrid || !slotsEmpty) return;
+
+                slotsGrid.innerHTML = "";
+                slotsEmpty.classList.add("d-none");
+
+                if (!Array.isArray(times) || times.length === 0) {
+                    slotsEmpty.classList.remove("d-none");
+                    return;
+                }
+
+                // show first 9 slots
+                const show = times.slice(0, 9);
+
+                for (const t of show) {
+                    const col = document.createElement("div");
+                    col.className = "col-4";
+
+                    const chip = document.createElement("div");
+                    chip.className = "sa-chip";
+                    chip.setAttribute("data-time", t);
+                    chip.textContent = t;
+
+                    if (startTimeInput?.value === t) chip.classList.add("sa-chip-active");
+
+                    chip.addEventListener("click", function () {
+                        if (!startTimeInput) return;
+                        startTimeInput.value = t;
+
+                        slotsGrid.querySelectorAll(".sa-chip").forEach(x => x.classList.remove("sa-chip-active"));
+                        chip.classList.add("sa-chip-active");
+
+                        refreshSummary();
+                    });
+
+                    col.appendChild(chip);
+                    slotsGrid.appendChild(col);
+                }
+
+                // If more slots exist
+                if (times.length > show.length) {
+                    const hint = document.createElement("div");
+                    hint.className = "col-12 text-muted small mt-2";
+                    hint.textContent = `Showing ${show.length} of ${times.length} available slots.`;
+                    slotsGrid.appendChild(hint);
+                }
+            }
+
+            async function loadSlots() {
+                const serviceId = svcSelect?.value;
+                const date = dateInput?.value;
+
+                if (!serviceId) {
+                    setBadge("Select service");
+                    renderSlots([]);
+                    return;
+                }
+                if (!date) {
+                    setBadge("Pick date");
+                    renderSlots([]);
+                    return;
+                }
+
+                setBadge("Loading…");
+
+                try {
+                    const url = `${endpoint}?serviceId=${encodeURIComponent(serviceId)}&date=${encodeURIComponent(date)}`;
+                    const res = await fetch(url, { headers: { "Accept": "application/json" } });
+                    if (!res.ok) throw new Error("Failed");
+                    const data = await res.json();
+
+                    setBadge("Ready");
+                    renderSlots(data);
+                } catch (e) {
+                    setBadge("Error");
+                    renderSlots([]);
+                }
+            }
+
+            // hooks
             ["input", "change"].forEach(evt => {
-                if (customerName) customerName.addEventListener(evt, refreshSummary);
-                if (customerEmail) customerEmail.addEventListener(evt, refreshSummary);
-                if (svcSelect) svcSelect.addEventListener(evt, refreshSummary);
-                if (dateInput) dateInput.addEventListener(evt, function () { refreshBadge(); refreshSummary(); });
-                if (startTimeInput) startTimeInput.addEventListener(evt, refreshSummary);
-                if (durInput) durInput.addEventListener(evt, refreshSummary);
-                if (priceInput) priceInput.addEventListener(evt, refreshSummary);
+                customerName?.addEventListener(evt, refreshSummary);
+                customerEmail?.addEventListener(evt, refreshSummary);
+                svcSelect?.addEventListener(evt, function () { refreshSummary(); loadSlots(); });
+                dateInput?.addEventListener(evt, function () { refreshSummary(); loadSlots(); });
+                startTimeInput?.addEventListener(evt, refreshSummary);
+                durInput?.addEventListener(evt, refreshSummary);
+                priceInput?.addEventListener(evt, refreshSummary);
             });
 
-            // Initial
-            refreshBadge();
+            // initial
             refreshSummary();
+            loadSlots();
 
             // Feather
             if (window.feather) window.feather.replace();
