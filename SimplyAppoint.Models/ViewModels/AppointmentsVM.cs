@@ -6,12 +6,10 @@ namespace SimplyAppoint.Models.ViewModels
 {
     public class AppointmentsIndexVM
     {
-        // Filters (optional)
         public string? Query { get; set; }
         public string DateRange { get; set; } = "week";   // today | week | month | all
         public string Status { get; set; } = "all";       // all | Confirmed | Pending | Cancelled
 
-        // Stats
         public int TodayCount { get; set; }
         public int Next7DaysCount { get; set; }
         public decimal RevenueWeek { get; set; }
@@ -19,7 +17,6 @@ namespace SimplyAppoint.Models.ViewModels
 
         public int TotalShown { get; set; }
 
-        // Table
         public List<AppointmentRowVM> Rows { get; set; } = new();
 
         public int OpenSlotsCount { get; set; }
@@ -83,5 +80,16 @@ namespace SimplyAppoint.Models.ViewModels
         // Dropdowns
         public List<SelectListItem> ServiceOptions { get; set; } = new();
         public string? ServiceLabel { get; set; } // for Edit header display
+
+        // Real Available Times 
+        public List<string> AvailableTimes { get; set; } = new();  
+        public string? AvailabilityMessage { get; set; }            // if no slots etc.
+        public int MaxSlotsToShow { get; set; } = 9;                // UI chips count
+
+        // Booking policy
+        public int SlotIntervalMinutes { get; set; } = 30;
+        public int AdvanceNoticeMinutes { get; set; } = 0;
+        public int CancellationWindowMinutes { get; set; } = 0;
+        public int MaxAdvanceDays { get; set; } = 30;
     }
 }
