@@ -26,34 +26,34 @@
         border-color: rgba(255,255,255,.10) !important;
     }
 
-        .list-group-item:hover {
-            background: rgba(255,255,255,.04) !important;
-        }
+    .list-group-item:hover {
+        background: rgba(255,255,255,.04) !important;
+    }
 
-        .list-group-item .text-muted {
-            color: rgba(255,255,255,.60) !important;
-        }
+    .list-group-item .text-muted {
+        color: rgba(255,255,255,.60) !important;
+    }
 
     .dropdown-menu {
         background: #222e3c;
         border: 1px solid rgba(255,255,255,.10);
     }
 
-        .dropdown-menu .text-muted {
-            color: rgba(255,255,255,.60) !important;
-        }
+    .dropdown-menu .text-muted {
+        color: rgba(255,255,255,.60) !important;
+    }
 
-        .dropdown-menu .form-select,
-        .dropdown-menu .form-control {
-            background-color: rgba(255,255,255,.06);
-            color: rgba(255,255,255,.92);
-            border-color: rgba(255,255,255,.10);
-        }
+    .dropdown-menu .form-select,
+    .dropdown-menu .form-control {
+        background-color: rgba(255,255,255,.06);
+        color: rgba(255,255,255,.92);
+        border-color: rgba(255,255,255,.10);
+    }
 
-            .dropdown-menu .form-select option {
-                background: #222e3c;
-                color: rgba(255,255,255,.92);
-            }
+    .dropdown-menu .form-select option {
+        background: #222e3c;
+        color: rgba(255,255,255,.92);
+    }
 
     .input-group-navbar .form-control {
         min-width: 220px;
@@ -136,8 +136,8 @@
                 </div>
                 <h1 class="mt-1 mb-3">€ @Model.RevenueWeek.ToString("0.00")</h1>
                 <div class="mb-0">
-                    <span class="badge badge-primary-light">est.</span>
-                    <span class="text-muted">confirmed bookings</span>
+                    <span class="badge badge-primary-light">earned</span>
+                    <span class="text-muted">confirmed + completed</span>
                 </div>
             </div>
         </div>
@@ -159,7 +159,7 @@
                 <h1 class="mt-1 mb-3">@Model.CancellationsWeek</h1>
                 <div class="mb-0">
                     <span class="badge badge-danger-light">attention</span>
-                    <span class="text-muted">cancelled bookings</span>
+                    <span class="text-muted">cancelled this week</span>
                 </div>
             </div>
         </div>
