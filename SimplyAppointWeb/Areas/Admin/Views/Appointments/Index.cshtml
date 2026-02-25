@@ -24,7 +24,6 @@
         _ => s.ToString()
     };
 
-    // Defensive defaults
     var qVal = Model?.Query ?? "";
     var rangeVal = Model?.DateRange ?? "week";
     var statusVal = Model?.Status ?? "all";
@@ -70,11 +69,32 @@
         min-width: 220px;
     }
 
-    /* nicer table actions */
     .sa-actions .btn {
         padding: .28rem .55rem;
         line-height: 1.2;
     }
+
+        .sa-actions .btn + .btn,
+        .sa-actions form + form,
+        .sa-actions a + form,
+        .sa-actions form + a {
+            margin-left: .35rem;
+        }
+
+
+    .sa-iconbtn {
+        width: 34px;
+        height: 32px;
+        padding: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+        .sa-iconbtn i {
+            width: 16px;
+            height: 16px;
+        }
 </style>
 
 <div class="row mb-2 mb-xl-3 align-items-center">
@@ -244,7 +264,7 @@
                                 <th>Customer</th>
                                 <th class="d-none d-xl-table-cell">Service</th>
                                 <th>Status</th>
-                                <th class="text-end">Action</th>
+                                <th class="text-end">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -252,6 +272,9 @@
                             {
                                 foreach (var row in Model.Rows)
                                 {
+                                    var isLocked = row.Status == AppointmentStatus.Cancelled || row.Status == AppointmentStatus.Completed;
+                                    var canMarkNoShow = row.Status == AppointmentStatus.Confirmed || row.Status == AppointmentStatus.Pending;
+
                                     <tr>
                                         <td>
                                             <div class="fw-semibold">@row.WhenTime</div>
@@ -275,9 +298,58 @@
                                                asp-controller="Appointments"
                                                asp-action="Edit"
                                                asp-route-id="@row.Id"
-                                               class="btn btn-primary btn-sm">
+                                               class="btn btn-primary btn-sm"
+                                               title="Open">
                                                 Open
                                             </a>
+
+                                            <form class="d-inline"
+                                                  method="post"
+                                                  asp-area="Admin"
+                                                  asp-controller="Appointments"
+                                                  asp-action="MarkNoShow"
+                                                  asp-route-id="@row.Id"
+                                                  onsubmit="return saConfirmNoShow(this);">
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit"
+                                                        class="btn btn-outline-dark btn-sm sa-iconbtn"
+                                                        title="Mark No Show"
+                                                        @(canMarkNoShow ? "" : "disabled")>
+                                                    <i class="align-middle" data-feather="user-x"></i>
+                                                </button>
+                                            </form>
+
+                                            <form class="d-inline"
+                                                  method="post"
+                                                  asp-area="Admin"
+                                                  asp-controller="Appointments"
+                                                  asp-action="Cancel"
+                                                  asp-route-id="@row.Id"
+                                                  onsubmit="return saConfirmCancel(this);">
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit"
+                                                        class="btn btn-outline-danger btn-sm sa-iconbtn"
+                                                        title="Cancel"
+                                                        @(row.Status == AppointmentStatus.Cancelled ? "disabled" : "")>
+                                                    <i class="align-middle" data-feather="x"></i>
+                                                </button>
+                                            </form>
+
+                                            <form class="d-inline"
+                                                  method="post"
+                                                  asp-area="Admin"
+                                                  asp-controller="Appointments"
+                                                  asp-action="DeleteHard"
+                                                  asp-route-id="@row.Id"
+                                                  onsubmit="return saConfirmDelete(this);">
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit"
+                                                        class="btn btn-outline-light btn-sm sa-iconbtn"
+                                                        title="Hard delete"
+                                                        @(isLocked ? "disabled" : "")>
+                                                    <i class="align-middle" data-feather="trash-2"></i>
+                                                </button>
+                                            </form>
                                         </td>
                                     </tr>
                                 }
@@ -409,3 +481,22 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        function saConfirmCancel(form) {
+            return confirm("Are you sure you want to cancel this appointment?\n\nThis will permanently cancel the booking.");
+        }
+
+        function saConfirmDelete(form) {
+            return confirm("Are you sure you want to HARD delete this appointment?\n\nThis cannot be undone.");
+        }
+
+        function saConfirmNoShow(form) {
+            return confirm("Mark this appointment as NO SHOW?\n\nOnly do this if the customer did not come.");
+        }
+
+        // Feather icons
+        if (window.feather) window.feather.replace();
+    </script>
+}
