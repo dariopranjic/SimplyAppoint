@@ -12,11 +12,22 @@
             AppointmentStatus.Confirmed => "badge-success-light",
             AppointmentStatus.Pending => "badge-warning-light",
             AppointmentStatus.Cancelled => "badge-danger-light",
+            AppointmentStatus.NoShow => "badge-dark-light",
+            AppointmentStatus.Completed => "badge-info-light",
             _ => "badge-primary-light"
         };
     }
 
-    string StatusLabel(AppointmentStatus s) => s.ToString();
+    string StatusLabel(AppointmentStatus s) => s switch
+    {
+        AppointmentStatus.NoShow => "No show",
+        _ => s.ToString()
+    };
+
+    // Defensive defaults
+    var qVal = Model?.Query ?? "";
+    var rangeVal = Model?.DateRange ?? "week";
+    var statusVal = Model?.Status ?? "all";
 }
 
 <style>
@@ -26,37 +37,43 @@
         border-color: rgba(255,255,255,.10) !important;
     }
 
-    .list-group-item:hover {
-        background: rgba(255,255,255,.04) !important;
-    }
+        .list-group-item:hover {
+            background: rgba(255,255,255,.04) !important;
+        }
 
-    .list-group-item .text-muted {
-        color: rgba(255,255,255,.60) !important;
-    }
+        .list-group-item .text-muted {
+            color: rgba(255,255,255,.60) !important;
+        }
 
     .dropdown-menu {
         background: #222e3c;
         border: 1px solid rgba(255,255,255,.10);
     }
 
-    .dropdown-menu .text-muted {
-        color: rgba(255,255,255,.60) !important;
-    }
+        .dropdown-menu .text-muted {
+            color: rgba(255,255,255,.60) !important;
+        }
 
-    .dropdown-menu .form-select,
-    .dropdown-menu .form-control {
-        background-color: rgba(255,255,255,.06);
-        color: rgba(255,255,255,.92);
-        border-color: rgba(255,255,255,.10);
-    }
+        .dropdown-menu .form-select,
+        .dropdown-menu .form-control {
+            background-color: rgba(255,255,255,.06);
+            color: rgba(255,255,255,.92);
+            border-color: rgba(255,255,255,.10);
+        }
 
-    .dropdown-menu .form-select option {
-        background: #222e3c;
-        color: rgba(255,255,255,.92);
-    }
+            .dropdown-menu .form-select option {
+                background: #222e3c;
+                color: rgba(255,255,255,.92);
+            }
 
     .input-group-navbar .form-control {
         min-width: 220px;
+    }
+
+    /* nicer table actions */
+    .sa-actions .btn {
+        padding: .28rem .55rem;
+        line-height: 1.2;
     }
 </style>
 
@@ -81,13 +98,9 @@
         <div class="card">
             <div class="card-body">
                 <div class="row">
-                    <div class="col mt-0">
-                        <h5 class="card-title">Today</h5>
-                    </div>
+                    <div class="col mt-0"><h5 class="card-title">Today</h5></div>
                     <div class="col-auto">
-                        <div class="stat text-primary">
-                            <i class="align-middle" data-feather="clock"></i>
-                        </div>
+                        <div class="stat text-primary"><i class="align-middle" data-feather="clock"></i></div>
                     </div>
                 </div>
                 <h1 class="mt-1 mb-3">@Model.TodayCount</h1>
@@ -103,13 +116,9 @@
         <div class="card">
             <div class="card-body">
                 <div class="row">
-                    <div class="col mt-0">
-                        <h5 class="card-title">Next 7 Days</h5>
-                    </div>
+                    <div class="col mt-0"><h5 class="card-title">Next 7 Days</h5></div>
                     <div class="col-auto">
-                        <div class="stat text-primary">
-                            <i class="align-middle" data-feather="calendar"></i>
-                        </div>
+                        <div class="stat text-primary"><i class="align-middle" data-feather="calendar"></i></div>
                     </div>
                 </div>
                 <h1 class="mt-1 mb-3">@Model.Next7DaysCount</h1>
@@ -125,19 +134,15 @@
         <div class="card">
             <div class="card-body">
                 <div class="row">
-                    <div class="col mt-0">
-                        <h5 class="card-title">Revenue (Week)</h5>
-                    </div>
+                    <div class="col mt-0"><h5 class="card-title">Revenue (Week)</h5></div>
                     <div class="col-auto">
-                        <div class="stat text-primary">
-                            <i class="align-middle" data-feather="credit-card"></i>
-                        </div>
+                        <div class="stat text-primary"><i class="align-middle" data-feather="credit-card"></i></div>
                     </div>
                 </div>
                 <h1 class="mt-1 mb-3">€ @Model.RevenueWeek.ToString("0.00")</h1>
                 <div class="mb-0">
                     <span class="badge badge-primary-light">earned</span>
-                    <span class="text-muted">confirmed + completed</span>
+                    <span class="text-muted">confirmed + ended</span>
                 </div>
             </div>
         </div>
@@ -147,13 +152,9 @@
         <div class="card">
             <div class="card-body">
                 <div class="row">
-                    <div class="col mt-0">
-                        <h5 class="card-title">Cancellations</h5>
-                    </div>
+                    <div class="col mt-0"><h5 class="card-title">Cancellations</h5></div>
                     <div class="col-auto">
-                        <div class="stat text-primary">
-                            <i class="align-middle" data-feather="x-circle"></i>
-                        </div>
+                        <div class="stat text-primary"><i class="align-middle" data-feather="x-circle"></i></div>
                     </div>
                 </div>
                 <h1 class="mt-1 mb-3">@Model.CancellationsWeek</h1>
@@ -188,7 +189,7 @@
                             <input type="text"
                                    class="form-control"
                                    name="q"
-                                   value="@Model.Query"
+                                   value="@qVal"
                                    placeholder="Search…"
                                    aria-label="Search">
                             <button class="btn" type="submit" aria-label="Search">
@@ -204,21 +205,23 @@
                             <div class="dropdown-menu dropdown-menu-end p-3" style="min-width: 320px;">
                                 <div class="mb-2 text-muted fw-semibold">Date range</div>
                                 <select class="form-select mb-3" name="range" onchange="this.form.submit()">
-                                    <option value="today" selected="@(Model.DateRange == "today")">Today</option>
-                                    <option value="week" selected="@(Model.DateRange == "week")">This week</option>
-                                    <option value="month" selected="@(Model.DateRange == "month")">This month</option>
-                                    <option value="all" selected="@(Model.DateRange == "all")">All</option>
+                                    <option value="today" selected="@(rangeVal == "today")">Today</option>
+                                    <option value="week" selected="@(rangeVal == "week")">This week</option>
+                                    <option value="month" selected="@(rangeVal == "month")">This month</option>
+                                    <option value="all" selected="@(rangeVal == "all")">All</option>
                                 </select>
 
                                 <div class="mb-2 text-muted fw-semibold">Status</div>
                                 <select class="form-select" name="status" onchange="this.form.submit()">
-                                    <option value="all" selected="@(Model.Status == "all")">All</option>
-                                    <option value="Confirmed" selected="@(Model.Status == "Confirmed")">Confirmed</option>
-                                    <option value="Pending" selected="@(Model.Status == "Pending")">Pending</option>
-                                    <option value="Cancelled" selected="@(Model.Status == "Cancelled")">Cancelled</option>
+                                    <option value="all" selected="@(statusVal == "all")">All</option>
+                                    <option value="Confirmed" selected="@(statusVal == "Confirmed")">Confirmed</option>
+                                    <option value="Pending" selected="@(statusVal == "Pending")">Pending</option>
+                                    <option value="Cancelled" selected="@(statusVal == "Cancelled")">Cancelled</option>
+                                    <option value="NoShow" selected="@(statusVal == "NoShow")">No show</option>
+                                    <option value="Completed" selected="@(statusVal == "Completed")">Completed</option>
                                 </select>
 
-                                <input type="hidden" name="q" value="@Model.Query" />
+                                <input type="hidden" name="q" value="@qVal" />
                             </div>
                         </div>
 
@@ -267,7 +270,7 @@
                                         <td>
                                             <span class="badge @StatusBadgeClass(row.Status)">@StatusLabel(row.Status)</span>
                                         </td>
-                                        <td class="text-end">
+                                        <td class="text-end sa-actions">
                                             <a asp-area="Admin"
                                                asp-controller="Appointments"
                                                asp-action="Edit"

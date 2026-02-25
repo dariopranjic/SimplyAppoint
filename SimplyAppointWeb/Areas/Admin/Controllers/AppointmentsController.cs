@@ -99,7 +99,7 @@ namespace SimplyAppointWeb.Controllers
                     })
                     .ToList(),
 
-                OpenSlotsCount = 0, // you can compute later (same logic as customer slots)
+                OpenSlotsCount = 0,
                 Upcoming = upcoming
             };
 
@@ -193,14 +193,12 @@ namespace SimplyAppointWeb.Controllers
                 Notes = string.IsNullOrWhiteSpace(vm.Notes) ? null : vm.Notes.Trim(),
                 CreatedUtc = DateTimeOffset.UtcNow,
 
-                // IMPORTANT: admin-created appointments should also have a token
                 ConfirmationToken = Guid.NewGuid().ToString()
             };
 
             _unitOfWork.Appointment.Add(appt);
             _unitOfWork.Save();
 
-            // Email customer (owner-created) with cancel button + calendar links
             if (appt.Status == AppointmentStatus.Confirmed && !string.IsNullOrWhiteSpace(appt.CustomerEmail))
             {
                 try
@@ -333,7 +331,7 @@ namespace SimplyAppointWeb.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // -------------------- QUICK ACTIONS (Edit page buttons) --------------------
+        // -------------------- QUICK ACTIONS --------------------
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SetStatus(int id, AppointmentStatus status)
@@ -344,7 +342,6 @@ namespace SimplyAppointWeb.Controllers
             var appt = _unitOfWork.Appointment.Get(a => a.BusinessId == business.Id && a.Id == id);
             if (appt == null) return NotFound();
 
-            // cancel should be permanent in your rules
             if (appt.Status == AppointmentStatus.Cancelled)
             {
                 TempData["error"] = "This appointment is permanently cancelled.";
@@ -363,7 +360,7 @@ namespace SimplyAppointWeb.Controllers
             return RedirectToAction(nameof(Edit), new { id });
         }
 
-        // -------------------- CANCEL (Index button) --------------------
+        // -------------------- CANCEL --------------------
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Cancel(int id)
@@ -386,21 +383,20 @@ namespace SimplyAppointWeb.Controllers
             _unitOfWork.Appointment.Update(appt);
             _unitOfWork.Save();
 
-            // Optional: send cancel email (only if customer email exists)
             if (!string.IsNullOrWhiteSpace(appt.CustomerEmail))
             {
                 try
                 {
                     await SendCancelledEmail(appt, tz);
                 }
-                catch { /* swallow */ }
+                catch {}
             }
 
             TempData["success"] = "Appointment cancelled permanently.";
             return RedirectToAction(nameof(Index));
         }
 
-        // -------------------- NO SHOW (Index button) --------------------
+        // -------------------- NO SHOW --------------------
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> MarkNoShow(int id)
@@ -411,7 +407,6 @@ namespace SimplyAppointWeb.Controllers
             var appt = _unitOfWork.Appointment.Get(a => a.BusinessId == business.Id && a.Id == id);
             if (appt == null) return NotFound();
 
-            // only if not cancelled
             if (appt.Status == AppointmentStatus.Cancelled)
             {
                 TempData["error"] = "Cancelled appointments cannot be marked No-Show.";
@@ -427,7 +422,7 @@ namespace SimplyAppointWeb.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // -------------------- HARD DELETE (restricted) --------------------
+        // -------------------- HARD DELETE --------------------
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteHard(int id)
@@ -438,14 +433,12 @@ namespace SimplyAppointWeb.Controllers
             var appt = _unitOfWork.Appointment.Get(a => a.BusinessId == business.Id && a.Id == id);
             if (appt == null) return NotFound();
 
-            // Restriction: only future appointments can be hard deleted
             if (appt.StartUtc <= DateTimeOffset.UtcNow)
             {
                 TempData["error"] = "Past/started appointments cannot be hard deleted.";
                 return RedirectToAction(nameof(Index));
             }
 
-            // If you have repository Remove:
             _unitOfWork.Appointment.Remove(appt);
             _unitOfWork.Save();
 
@@ -453,9 +446,9 @@ namespace SimplyAppointWeb.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // -------------------- AVAILABILITY (Admin uses same logic) --------------------
+        // -------------------- AVAILABILITY --------------------
         [HttpGet]
-        public async Task<IActionResult> GetAvailableSlots(int serviceId, string date) // date: yyyy-MM-dd
+        public async Task<IActionResult> GetAvailableSlots(int serviceId, string date)
         {
             var (business, tz) = await GetBusinessContextAsync();
             if (business == null) return Json(new List<string>());
@@ -622,7 +615,6 @@ namespace SimplyAppointWeb.Controllers
             var workingDay = business.WorkingHours.FirstOrDefault(wh => (int)wh.Weekday == dayNum && !wh.IsClosed);
             if (workingDay == null || !workingDay.OpenTime.HasValue || !workingDay.CloseTime.HasValue) return new List<string>();
 
-            // existing bookings (ignore cancelled)
             var existingBookings = _unitOfWork.Appointment.GetAll(a =>
                 a.BusinessId == businessId &&
                 a.StartUtc.Date == date.Date &&
@@ -650,11 +642,9 @@ namespace SimplyAppointWeb.Controllers
                     var bStart = TimeZoneInfo.ConvertTime(b.StartUtc, tz).DateTime;
                     var bEnd = TimeZoneInfo.ConvertTime(b.EndUtc, tz).DateTime;
 
-                    // include buffers
                     var bBlockStart = bStart.AddMinutes(-(b.Service?.BufferBefore ?? 0));
                     var bBlockEnd = bEnd.AddMinutes((b.Service?.BufferAfter ?? 0));
 
-                    // also include current service buffers
                     var curBlockStart = cur.AddMinutes(-service.BufferBefore);
                     var curBlockEnd = curEnd.AddMinutes(service.BufferAfter);
 
@@ -816,7 +806,6 @@ namespace SimplyAppointWeb.Controllers
             var weekStartBiz = todayBiz.AddDays(-(int)todayBiz.DayOfWeek + (int)DayOfWeek.Monday);
             var weekEndBiz = weekStartBiz.AddDays(7);
 
-            // Earned revenue: confirmed + not cancelled + appointment ended (past)
             decimal revenueWeek = appts
                 .Where(a => a.Status == AppointmentStatus.Confirmed && a.CancelledUtc == null)
                 .Where(a =>
