@@ -10,6 +10,7 @@ using SimplyAppoint.Models.ViewModels;
 using System.Diagnostics;
 using System.Globalization;
 using System.Net;
+using System.Text;
 
 namespace SimplyAppointWeb.Controllers
 {
@@ -44,7 +45,6 @@ namespace SimplyAppointWeb.Controllers
                 .ToList();
 
             var filtered = ApplyFilters(allAppts, tz, range, status, q);
-
             var stats = BuildStats(allAppts, tz);
 
             var upcoming = allAppts
@@ -99,7 +99,7 @@ namespace SimplyAppointWeb.Controllers
                     })
                     .ToList(),
 
-                OpenSlotsCount = 0,
+                OpenSlotsCount = 0, // you can compute later (same logic as customer slots)
                 Upcoming = upcoming
             };
 
@@ -123,6 +123,9 @@ namespace SimplyAppointWeb.Controllers
             };
 
             await PopulateServicesAsync(business.Id, vm);
+            PopulateBookingPolicy(business.Id, vm);
+            await PopulateAvailabilityAsync(business, tz, vm);
+
             return View(vm);
         }
 
@@ -134,6 +137,8 @@ namespace SimplyAppointWeb.Controllers
             if (business == null) return RedirectToAction(nameof(Index));
 
             await PopulateServicesAsync(business.Id, vm);
+            PopulateBookingPolicy(business.Id, vm);
+            await PopulateAvailabilityAsync(business, tz, vm);
 
             if (!ModelState.IsValid)
                 return View(vm);
@@ -175,8 +180,8 @@ namespace SimplyAppointWeb.Controllers
                 BusinessId = business.Id,
                 ServiceId = service.Id,
 
-                CustomerName = vm.CustomerName?.Trim() ?? "",
-                CustomerEmail = vm.CustomerEmail?.Trim() ?? "",
+                CustomerName = (vm.CustomerName ?? "").Trim(),
+                CustomerEmail = (vm.CustomerEmail ?? "").Trim(),
                 CustomerPhone = string.IsNullOrWhiteSpace(vm.CustomerPhone) ? null : vm.CustomerPhone.Trim(),
 
                 StartUtc = startUtc,
@@ -186,12 +191,16 @@ namespace SimplyAppointWeb.Controllers
                 Price = vm.PriceOverride ?? service.Price,
                 Status = vm.Status,
                 Notes = string.IsNullOrWhiteSpace(vm.Notes) ? null : vm.Notes.Trim(),
-                CreatedUtc = DateTimeOffset.UtcNow
+                CreatedUtc = DateTimeOffset.UtcNow,
+
+                // IMPORTANT: admin-created appointments should also have a token
+                ConfirmationToken = Guid.NewGuid().ToString()
             };
 
             _unitOfWork.Appointment.Add(appt);
             _unitOfWork.Save();
 
+            // Email customer (owner-created) with cancel button + calendar links
             if (appt.Status == AppointmentStatus.Confirmed && !string.IsNullOrWhiteSpace(appt.CustomerEmail))
             {
                 try
@@ -210,7 +219,8 @@ namespace SimplyAppointWeb.Controllers
                 }
             }
 
-            return RedirectToAction(nameof(Edit), new { id = appt.Id });
+            TempData["success"] = "Appointment created.";
+            return RedirectToAction(nameof(Index));
         }
 
         // -------------------- EDIT --------------------
@@ -229,8 +239,8 @@ namespace SimplyAppointWeb.Controllers
             {
                 Id = appt.Id,
                 ServiceId = appt.ServiceId,
-                CustomerName = appt.CustomerName ?? "",
-                CustomerEmail = appt.CustomerEmail ?? "",
+                CustomerName = appt.CustomerName,
+                CustomerEmail = appt.CustomerEmail,
                 CustomerPhone = appt.CustomerPhone,
                 Status = appt.Status,
                 Date = startBiz.ToString("yyyy-MM-dd"),
@@ -242,6 +252,9 @@ namespace SimplyAppointWeb.Controllers
             };
 
             await PopulateServicesAsync(business.Id, vm);
+            PopulateBookingPolicy(business.Id, vm);
+            await PopulateAvailabilityAsync(business, tz, vm);
+
             return View(vm);
         }
 
@@ -253,6 +266,8 @@ namespace SimplyAppointWeb.Controllers
             if (business == null) return RedirectToAction(nameof(Index));
 
             await PopulateServicesAsync(business.Id, vm);
+            PopulateBookingPolicy(business.Id, vm);
+            await PopulateAvailabilityAsync(business, tz, vm);
 
             if (!ModelState.IsValid)
                 return View(vm);
@@ -293,8 +308,8 @@ namespace SimplyAppointWeb.Controllers
             }
 
             appt.ServiceId = service.Id;
-            appt.CustomerName = vm.CustomerName?.Trim() ?? "";
-            appt.CustomerEmail = vm.CustomerEmail?.Trim() ?? "";
+            appt.CustomerName = (vm.CustomerName ?? "").Trim();
+            appt.CustomerEmail = (vm.CustomerEmail ?? "").Trim();
             appt.CustomerPhone = string.IsNullOrWhiteSpace(vm.CustomerPhone) ? null : vm.CustomerPhone.Trim();
 
             appt.StartUtc = startUtc;
@@ -315,7 +330,141 @@ namespace SimplyAppointWeb.Controllers
             _unitOfWork.Save();
 
             TempData["success"] = "Appointment updated.";
-            return RedirectToAction(nameof(Edit), new { id = appt.Id });
+            return RedirectToAction(nameof(Index));
+        }
+
+        // -------------------- QUICK ACTIONS (Edit page buttons) --------------------
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SetStatus(int id, AppointmentStatus status)
+        {
+            var (business, _) = await GetBusinessContextAsync();
+            if (business == null) return RedirectToAction(nameof(Index));
+
+            var appt = _unitOfWork.Appointment.Get(a => a.BusinessId == business.Id && a.Id == id);
+            if (appt == null) return NotFound();
+
+            // cancel should be permanent in your rules
+            if (appt.Status == AppointmentStatus.Cancelled)
+            {
+                TempData["error"] = "This appointment is permanently cancelled.";
+                return RedirectToAction(nameof(Edit), new { id });
+            }
+
+            appt.Status = status;
+
+            if (status == AppointmentStatus.Cancelled && appt.CancelledUtc == null)
+                appt.CancelledUtc = DateTimeOffset.UtcNow;
+
+            _unitOfWork.Appointment.Update(appt);
+            _unitOfWork.Save();
+
+            TempData["success"] = $"Status updated to {status}.";
+            return RedirectToAction(nameof(Edit), new { id });
+        }
+
+        // -------------------- CANCEL (Index button) --------------------
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Cancel(int id)
+        {
+            var (business, tz) = await GetBusinessContextAsync();
+            if (business == null) return RedirectToAction(nameof(Index));
+
+            var appt = _unitOfWork.Appointment.Get(a => a.BusinessId == business.Id && a.Id == id, includeProperties: "Business,Service");
+            if (appt == null) return NotFound();
+
+            if (appt.Status == AppointmentStatus.Cancelled)
+            {
+                TempData["error"] = "Already cancelled.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            appt.Status = AppointmentStatus.Cancelled;
+            appt.CancelledUtc = DateTimeOffset.UtcNow;
+
+            _unitOfWork.Appointment.Update(appt);
+            _unitOfWork.Save();
+
+            // Optional: send cancel email (only if customer email exists)
+            if (!string.IsNullOrWhiteSpace(appt.CustomerEmail))
+            {
+                try
+                {
+                    await SendCancelledEmail(appt, tz);
+                }
+                catch { /* swallow */ }
+            }
+
+            TempData["success"] = "Appointment cancelled permanently.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        // -------------------- NO SHOW (Index button) --------------------
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> MarkNoShow(int id)
+        {
+            var (business, _) = await GetBusinessContextAsync();
+            if (business == null) return RedirectToAction(nameof(Index));
+
+            var appt = _unitOfWork.Appointment.Get(a => a.BusinessId == business.Id && a.Id == id);
+            if (appt == null) return NotFound();
+
+            // only if not cancelled
+            if (appt.Status == AppointmentStatus.Cancelled)
+            {
+                TempData["error"] = "Cancelled appointments cannot be marked No-Show.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            appt.Status = AppointmentStatus.NoShow;
+
+            _unitOfWork.Appointment.Update(appt);
+            _unitOfWork.Save();
+
+            TempData["success"] = "Marked as No-Show.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        // -------------------- HARD DELETE (restricted) --------------------
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteHard(int id)
+        {
+            var (business, _) = await GetBusinessContextAsync();
+            if (business == null) return RedirectToAction(nameof(Index));
+
+            var appt = _unitOfWork.Appointment.Get(a => a.BusinessId == business.Id && a.Id == id);
+            if (appt == null) return NotFound();
+
+            // Restriction: only future appointments can be hard deleted
+            if (appt.StartUtc <= DateTimeOffset.UtcNow)
+            {
+                TempData["error"] = "Past/started appointments cannot be hard deleted.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            // If you have repository Remove:
+            _unitOfWork.Appointment.Remove(appt);
+            _unitOfWork.Save();
+
+            TempData["success"] = "Appointment deleted permanently.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        // -------------------- AVAILABILITY (Admin uses same logic) --------------------
+        [HttpGet]
+        public async Task<IActionResult> GetAvailableSlots(int serviceId, string date) // date: yyyy-MM-dd
+        {
+            var (business, tz) = await GetBusinessContextAsync();
+            if (business == null) return Json(new List<string>());
+
+            if (!DateTime.TryParseExact(date, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var d))
+                return Json(new List<string>());
+
+            var slots = ComputeAvailableSlots(business.Id, serviceId, d, tz);
+            return Json(slots);
         }
 
         // -------------------- EMAIL HELPERS --------------------
@@ -330,8 +479,11 @@ namespace SimplyAppointWeb.Controllers
 
             string googleUrl = GenerateGoogleCalendarLink(appt);
             string appleUrl = Url.Action("DownloadIcs", "Home", new { area = "Customer", appointmentId = appt.Id }, protocol: Request.Scheme) ?? "";
+            string cancelUrl = Url.Action("CancelAppointment", "Home", new { area = "Customer", token = appt.ConfirmationToken }, protocol: Request.Scheme) ?? "";
 
             var subject = $"New appointment at {businessName}";
+
+            var safeName = !string.IsNullOrWhiteSpace(appt.CustomerName) ? appt.CustomerName : "there";
 
             string html = $@"
 <div style='background-color:#f4f7fa;padding:40px 20px;font-family:sans-serif;'>
@@ -340,7 +492,7 @@ namespace SimplyAppointWeb.Controllers
       <h2 style='margin:0;'>Appointment booked</h2>
     </div>
     <div style='padding:30px;'>
-      <p style='margin-top:0;'>Hello {WebUtility.HtmlEncode(appt.CustomerName)},</p>
+      <p style='margin-top:0;'>Hello {WebUtility.HtmlEncode(safeName)},</p>
       <p>A new appointment has been scheduled for you at <strong>{WebUtility.HtmlEncode(businessName)}</strong>.</p>
 
       <div style='border-left:4px solid #0d6efd;background:#f8fafc;padding:18px;border-radius:0 12px 12px 0;margin:18px 0;'>
@@ -358,14 +510,43 @@ namespace SimplyAppointWeb.Controllers
         <a href='{appleUrl}' style='display:inline-block;padding:12px 22px;margin:5px;border:1px solid #000;text-decoration:none;border-radius:8px;font-weight:bold;color:#000;background:#fff;'>Apple / Outlook</a>
       </div>
 
-      <p style='margin:22px 0 0;color:#999;font-size:12px;text-align:center;'>
-        If you need to change or cancel, please contact the business.
-      </p>
+      <div style='text-align:center;margin-top:22px;padding-top:18px;border-top:1px solid #eee;'>
+        <p style='font-size:12px;color:#888;margin:0 0 10px;'>Can&apos;t make it?</p>
+        <a href='{cancelUrl}' style='display:inline-block;background:#dc3545;color:#fff;padding:12px 18px;border-radius:10px;text-decoration:none;font-weight:700;'>Cancel appointment</a>
+        <div style='font-size:11px;color:#aaa;margin-top:10px;'>Cancellation may be subject to the business policy.</div>
+      </div>
     </div>
   </div>
 </div>";
 
             await _emailSender.SendEmailAsync(appt.CustomerEmail, subject, html);
+        }
+
+        private async Task SendCancelledEmail(Appointment appt, TimeZoneInfo tz)
+        {
+            var businessName = appt.Business?.Name ?? "Business";
+            var serviceName = appt.Service?.Name ?? "Service";
+
+            var startBiz = TimeZoneInfo.ConvertTime(appt.StartUtc, tz);
+
+            string html = $@"
+<div style='background-color:#f4f7fa;padding:40px 20px;font-family:sans-serif;'>
+  <div style='max-width:520px;margin:0 auto;background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.10);'>
+    <div style='background:#dc3545;padding:22px;text-align:center;color:#ffffff;'>
+      <h2 style='margin:0;'>Appointment cancelled</h2>
+    </div>
+    <div style='padding:26px;'>
+      <p>Your appointment at <strong>{WebUtility.HtmlEncode(businessName)}</strong> has been cancelled.</p>
+      <div style='background:#f8fafc;padding:14px;border-radius:12px;'>
+        <div><strong>Service:</strong> {WebUtility.HtmlEncode(serviceName)}</div>
+        <div><strong>Date:</strong> {startBiz:dd.MM.yyyy}</div>
+        <div><strong>Time:</strong> {startBiz:HH:mm}</div>
+      </div>
+    </div>
+  </div>
+</div>";
+
+            await _emailSender.SendEmailAsync(appt.CustomerEmail, $"Cancelled: {businessName}", html);
         }
 
         private string GenerateGoogleCalendarLink(Appointment app)
@@ -382,6 +563,111 @@ namespace SimplyAppointWeb.Controllers
                    $"&dates={start}/{end}" +
                    $"&details={Uri.EscapeDataString(details)}" +
                    $"&location={Uri.EscapeDataString(businessName)}&sf=true&output=xml";
+        }
+
+        // -------------------- POLICY + AVAILABILITY --------------------
+
+        private void PopulateBookingPolicy(int businessId, AppointmentsVM vm)
+        {
+            var policy = _unitOfWork.BookingPolicy.Get(p => p.BusinessId == businessId);
+            if (policy == null) return;
+
+            vm.SlotIntervalMinutes = policy.SlotIntervalMinutes;
+            vm.AdvanceNoticeMinutes = policy.AdvanceNoticeMinutes;
+            vm.CancellationWindowMinutes = policy.CancellationWindowMinutes;
+            vm.MaxAdvanceDays = policy.MaxAdvanceDays;
+        }
+
+        private async Task PopulateAvailabilityAsync(Business business, TimeZoneInfo tz, AppointmentsVM vm)
+        {
+            vm.AvailableTimes = new List<string>();
+            vm.AvailabilityMessage = null;
+
+            if (vm.ServiceId <= 0 || string.IsNullOrWhiteSpace(vm.Date))
+            {
+                vm.AvailabilityMessage = "Select a service and date to load available times.";
+                return;
+            }
+
+            if (!DateTime.TryParseExact(vm.Date, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var d))
+            {
+                vm.AvailabilityMessage = "Invalid date.";
+                return;
+            }
+
+            var slots = ComputeAvailableSlots(business.Id, vm.ServiceId, d, tz);
+
+            if (!slots.Any())
+            {
+                vm.AvailabilityMessage = "No available times for the selected date/service.";
+                return;
+            }
+
+            vm.AvailableTimes = slots.Take(vm.MaxSlotsToShow).ToList();
+            await Task.CompletedTask;
+        }
+
+        private List<string> ComputeAvailableSlots(int businessId, int serviceId, DateTime date, TimeZoneInfo tz)
+        {
+            var service = _unitOfWork.Service.Get(s => s.Id == serviceId && s.BusinessId == businessId);
+            if (service == null) return new List<string>();
+
+            var business = _unitOfWork.Business.Get(b => b.Id == businessId, includeProperties: "WorkingHours");
+            var policy = _unitOfWork.BookingPolicy.Get(p => p.BusinessId == businessId);
+            if (business == null || policy == null) return new List<string>();
+
+            int dayNum = (int)date.DayOfWeek;
+            if (dayNum == 0) dayNum = 7;
+
+            var workingDay = business.WorkingHours.FirstOrDefault(wh => (int)wh.Weekday == dayNum && !wh.IsClosed);
+            if (workingDay == null || !workingDay.OpenTime.HasValue || !workingDay.CloseTime.HasValue) return new List<string>();
+
+            // existing bookings (ignore cancelled)
+            var existingBookings = _unitOfWork.Appointment.GetAll(a =>
+                a.BusinessId == businessId &&
+                a.StartUtc.Date == date.Date &&
+                a.Status != AppointmentStatus.Cancelled &&
+                a.CancelledUtc == null);
+
+            var availableSlots = new List<string>();
+
+            var openLocal = date.Date.Add(workingDay.OpenTime.Value.ToTimeSpan());
+            var closeLocal = date.Date.Add(workingDay.CloseTime.Value.ToTimeSpan());
+
+            int interval = policy.SlotIntervalMinutes;
+            var nowLocal = TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, tz).DateTime;
+
+            var cur = openLocal;
+            while (cur.AddMinutes(service.DurationMinutes) <= closeLocal)
+            {
+                var curEnd = cur.AddMinutes(service.DurationMinutes);
+
+                bool isPast = cur < nowLocal;
+                bool satisfiesNotice = cur >= nowLocal.AddMinutes(policy.AdvanceNoticeMinutes);
+
+                bool occupied = existingBookings.Any(b =>
+                {
+                    var bStart = TimeZoneInfo.ConvertTime(b.StartUtc, tz).DateTime;
+                    var bEnd = TimeZoneInfo.ConvertTime(b.EndUtc, tz).DateTime;
+
+                    // include buffers
+                    var bBlockStart = bStart.AddMinutes(-(b.Service?.BufferBefore ?? 0));
+                    var bBlockEnd = bEnd.AddMinutes((b.Service?.BufferAfter ?? 0));
+
+                    // also include current service buffers
+                    var curBlockStart = cur.AddMinutes(-service.BufferBefore);
+                    var curBlockEnd = curEnd.AddMinutes(service.BufferAfter);
+
+                    return curBlockStart < bBlockEnd && curBlockEnd > bBlockStart;
+                });
+
+                if (!occupied && !isPast && satisfiesNotice)
+                    availableSlots.Add(cur.ToString("HH:mm"));
+
+                cur = cur.AddMinutes(interval);
+            }
+
+            return availableSlots;
         }
 
         // -------------------- HELPERS --------------------
@@ -436,18 +722,10 @@ namespace SimplyAppointWeb.Controllers
         private static bool TryParseLocalDateTime(string date, string time, out DateTime local)
         {
             local = default;
-
-            if (string.IsNullOrWhiteSpace(date) || string.IsNullOrWhiteSpace(time))
-                return false;
+            if (string.IsNullOrWhiteSpace(date) || string.IsNullOrWhiteSpace(time)) return false;
 
             var s = $"{date} {time}";
-            return DateTime.TryParseExact(
-                s,
-                "yyyy-MM-dd HH:mm",
-                CultureInfo.InvariantCulture,
-                DateTimeStyles.None,
-                out local
-            );
+            return DateTime.TryParseExact(s, "yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None, out local);
         }
 
         private static DateTimeOffset ToUtc(DateTime localBiz, TimeZoneInfo tz)
@@ -477,8 +755,7 @@ namespace SimplyAppointWeb.Controllers
                 switch (range.ToLowerInvariant())
                 {
                     case "today":
-                        startBiz = todayBiz;
-                        endBiz = todayBiz.AddDays(1);
+                        startBiz = todayBiz; endBiz = todayBiz.AddDays(1);
                         break;
                     case "month":
                         startBiz = new DateTime(todayBiz.Year, todayBiz.Month, 1);
@@ -520,8 +797,8 @@ namespace SimplyAppointWeb.Controllers
         private (int TodayCount, int Next7DaysCount, decimal RevenueWeek, int CancellationsWeek) BuildStats(List<Appointment> appts, TimeZoneInfo tz)
         {
             var nowUtc = DateTimeOffset.UtcNow;
-            var nowBiz = TimeZoneInfo.ConvertTime(nowUtc, tz);
-            var todayBiz = nowBiz.Date;
+            var todayBiz = TimeZoneInfo.ConvertTime(nowUtc, tz).Date;
+
             var next7BizEnd = todayBiz.AddDays(7);
 
             int todayCount = appts.Count(a =>
@@ -539,6 +816,7 @@ namespace SimplyAppointWeb.Controllers
             var weekStartBiz = todayBiz.AddDays(-(int)todayBiz.DayOfWeek + (int)DayOfWeek.Monday);
             var weekEndBiz = weekStartBiz.AddDays(7);
 
+            // Earned revenue: confirmed + not cancelled + appointment ended (past)
             decimal revenueWeek = appts
                 .Where(a => a.Status == AppointmentStatus.Confirmed && a.CancelledUtc == null)
                 .Where(a =>
@@ -552,7 +830,6 @@ namespace SimplyAppointWeb.Controllers
             int cancellationsWeek = appts.Count(a =>
             {
                 if (a.Status != AppointmentStatus.Cancelled && a.CancelledUtc == null) return false;
-
                 var cUtc = a.CancelledUtc ?? a.CreatedUtc;
                 var cBiz = TimeZoneInfo.ConvertTime(cUtc, tz).DateTime;
                 return cBiz >= weekStartBiz && cBiz < weekEndBiz;
@@ -561,20 +838,12 @@ namespace SimplyAppointWeb.Controllers
             return (todayCount, next7, revenueWeek, cancellationsWeek);
         }
 
-        private string? ValidateSlot(
-            int businessId,
-            TimeZoneInfo tz,
-            DateTime startBiz,
-            DateTime endBiz,
-            Service service,
-            int? excludeAppointmentId)
+        private string? ValidateSlot(int businessId, TimeZoneInfo tz, DateTime startBiz, DateTime endBiz, Service service, int? excludeAppointmentId)
         {
-            if (endBiz <= startBiz)
-                return "End time must be after start time.";
+            if (endBiz <= startBiz) return "End time must be after start time.";
 
             var nowBiz = TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, tz).DateTime;
-            if (startBiz < nowBiz.AddMinutes(-1))
-                return "Start time must be in the future.";
+            if (startBiz < nowBiz.AddMinutes(-1)) return "Start time must be in the future.";
 
             var weekday = startBiz.DayOfWeek switch
             {
@@ -589,13 +858,11 @@ namespace SimplyAppointWeb.Controllers
             };
 
             var wh = _unitOfWork.WorkingHours.Get(w => w.BusinessId == businessId && w.Weekday == weekday);
-            if (wh != null && (!wh.IsClosed) && wh.OpenTime.HasValue && wh.CloseTime.HasValue)
+            if (wh != null && !wh.IsClosed && wh.OpenTime.HasValue && wh.CloseTime.HasValue)
             {
                 var open = startBiz.Date.Add(wh.OpenTime.Value.ToTimeSpan());
                 var close = startBiz.Date.Add(wh.CloseTime.Value.ToTimeSpan());
-
-                if (startBiz < open || endBiz > close)
-                    return $"Outside working hours ({open:HH:mm}–{close:HH:mm}).";
+                if (startBiz < open || endBiz > close) return $"Outside working hours ({open:HH:mm}–{close:HH:mm}).";
             }
 
             var timeOffs = _unitOfWork.TimeOff.GetAll(t => t.BusinessId == businessId).ToList();
@@ -603,15 +870,11 @@ namespace SimplyAppointWeb.Controllers
             {
                 var s = TimeZoneInfo.ConvertTime(t.StartUtc, tz).DateTime;
                 var e = TimeZoneInfo.ConvertTime(t.EndUtc, tz).DateTime;
-                if (Overlaps(startBiz, endBiz, s, e))
-                    return "This time overlaps with Time Off.";
+                if (Overlaps(startBiz, endBiz, s, e)) return "This time overlaps with Time Off.";
             }
 
-            var before = service.BufferBefore;
-            var after = service.BufferAfter;
-
-            var blockStart = startBiz.AddMinutes(-before);
-            var blockEnd = endBiz.AddMinutes(after);
+            var blockStart = startBiz.AddMinutes(-service.BufferBefore);
+            var blockEnd = endBiz.AddMinutes(service.BufferAfter);
 
             var appts = _unitOfWork.Appointment
                 .GetAll(a => a.BusinessId == businessId && a.CancelledUtc == null && a.Status != AppointmentStatus.Cancelled, includeProperties: "Service")
@@ -619,8 +882,7 @@ namespace SimplyAppointWeb.Controllers
 
             foreach (var a in appts)
             {
-                if (excludeAppointmentId.HasValue && a.Id == excludeAppointmentId.Value)
-                    continue;
+                if (excludeAppointmentId.HasValue && a.Id == excludeAppointmentId.Value) continue;
 
                 var s0 = TimeZoneInfo.ConvertTime(a.StartUtc, tz).DateTime;
                 var e0 = TimeZoneInfo.ConvertTime(a.EndUtc, tz).DateTime;
@@ -628,8 +890,7 @@ namespace SimplyAppointWeb.Controllers
                 var s = s0.AddMinutes(-(a.Service?.BufferBefore ?? 0));
                 var e = e0.AddMinutes((a.Service?.BufferAfter ?? 0));
 
-                if (Overlaps(blockStart, blockEnd, s, e))
-                    return "This time overlaps with an existing appointment.";
+                if (Overlaps(blockStart, blockEnd, s, e)) return "This time overlaps with an existing appointment.";
             }
 
             return null;
