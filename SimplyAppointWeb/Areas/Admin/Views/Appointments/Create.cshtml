@@ -92,6 +92,23 @@
         color: rgba(255,255,255,.75);
         text-align: center;
     }
+
+    .sa-policy {
+        border: 1px solid rgba(255,255,255,.10);
+        background: rgba(255,255,255,.03);
+        border-radius: 14px;
+        padding: .75rem .85rem;
+    }
+
+    .sa-policy .k {
+        color: rgba(255,255,255,.65);
+        font-size: .85rem;
+    }
+
+    .sa-policy .v {
+        font-weight: 700;
+        color: rgba(255,255,255,.92);
+    }
 </style>
 
 <div class="row mb-2 mb-xl-3 align-items-center">
@@ -145,6 +162,7 @@
                                 <input asp-for="CustomerName" class="form-control" placeholder="e.g. Anna K." />
                             </div>
                             <span asp-validation-for="CustomerName"></span>
+                            <div class="form-text">Name OR email is enough — email is required only if you want to send emails.</div>
                         </div>
 
                         <div class="col-md-6 mb-3">
@@ -174,6 +192,7 @@
                                     asp-items="Html.GetEnumSelectList<AppointmentStatus>()">
                             </select>
                             <span asp-validation-for="Status"></span>
+                            <div class="form-text">Tip: use <strong>Pending</strong> if you still need to confirm.</div>
                         </div>
                     </div>
 
@@ -193,7 +212,7 @@
                                 </select>
                             </div>
                             <span asp-validation-for="ServiceId"></span>
-                            <div class="form-text">Pick a service first to load available times.</div>
+                            <div class="form-text">Pick a service + date to load available times.</div>
                         </div>
 
                         <div class="col-md-4 mb-3">
@@ -323,44 +342,62 @@
                 <div class="card-body pt-2">
                     <div class="text-muted small mb-2">Pick a service + date. Then click a slot to fill Start time.</div>
 
+                    @if (!string.IsNullOrWhiteSpace(Model.AvailabilityMessage))
+                    {
+                        <div class="sa-slot-empty mb-2">@Model.AvailabilityMessage</div>
+                    }
+
                     <div id="slotsEmpty" class="sa-slot-empty d-none">
                         No available slots for this date.
                     </div>
 
-                    <div class="row g-2" id="slotsGrid"></div>
+                    <div class="row g-2" id="slotsGrid">
+                        @if (Model.AvailableTimes != null && Model.AvailableTimes.Any())
+                        {
+                            foreach (var t in Model.AvailableTimes.Take(Model.MaxSlotsToShow > 0 ? Model.MaxSlotsToShow : 9))
+                            {
+                                <div class="col-4">
+                                    <div class="sa-chip" data-time="@t">@t</div>
+                                </div>
+                            }
+
+                            if (Model.AvailableTimes.Count > (Model.MaxSlotsToShow > 0 ? Model.MaxSlotsToShow : 9))
+                            {
+                                <div class="col-12 text-muted small mt-2">
+                                    Showing @(Model.MaxSlotsToShow > 0 ? Model.MaxSlotsToShow : 9) of @Model.AvailableTimes.Count available slots.
+                                </div>
+                            }
+                        }
+                    </div>
 
                     <div class="text-muted small mt-3" id="slotsHint">
-                        Slots are loaded from your existing booking logic.
+                        Slots are loaded from your booking logic (working hours, time off, buffers).
                     </div>
                 </div>
             </div>
 
+            <!-- Booking rules -->
             <div class="card flex-fill">
                 <div class="card-header">
                     <h5 class="card-title mb-0">Booking Rules</h5>
                 </div>
                 <div class="card-body">
-                    <div class="d-flex align-items-start mb-3">
-                        <i class="align-middle me-2 text-primary" data-feather="info"></i>
-                        <div>
-                            <div class="fw-semibold">Advance notice</div>
-                            <div class="text-muted small">Bookings too soon may be rejected by your policy.</div>
+                    <div class="sa-policy">
+                        <div class="d-flex justify-content-between">
+                            <div class="k">Slot interval</div>
+                            <div class="v">@Model.SlotIntervalMinutes min</div>
                         </div>
-                    </div>
-
-                    <div class="d-flex align-items-start mb-3">
-                        <i class="align-middle me-2 text-primary" data-feather="bell"></i>
-                        <div>
-                            <div class="fw-semibold">Confirmation</div>
-                            <div class="text-muted small">Use Pending if you still need to confirm with the customer.</div>
+                        <div class="d-flex justify-content-between mt-2">
+                            <div class="k">Advance notice</div>
+                            <div class="v">@Model.AdvanceNoticeMinutes min</div>
                         </div>
-                    </div>
-
-                    <div class="d-flex align-items-start">
-                        <i class="align-middle me-2 text-primary" data-feather="shield"></i>
-                        <div>
-                            <div class="fw-semibold">Overlaps</div>
-                            <div class="text-muted small">Working hours, time off, and buffers are enforced.</div>
+                        <div class="d-flex justify-content-between mt-2">
+                            <div class="k">Cancellation window</div>
+                            <div class="v">@Model.CancellationWindowMinutes min</div>
+                        </div>
+                        <div class="d-flex justify-content-between mt-2">
+                            <div class="k">Max advance</div>
+                            <div class="v">@Model.MaxAdvanceDays day(s)</div>
                         </div>
                     </div>
                 </div>
@@ -431,13 +468,6 @@
                 if (slotsBadge) slotsBadge.textContent = text;
             }
 
-            function clearSlots(activeTime) {
-                if (!slotsGrid) return;
-                slotsGrid.innerHTML = "";
-                slotsGrid.querySelectorAll?.(".sa-chip")?.forEach(x => x.classList.remove("sa-chip-active"));
-                if (activeTime && startTimeInput) startTimeInput.value = activeTime;
-            }
-
             function renderSlots(times) {
                 if (!slotsGrid || !slotsEmpty) return;
 
@@ -449,8 +479,8 @@
                     return;
                 }
 
-                // show first 9 slots
-                const show = times.slice(0, 9);
+                const maxShow = 9; 
+                const show = times.slice(0, maxShow);
 
                 for (const t of show) {
                     const col = document.createElement("div");
@@ -477,7 +507,6 @@
                     slotsGrid.appendChild(col);
                 }
 
-                // If more slots exist
                 if (times.length > show.length) {
                     const hint = document.createElement("div");
                     hint.className = "col-12 text-muted small mt-2";
@@ -532,7 +561,6 @@
             refreshSummary();
             loadSlots();
 
-            // Feather
             if (window.feather) window.feather.replace();
         })();
     </script>
