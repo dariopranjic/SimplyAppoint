@@ -8,6 +8,8 @@
     // safe defaults
     var safeDate = !string.IsNullOrWhiteSpace(Model.Date) ? Model.Date : DateTime.Today.ToString("yyyy-MM-dd");
     var safeStart = !string.IsNullOrWhiteSpace(Model.StartTime) ? Model.StartTime : "";
+
+    Model.Status = AppointmentStatus.Confirmed;
 }
 
 <style>
@@ -63,9 +65,7 @@
         margin-top: .35rem;
     }
 
-    .validation-summary-errors {
-        color: #ffb4b4;
-    }
+    .validation-summary-errors { color: #ffb4b4; }
 
     .card .form-select,
     .card .form-control {
@@ -100,15 +100,48 @@
         padding: .75rem .85rem;
     }
 
-    .sa-policy .k {
-        color: rgba(255,255,255,.65);
-        font-size: .85rem;
+    .sa-policy .k { color: rgba(255,255,255,.65); font-size: .85rem; }
+    .sa-policy .v { font-weight: 700; color: rgba(255,255,255,.92); }
+
+    .sa-slots-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: .75rem;
+        margin: .25rem 0 .75rem 0;
+        padding: .4rem .55rem;
+        border: 1px solid rgba(255,255,255,.10);
+        background: rgba(255,255,255,.03);
+        border-radius: 14px;
     }
 
-    .sa-policy .v {
-        font-weight: 700;
-        color: rgba(255,255,255,.92);
+    .sa-slots-toolbar .btn {
+        padding: .35rem .55rem;
+        line-height: 1.1;
+        border-radius: 12px;
     }
+
+    .sa-slots-toolbar .btn:disabled { opacity: .35; cursor: not-allowed; }
+
+    .sa-slots-meta {
+        color: rgba(255,255,255,.70);
+        font-size: .85rem;
+        white-space: nowrap;
+    }
+
+    .sa-slots-toolbar .btn-outline-light {
+    border-color: rgba(255,255,255,.18);
+    color: rgba(255,255,255,.75);
+    background: rgba(255,255,255,.03);
+    }
+
+    .sa-slots-toolbar .btn-outline-light:hover {
+        background: rgba(255,255,255,.10);
+        border-color: rgba(255,255,255,.35);
+        color: #fff;
+    }
+
+    .sa-saving { opacity: .75; pointer-events: none; }
 </style>
 
 <div class="row mb-2 mb-xl-3 align-items-center">
@@ -159,17 +192,17 @@
                             <label class="form-label">Customer name</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="align-middle" data-feather="user"></i></span>
-                                <input asp-for="CustomerName" class="form-control" placeholder="e.g. Anna K." />
+                                <input asp-for="CustomerName" class="form-control" placeholder="e.g. Anna K." autocomplete="name" />
                             </div>
                             <span asp-validation-for="CustomerName"></span>
-                            <div class="form-text">Name OR email is enough — email is required only if you want to send emails.</div>
+                            <div class="form-text">Name or email is enough - email is required only if you want to send emails.</div>
                         </div>
 
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Customer email</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="align-middle" data-feather="mail"></i></span>
-                                <input asp-for="CustomerEmail" class="form-control" placeholder="name@@domain.com" />
+                                <input asp-for="CustomerEmail" class="form-control" placeholder="name@domain.com" autocomplete="email" />
                             </div>
                             <span asp-validation-for="CustomerEmail"></span>
                         </div>
@@ -180,19 +213,18 @@
                             <label class="form-label">Phone (optional)</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="align-middle" data-feather="phone"></i></span>
-                                <input asp-for="CustomerPhone" class="form-control" placeholder="+385 ..." />
+                                <input asp-for="CustomerPhone" class="form-control" placeholder="+385 ..." autocomplete="tel" />
                             </div>
                             <span asp-validation-for="CustomerPhone"></span>
                         </div>
 
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Status</label>
-                            <select asp-for="Status"
-                                    class="form-select"
-                                    asp-items="Html.GetEnumSelectList<AppointmentStatus>()">
-                            </select>
-                            <span asp-validation-for="Status"></span>
-                            <div class="form-text">Tip: use <strong>Pending</strong> if you still need to confirm.</div>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="align-middle" data-feather="check-circle"></i></span>
+                                <input class="form-control" value="Confirmed" disabled />
+                            </div>
+                            <input asp-for="Status" type="hidden" value="@AppointmentStatus.Confirmed" />
                         </div>
                     </div>
 
@@ -207,7 +239,8 @@
                                 <select asp-for="ServiceId"
                                         class="form-select"
                                         asp-items="Model.ServiceOptions"
-                                        id="svcSelect">
+                                        id="svcSelect"
+                                        required>
                                     <option value="">Select service…</option>
                                 </select>
                             </div>
@@ -219,7 +252,7 @@
                             <label class="form-label">Price override (optional)</label>
                             <div class="input-group">
                                 <span class="input-group-text">€</span>
-                                <input asp-for="PriceOverride" class="form-control" type="number" step="0.01" min="0" id="priceInput" />
+                                <input asp-for="PriceOverride" class="form-control" type="number" step="0.01" min="0" id="priceInput" inputmode="decimal" />
                             </div>
                             <span asp-validation-for="PriceOverride"></span>
                             <div class="form-text">Leave empty to use service price.</div>
@@ -232,7 +265,7 @@
                             <label class="form-label">Date</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="align-middle" data-feather="calendar"></i></span>
-                                <input asp-for="Date" class="form-control" type="date" id="dateInput" value="@safeDate" />
+                                <input asp-for="Date" class="form-control" type="date" id="dateInput" value="@safeDate" required />
                             </div>
                             <span asp-validation-for="Date"></span>
                         </div>
@@ -241,7 +274,7 @@
                             <label class="form-label">Start time</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="align-middle" data-feather="clock"></i></span>
-                                <input asp-for="StartTime" class="form-control" type="time" id="startTimeInput" value="@safeStart" />
+                                <input asp-for="StartTime" class="form-control" type="time" id="startTimeInput" value="@safeStart" required />
                             </div>
                             <span asp-validation-for="StartTime"></span>
                             <div class="form-text">Click a slot on the right to fill this.</div>
@@ -251,10 +284,10 @@
                             <label class="form-label">Duration (minutes)</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="align-middle" data-feather="hash"></i></span>
-                                <input asp-for="DurationMinutes" class="form-control" type="number" min="1" max="1440" id="durInput" />
+                                <input asp-for="DurationMinutes" class="form-control" type="number" min="1" max="1440" id="durInput" inputmode="numeric" />
                             </div>
                             <span asp-validation-for="DurationMinutes"></span>
-                            <div class="form-text">If empty, controller will fallback to service duration.</div>
+                            <div class="form-text">Leave empty to use service duration.</div>
                         </div>
                     </div>
 
@@ -279,7 +312,7 @@
                         </a>
 
                         <div class="d-flex gap-2">
-                            <button type="submit" class="btn btn-primary">
+                            <button id="saSubmitBtn" type="submit" class="btn btn-primary">
                                 <i class="align-middle me-1" data-feather="check"></i> Create Appointment
                             </button>
                         </div>
@@ -310,7 +343,7 @@
                         </div>
                         <div class="d-flex justify-content-between mt-2">
                             <span class="text-muted">When</span>
-                            <span class="fw-semibold" id="sumWhen">—</span>
+                            <span class="fw-semibold" id="sumWhen">-</span>
                         </div>
                         <div class="d-flex justify-content-between mt-2">
                             <span class="text-muted">Duration</span>
@@ -351,27 +384,37 @@
                         No available slots for this date.
                     </div>
 
+                    <div class="sa-slots-toolbar d-none" id="slotsPager">
+                        <button type="button" class="btn btn-outline-light" id="slotsPrev" aria-label="Previous slots">
+                            <i data-feather="chevron-left"></i>
+                        </button>
+
+                        <div class="sa-slots-meta">
+                            <span id="slotsRangeText">—</span>
+                        </div>
+
+                        <button type="button" class="btn btn-outline-light" id="slotsNext" aria-label="Next slots">
+                            <i data-feather="chevron-right"></i>
+                        </button>
+                    </div>
+
                     <div class="row g-2" id="slotsGrid">
                         @if (Model.AvailableTimes != null && Model.AvailableTimes.Any())
                         {
-                            foreach (var t in Model.AvailableTimes.Take(Model.MaxSlotsToShow > 0 ? Model.MaxSlotsToShow : 9))
+                            foreach (var t in Model.AvailableTimes.Take(9))
                             {
                                 <div class="col-4">
                                     <div class="sa-chip" data-time="@t">@t</div>
                                 </div>
                             }
 
-                            if (Model.AvailableTimes.Count > (Model.MaxSlotsToShow > 0 ? Model.MaxSlotsToShow : 9))
+                            if (Model.AvailableTimes.Count > 9)
                             {
                                 <div class="col-12 text-muted small mt-2">
-                                    Showing @(Model.MaxSlotsToShow > 0 ? Model.MaxSlotsToShow : 9) of @Model.AvailableTimes.Count available slots.
+                                    More slots available — use arrows to browse.
                                 </div>
                             }
                         }
-                    </div>
-
-                    <div class="text-muted small mt-3" id="slotsHint">
-                        Slots are loaded from your booking logic (working hours, time off, buffers).
                     </div>
                 </div>
             </div>
@@ -412,6 +455,9 @@
 
     <script>
         (function () {
+            const form = document.getElementById("saCreateForm");
+            const submitBtn = document.getElementById("saSubmitBtn");
+
             const customerName = document.getElementById("CustomerName");
             const customerEmail = document.getElementById("CustomerEmail");
             const svcSelect = document.getElementById("svcSelect");
@@ -430,7 +476,16 @@
             const slotsGrid = document.getElementById("slotsGrid");
             const slotsEmpty = document.getElementById("slotsEmpty");
 
-            const endpoint = '@Url.Action("GetAvailableSlots", "Home", new { area = "Customer" })';
+            const slotsPager = document.getElementById("slotsPager");
+            const slotsPrev = document.getElementById("slotsPrev");
+            const slotsNext = document.getElementById("slotsNext");
+            const slotsRangeText = document.getElementById("slotsRangeText");
+
+            const endpoint = '@Url.Action("GetAvailableSlots", "Appointments", new { area = "Admin" })';
+
+            const PAGE_SIZE = 9;
+            let allSlots = [];
+            let page = 0;
 
             function fmtWhenLabel() {
                 const d = dateInput?.value || "";
@@ -468,19 +523,37 @@
                 if (slotsBadge) slotsBadge.textContent = text;
             }
 
-            function renderSlots(times) {
+            function setPager() {
+                if (!slotsPager || !slotsPrev || !slotsNext || !slotsRangeText) return;
+
+                if (!Array.isArray(allSlots) || allSlots.length <= PAGE_SIZE) {
+                    slotsPager.classList.add("d-none");
+                    return;
+                }
+
+                const start = page * PAGE_SIZE;
+                const end = Math.min(start + PAGE_SIZE, allSlots.length);
+
+                slotsPager.classList.remove("d-none");
+                slotsRangeText.textContent = `Showing ${start + 1}–${end} of ${allSlots.length}`;
+                slotsPrev.disabled = page <= 0;
+                slotsNext.disabled = end >= allSlots.length;
+            }
+
+            function renderSlotsPage() {
                 if (!slotsGrid || !slotsEmpty) return;
 
                 slotsGrid.innerHTML = "";
                 slotsEmpty.classList.add("d-none");
 
-                if (!Array.isArray(times) || times.length === 0) {
+                if (!Array.isArray(allSlots) || allSlots.length === 0) {
                     slotsEmpty.classList.remove("d-none");
+                    setPager();
                     return;
                 }
 
-                const maxShow = 9; 
-                const show = times.slice(0, maxShow);
+                const start = page * PAGE_SIZE;
+                const show = allSlots.slice(start, start + PAGE_SIZE);
 
                 for (const t of show) {
                     const col = document.createElement("div");
@@ -507,26 +580,25 @@
                     slotsGrid.appendChild(col);
                 }
 
-                if (times.length > show.length) {
-                    const hint = document.createElement("div");
-                    hint.className = "col-12 text-muted small mt-2";
-                    hint.textContent = `Showing ${show.length} of ${times.length} available slots.`;
-                    slotsGrid.appendChild(hint);
-                }
+                setPager();
+                if (window.feather) window.feather.replace();
             }
 
             async function loadSlots() {
                 const serviceId = svcSelect?.value;
                 const date = dateInput?.value;
 
+                allSlots = [];
+                page = 0;
+
                 if (!serviceId) {
                     setBadge("Select service");
-                    renderSlots([]);
+                    renderSlotsPage();
                     return;
                 }
                 if (!date) {
                     setBadge("Pick date");
-                    renderSlots([]);
+                    renderSlotsPage();
                     return;
                 }
 
@@ -538,26 +610,54 @@
                     if (!res.ok) throw new Error("Failed");
                     const data = await res.json();
 
-                    setBadge("Ready");
-                    renderSlots(data);
+                    allSlots = Array.isArray(data) ? data : [];
+                    setBadge(allSlots.length ? "Ready" : "No slots");
+                    renderSlotsPage();
+
+                    const chosen = startTimeInput?.value;
+                    if (chosen && allSlots.length && !allSlots.includes(chosen)) {
+                        startTimeInput.value = "";
+                        refreshSummary();
+                    }
                 } catch (e) {
                     setBadge("Error");
-                    renderSlots([]);
+                    allSlots = [];
+                    renderSlotsPage();
                 }
             }
 
-            // hooks
+            slotsPrev?.addEventListener("click", function () {
+                if (page <= 0) return;
+                page -= 1;
+                renderSlotsPage();
+            });
+
+            slotsNext?.addEventListener("click", function () {
+                const maxPage = Math.floor((allSlots.length - 1) / PAGE_SIZE);
+                if (page >= maxPage) return;
+                page += 1;
+                renderSlotsPage();
+            });
+
             ["input", "change"].forEach(evt => {
                 customerName?.addEventListener(evt, refreshSummary);
                 customerEmail?.addEventListener(evt, refreshSummary);
+
                 svcSelect?.addEventListener(evt, function () { refreshSummary(); loadSlots(); });
                 dateInput?.addEventListener(evt, function () { refreshSummary(); loadSlots(); });
+
                 startTimeInput?.addEventListener(evt, refreshSummary);
                 durInput?.addEventListener(evt, refreshSummary);
                 priceInput?.addEventListener(evt, refreshSummary);
             });
 
-            // initial
+            form?.addEventListener("submit", function () {
+                if (!submitBtn) return;
+                submitBtn.disabled = true;
+                submitBtn.classList.add("sa-saving");
+                submitBtn.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Creating…`;
+            });
+
             refreshSummary();
             loadSlots();
 
