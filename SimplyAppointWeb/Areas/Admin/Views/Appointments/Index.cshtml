@@ -36,34 +36,34 @@
         border-color: rgba(255,255,255,.10) !important;
     }
 
-        .list-group-item:hover {
-            background: rgba(255,255,255,.04) !important;
-        }
+    .list-group-item:hover {
+        background: rgba(255,255,255,.04) !important;
+    }
 
-        .list-group-item .text-muted {
-            color: rgba(255,255,255,.60) !important;
-        }
+    .list-group-item .text-muted {
+        color: rgba(255,255,255,.60) !important;
+    }
 
     .dropdown-menu {
         background: #222e3c;
         border: 1px solid rgba(255,255,255,.10);
     }
 
-        .dropdown-menu .text-muted {
-            color: rgba(255,255,255,.60) !important;
-        }
+    .dropdown-menu .text-muted {
+        color: rgba(255,255,255,.60) !important;
+    }
 
-        .dropdown-menu .form-select,
-        .dropdown-menu .form-control {
-            background-color: rgba(255,255,255,.06);
-            color: rgba(255,255,255,.92);
-            border-color: rgba(255,255,255,.10);
-        }
+    .dropdown-menu .form-select,
+    .dropdown-menu .form-control {
+        background-color: rgba(255,255,255,.06);
+        color: rgba(255,255,255,.92);
+        border-color: rgba(255,255,255,.10);
+    }
 
-            .dropdown-menu .form-select option {
-                background: #222e3c;
-                color: rgba(255,255,255,.92);
-            }
+    .dropdown-menu .form-select option {
+        background: #222e3c;
+        color: rgba(255,255,255,.92);
+    }
 
     .input-group-navbar .form-control {
         min-width: 220px;
@@ -74,27 +74,172 @@
         line-height: 1.2;
     }
 
-        .sa-actions .btn + .btn,
-        .sa-actions form + form,
-        .sa-actions a + form,
-        .sa-actions form + a {
-            margin-left: .35rem;
-        }
-
+    .sa-actions .btn + .btn,
+    .sa-actions form + form,
+    .sa-actions a + form,
+    .sa-actions form + a {
+        margin-left: .35rem;
+    }
 
     .sa-iconbtn {
-        width: 34px;
-        height: 32px;
+        width: 36px;
+        height: 34px;
         padding: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10px;
+    }
+
+    .sa-iconbtn i {
+        width: 16px;
+        height: 16px;
+    }
+
+    .btn-outline-danger.sa-iconbtn {
+        border-color: rgba(220,53,69,.55);
+    }
+
+    .btn-outline-danger.sa-iconbtn:hover {
+        background: rgba(220,53,69,.12);
+    }
+
+    .btn-outline-warning.sa-iconbtn {
+        border-color: rgba(255,193,7,.55);
+        color: rgba(255,255,255,.85);
+    }
+
+    .btn-outline-warning.sa-iconbtn:hover {
+        background: rgba(255,193,7,.12);
+    }
+
+    .btn-outline-secondary.sa-iconbtn {
+        border-color: rgba(173,181,189,.45);
+        color: rgba(255,255,255,.82);
+    }
+
+    .btn-outline-secondary.sa-iconbtn:hover {
+        background: rgba(173,181,189,.10);
+    }
+
+    .sa-actions button:disabled {
+        opacity: .35;
+        cursor: not-allowed;
+    }
+
+    .sa-modal {
+        position: fixed;
+        inset: 0;
+        z-index: 1055;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+    }
+
+    .sa-modal.sa-open {
+        display: flex;
+    }
+
+    .sa-modal-backdrop {
+        position: absolute;
+        inset: 0;
+        background: rgba(0,0,0,.55);
+        backdrop-filter: blur(4px);
+    }
+
+    .sa-modal-card {
+        position: relative;
+        width: 100%;
+        max-width: 520px;
+        background: #222e3c;
+        border: 1px solid rgba(255,255,255,.10);
+        border-radius: 18px;
+        box-shadow: 0 18px 55px rgba(0,0,0,.55);
+        overflow: hidden;
+        transform: translateY(6px);
+        animation: saPop .14s ease-out forwards;
+    }
+
+    @@keyframes saPop {
+        to {
+            transform: translateY(0);
+        }
+    }
+
+    .sa-modal-head {
+        padding: 18px 20px;
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+        border-bottom: 1px solid rgba(255,255,255,.08);
+    }
+
+    .sa-modal-title {
+        margin: 0;
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: rgba(255,255,255,.92);
+    }
+
+    .sa-modal-close {
+        background: transparent;
+        border: 0;
+        color: rgba(255,255,255,.75);
+        width: 38px;
+        height: 38px;
+        border-radius: 12px;
         display: inline-flex;
         align-items: center;
         justify-content: center;
     }
 
-        .sa-iconbtn i {
-            width: 16px;
-            height: 16px;
-        }
+    .sa-modal-close:hover {
+        background: rgba(255,255,255,.06);
+    }
+
+    .sa-modal-body {
+        padding: 18px 20px 6px 20px;
+        color: rgba(255,255,255,.86);
+    }
+
+    .sa-modal-body .text-muted {
+        color: rgba(255,255,255,.60) !important;
+    }
+
+    .sa-modal-foot {
+        padding: 14px 20px 18px 20px;
+        display: flex;
+        justify-content: flex-end;
+        gap: .5rem;
+        border-top: 1px solid rgba(255,255,255,.08);
+        background: rgba(255,255,255,.02);
+    }
+
+    .sa-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: .35rem;
+        padding: .35rem .6rem;
+        border-radius: 999px;
+        font-weight: 700;
+        font-size: .78rem;
+        border: 1px solid rgba(255,255,255,.10);
+        color: rgba(255,255,255,.86);
+        background: rgba(255,255,255,.04);
+        white-space: nowrap;
+    }
+
+    .sa-hintbox {
+        margin-top: 12px;
+        padding: 12px 12px;
+        border-radius: 14px;
+        border: 1px dashed rgba(255,255,255,.14);
+        background: rgba(255,255,255,.03);
+        color: rgba(255,255,255,.78);
+        font-size: .9rem;
+    }
 </style>
 
 <div class="row mb-2 mb-xl-3 align-items-center">
@@ -162,7 +307,7 @@
                 <h1 class="mt-1 mb-3">€ @Model.RevenueWeek.ToString("0.00")</h1>
                 <div class="mb-0">
                     <span class="badge badge-primary-light">earned</span>
-                    <span class="text-muted">confirmed + ended</span>
+                    <span class="text-muted">completed + ended</span>
                 </div>
             </div>
         </div>
@@ -272,8 +417,14 @@
                             {
                                 foreach (var row in Model.Rows)
                                 {
-                                    var isLocked = row.Status == AppointmentStatus.Cancelled || row.Status == AppointmentStatus.Completed;
-                                    var canMarkNoShow = row.Status == AppointmentStatus.Confirmed || row.Status == AppointmentStatus.Pending;
+                                    var isLocked = row.Status == AppointmentStatus.Cancelled
+                                    || row.Status == AppointmentStatus.Completed
+                                    || row.Status == AppointmentStatus.NoShow;
+
+                                    var canMarkNoShow = row.Status == AppointmentStatus.Completed;
+
+                                    var canCancel = !isLocked && row.Status != AppointmentStatus.Cancelled;
+                                    var canHardDelete = !isLocked; 
 
                                     <tr>
                                         <td>
@@ -303,52 +454,61 @@
                                                 Open
                                             </a>
 
-                                            <form class="d-inline"
+                                            <button type="button"
+                                                    class="btn btn-outline-warning btn-sm sa-iconbtn"
+                                                    title="@(canMarkNoShow ? "Mark No show" : "You can only mark No show after the appointment ended")"
+                                                    @(canMarkNoShow ? "" : "disabled")
+                                                    data-sa-open-modal="noshow"
+                                                    data-sa-id="@row.Id">
+                                                <i class="align-middle" data-feather="user-x"></i>
+                                            </button>
+
+                                            <button type="button"
+                                                    class="btn btn-outline-danger btn-sm sa-iconbtn"
+                                                    title="Cancel"
+                                                    @(canCancel ? "" : "disabled")
+                                                    data-sa-open-modal="cancel"
+                                                    data-sa-id="@row.Id">
+                                                <i class="align-middle" data-feather="x"></i>
+                                            </button>
+
+                                            <button type="button"
+                                                    class="btn btn-outline-secondary btn-sm sa-iconbtn"
+                                                    title="Hard delete"
+                                                    @(canHardDelete ? "" : "disabled")
+                                                    data-sa-open-modal="delete"
+                                                    data-sa-id="@row.Id">
+                                                <i class="align-middle" data-feather="trash-2"></i>
+                                            </button>
+
+                                            <form id="saNoshowForm-@row.Id"
+                                                  class="d-none"
                                                   method="post"
                                                   asp-area="Admin"
                                                   asp-controller="Appointments"
                                                   asp-action="MarkNoShow"
-                                                  asp-route-id="@row.Id"
-                                                  onsubmit="return saConfirmNoShow(this);">
+                                                  asp-route-id="@row.Id">
                                                 @Html.AntiForgeryToken()
-                                                <button type="submit"
-                                                        class="btn btn-outline-dark btn-sm sa-iconbtn"
-                                                        title="Mark No Show"
-                                                        @(canMarkNoShow ? "" : "disabled")>
-                                                    <i class="align-middle" data-feather="user-x"></i>
-                                                </button>
                                             </form>
 
-                                            <form class="d-inline"
+                                            <form id="saCancelForm-@row.Id"
+                                                  class="d-none"
                                                   method="post"
                                                   asp-area="Admin"
                                                   asp-controller="Appointments"
                                                   asp-action="Cancel"
-                                                  asp-route-id="@row.Id"
-                                                  onsubmit="return saConfirmCancel(this);">
+                                                  asp-route-id="@row.Id">
                                                 @Html.AntiForgeryToken()
-                                                <button type="submit"
-                                                        class="btn btn-outline-danger btn-sm sa-iconbtn"
-                                                        title="Cancel"
-                                                        @(row.Status == AppointmentStatus.Cancelled ? "disabled" : "")>
-                                                    <i class="align-middle" data-feather="x"></i>
-                                                </button>
                                             </form>
 
-                                            <form class="d-inline"
+                                            <form id="saDeleteForm-@row.Id"
+                                                  class="d-none"
                                                   method="post"
                                                   asp-area="Admin"
                                                   asp-controller="Appointments"
                                                   asp-action="DeleteHard"
-                                                  asp-route-id="@row.Id"
-                                                  onsubmit="return saConfirmDelete(this);">
+                                                  asp-route-id="@row.Id">
                                                 @Html.AntiForgeryToken()
-                                                <button type="submit"
-                                                        class="btn btn-outline-light btn-sm sa-iconbtn"
-                                                        title="Hard delete"
-                                                        @(isLocked ? "disabled" : "")>
-                                                    <i class="align-middle" data-feather="trash-2"></i>
-                                                </button>
                                             </form>
                                         </td>
                                     </tr>
@@ -475,6 +635,9 @@
                             </a>
                         </div>
                     </div>
+                    <div class="sa-hintbox mt-3">
+                        Tip: Cancelled and Completed appointments are locked. Use <strong>Open</strong> to view details.
+                    </div>
                 </div>
             </div>
 
@@ -482,21 +645,144 @@
     </div>
 </div>
 
+<!-- Reusable centered modal -->
+<div class="sa-modal" id="saModal" aria-hidden="true">
+    <div class="sa-modal-backdrop" data-sa-close></div>
+
+    <div class="sa-modal-card" role="dialog" aria-modal="true" aria-labelledby="saModalTitle">
+        <div class="sa-modal-head">
+            <div>
+                <h5 class="sa-modal-title" id="saModalTitle">Confirm</h5>
+                <div class="text-muted small" id="saModalSubtitle">—</div>
+            </div>
+            <button type="button" class="sa-modal-close" data-sa-close aria-label="Close">
+                <i data-feather="x"></i>
+            </button>
+        </div>
+
+        <div class="sa-modal-body">
+            <div id="saModalMessage" class="mb-2">—</div>
+
+            <div class="d-flex flex-wrap gap-2 mt-3">
+                <span class="sa-pill" id="saModalPill">
+                    <i data-feather="alert-triangle"></i>
+                    <span id="saModalPillText">Action</span>
+                </span>
+                <span class="sa-pill">
+                    <i data-feather="hash"></i>
+                    <span>Appointment ID:</span>
+                    <span class="fw-bold" id="saModalId">—</span>
+                </span>
+            </div>
+        </div>
+
+        <div class="sa-modal-foot">
+            <button type="button" class="btn btn-outline-light" data-sa-close>Cancel</button>
+            <button type="button" class="btn btn-danger" id="saModalConfirmBtn">
+                Confirm
+            </button>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <script>
-        function saConfirmCancel(form) {
-            return confirm("Are you sure you want to cancel this appointment?\n\nThis will permanently cancel the booking.");
-        }
+        (function () {
+            const modal = document.getElementById("saModal");
+            const titleEl = document.getElementById("saModalTitle");
+            const subtitleEl = document.getElementById("saModalSubtitle");
+            const msgEl = document.getElementById("saModalMessage");
+            const pillTextEl = document.getElementById("saModalPillText");
+            const idEl = document.getElementById("saModalId");
+            const confirmBtn = document.getElementById("saModalConfirmBtn");
 
-        function saConfirmDelete(form) {
-            return confirm("Are you sure you want to HARD delete this appointment?\n\nThis cannot be undone.");
-        }
+            let currentFormId = null;
 
-        function saConfirmNoShow(form) {
-            return confirm("Mark this appointment as NO SHOW?\n\nOnly do this if the customer did not come.");
-        }
+            const presets = {
+                cancel: {
+                    title: "Cancel appointment?",
+                    subtitle: "This will permanently cancel the booking.",
+                    message: "The customer will be notified by email (if an email exists). You can’t reopen a cancelled appointment.",
+                    pill: "Cancel",
+                    btnClass: "btn-danger",
+                    btnText: "Yes, cancel"
+                },
+                delete: {
+                    title: "Hard delete appointment?",
+                    subtitle: "This will remove the appointment permanently.",
+                    message: "Hard delete cannot be undone. Use only for test bookings or mistakes.",
+                    pill: "Hard delete",
+                    btnClass: "btn-danger",
+                    btnText: "Yes, delete"
+                },
+                noshow: {
+                    title: "Mark as No show?",
+                    subtitle: "Only do this if the customer did not come.",
+                    message: "No show appointments are excluded from revenue. You can still open the appointment afterwards.",
+                    pill: "No show",
+                    btnClass: "btn-warning",
+                    btnText: "Yes, mark No show"
+                }
+            };
 
-        // Feather icons
-        if (window.feather) window.feather.replace();
+            function openModal(kind, id) {
+                const p = presets[kind];
+                if (!p) return;
+
+                currentFormId = (kind === "cancel")
+                    ? `saCancelForm-${id}`
+                    : (kind === "delete")
+                        ? `saDeleteForm-${id}`
+                        : `saNoshowForm-${id}`;
+
+                titleEl.textContent = p.title;
+                subtitleEl.textContent = p.subtitle;
+                msgEl.textContent = p.message;
+                pillTextEl.textContent = p.pill;
+                idEl.textContent = id;
+
+                confirmBtn.className = "btn " + p.btnClass;
+                confirmBtn.textContent = p.btnText;
+
+                modal.classList.add("sa-open");
+                modal.setAttribute("aria-hidden", "false");
+
+                setTimeout(() => confirmBtn.focus(), 0);
+                if (window.feather) window.feather.replace();
+            }
+
+            function closeModal() {
+                modal.classList.remove("sa-open");
+                modal.setAttribute("aria-hidden", "true");
+                currentFormId = null;
+            }
+
+            document.querySelectorAll("[data-sa-open-modal]").forEach(btn => {
+                btn.addEventListener("click", function () {
+                    if (btn.hasAttribute("disabled")) return;
+                    const kind = btn.getAttribute("data-sa-open-modal");
+                    const id = btn.getAttribute("data-sa-id");
+                    openModal(kind, id);
+                });
+            });
+
+            modal.querySelectorAll("[data-sa-close]").forEach(x => {
+                x.addEventListener("click", closeModal);
+            });
+
+            confirmBtn.addEventListener("click", function () {
+                if (!currentFormId) return;
+                const form = document.getElementById(currentFormId);
+                if (form) form.submit();
+            });
+
+            document.addEventListener("keydown", function (e) {
+                if (e.key === "Escape" && modal.classList.contains("sa-open")) {
+                    closeModal();
+                }
+            });
+
+            if (window.feather) window.feather.replace();
+        })();
     </script>
 }
