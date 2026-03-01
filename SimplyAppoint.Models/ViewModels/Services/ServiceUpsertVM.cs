@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
 
-namespace SimplyAppoint.Models.ViewModels
+namespace SimplyAppoint.Models.ViewModels.Services
 {
     public class ServiceUpsertVM
     {

@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using SimplyAppoint.DataAccess.Repository.IRepository;
 using SimplyAppoint.Models;
-using SimplyAppoint.Models.ViewModels;
+using SimplyAppoint.Models.ViewModels.Services;
 using System.Diagnostics;
 
 namespace SimplyAppointWeb.Controllers

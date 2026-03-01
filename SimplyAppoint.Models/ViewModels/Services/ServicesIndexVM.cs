@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace SimplyAppoint.Models.ViewModels
+namespace SimplyAppoint.Models.ViewModels.Services
 {
     public class ServicesIndexVM
     {

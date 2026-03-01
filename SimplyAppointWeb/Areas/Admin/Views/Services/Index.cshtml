@@ -1,32 +1,8 @@
-﻿@{
+﻿@using SimplyAppoint.Models.ViewModels.Services;
+@model ServicesIndexVM
+@{
     ViewData["Title"] = "Services";
     Layout = "_AdminLayout";
-
-    // Dummy data (replace later with your model)
-    var services = new[]
-    {
-        new { Id = 1, Name = "Haircut", Duration = 45, Price = 25, Category = "Hair", Color = "primary", Active = true, Description = "Classic haircut, wash included." },
-        new { Id = 2, Name = "Beard Trim", Duration = 20, Price = 12, Category = "Beard", Color = "success", Active = true, Description = "Clean shaping + line-up." },
-        new { Id = 3, Name = "Nails", Duration = 60, Price = 30, Category = "Beauty", Color = "warning", Active = true, Description = "Full manicure service." },
-        new { Id = 4, Name = "Dog Grooming", Duration = 90, Price = 50, Category = "Pets", Color = "danger", Active = false, Description = "Bath + grooming (currently paused)." }
-    };
-
-    var total = services.Length;
-    var activeCount = services.Count(s => s.Active);
-    var inactiveCount = total - activeCount;
-
-    var avgDuration = (int)Math.Round(services.Average(s => s.Duration));
-    var avgPrice = (int)Math.Round(services.Average(s => s.Price));
-
-    var minPrice = services.Min(s => s.Price);
-    var maxPrice = services.Max(s => s.Price);
-    var minDuration = services.Min(s => s.Duration);
-    var maxDuration = services.Max(s => s.Duration);
-
-    var mostExpensive = services.OrderByDescending(s => s.Price).First();
-    var longest = services.OrderByDescending(s => s.Duration).First();
-
-    var activePct = total == 0 ? 0 : (int)Math.Round((activeCount * 100.0) / total);
 }
 
 <div class="row mb-2 mb-xl-3 align-items-center">
@@ -55,22 +31,21 @@
                         <div class="text-muted">Click a service to edit</div>
                     </div>
 
-                    <!-- UI-only controls (wire to backend later) -->
                     <div class="d-flex flex-wrap gap-2">
                         <div class="input-group input-group-navbar">
-                            <input type="text" class="form-control" placeholder="Search services…" aria-label="Search services">
-                            <button class="btn" type="button" title="Search (UI only)">
+                            <input type="text" class="form-control" placeholder="Search services…" aria-label="Search services" disabled>
+                            <button class="btn" type="button" title="Search (UI only)" disabled>
                                 <i class="align-middle" data-feather="search"></i>
                             </button>
                         </div>
 
-                        <select class="form-select" style="max-width: 190px;">
+                        <select class="form-select" style="max-width: 190px;" disabled>
                             <option selected>All</option>
                             <option>Active</option>
                             <option>Inactive</option>
                         </select>
 
-                        <select class="form-select" style="max-width: 200px;">
+                        <select class="form-select" style="max-width: 200px;" disabled>
                             <option selected>Sort: Name</option>
                             <option>Sort: Price</option>
                             <option>Sort: Duration</option>
@@ -114,52 +89,66 @@
 
                 <!-- Services grid -->
                 <div class="row g-3">
-                    @foreach (var s in services)
+                    @if (Model.Services != null && Model.Services.Any())
                     {
-                        <div class="col-12 col-md-6">
-                            <a asp-area="Admin" asp-controller="Services" asp-action="Upsert" asp-route-id="@s.Id"
-                               class="card text-decoration-none mb-0">
-                                <div class="card-body">
-                                    <div class="d-flex align-items-start justify-content-between">
-                                        <div class="d-flex align-items-center gap-2">
-                                            <span class="badge bg-@s.Color">@s.Category</span>
-                                            @if (s.Active)
-                                            {
-                                                <span class="badge badge-success-light">Active</span>
-                                            }
-                                            else
-                                            {
-                                                <span class="badge badge-danger-light">Inactive</span>
-                                            }
+                        foreach (var s in Model.Services)
+                        {
+                            <div class="col-12 col-md-6">
+                                <a asp-area="Admin"
+                                   asp-controller="Services"
+                                   asp-action="Upsert"
+                                   asp-route-id="@s.Id"
+                                   class="card text-decoration-none mb-0">
+                                    <div class="card-body">
+                                        <div class="d-flex align-items-start justify-content-between">
+                                            <div class="d-flex align-items-center gap-2">
+                                                @if (s.Active)
+                                                {
+                                                    <span class="badge badge-success-light">Active</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge badge-danger-light">Inactive</span>
+                                                }
+                                            </div>
+                                            <i class="align-middle text-muted" data-feather="chevron-right"></i>
                                         </div>
-                                        <i class="align-middle text-muted" data-feather="chevron-right"></i>
-                                    </div>
 
-                                    <h4 class="mt-3 mb-1">@s.Name</h4>
-                                    <div class="text-muted">@s.Description</div>
+                                        <h4 class="mt-3 mb-1">@s.Name</h4>
 
-                                    <div class="row mt-3">
-                                        <div class="col-6">
-                                            <div class="text-muted small">Duration</div>
-                                            <div class="fw-semibold">@s.Duration min</div>
+                                        <div class="row mt-3">
+                                            <div class="col-6">
+                                                <div class="text-muted small">Duration</div>
+                                                <div class="fw-semibold">@s.Duration min</div>
+                                            </div>
+                                            <div class="col-6 text-end">
+                                                <div class="text-muted small">Price</div>
+                                                <div class="fw-semibold">€ @s.Price.ToString("0.00")</div>
+                                            </div>
                                         </div>
-                                        <div class="col-6 text-end">
-                                            <div class="text-muted small">Price</div>
-                                            <div class="fw-semibold">€ @s.Price</div>
-                                        </div>
+
+                                        @if (s.BufferBefore > 0 || s.BufferAfter > 0)
+                                        {
+                                            <div class="mt-2 text-muted small">
+                                                Buffer: -@s.BufferBefore / +@s.BufferAfter min
+                                            </div>
+                                        }
                                     </div>
+                                </a>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="col-12">
+                            <div class="text-center text-muted py-4">
+                                <div class="mb-2">
+                                    <i class="align-middle" data-feather="inbox"></i>
                                 </div>
-                            </a>
+                                No services yet. Click <strong>New Service</strong> to create your first one.
+                            </div>
                         </div>
                     }
-                </div>
-
-                <!-- Empty state (UI only; show/hide via backend later) -->
-                <div class="text-center text-muted py-4 d-none">
-                    <div class="mb-2">
-                        <i class="align-middle" data-feather="inbox"></i>
-                    </div>
-                    No services match your filters.
                 </div>
             </div>
         </div>
@@ -177,19 +166,19 @@
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center mb-2">
                         <span class="text-muted">Total services</span>
-                        <span class="fw-semibold">@total</span>
+                        <span class="fw-semibold">@Model.Total</span>
                     </div>
                     <div class="d-flex justify-content-between align-items-center mb-2">
                         <span class="text-muted">Active</span>
-                        <span class="badge badge-success-light">@activeCount</span>
+                        <span class="badge badge-success-light">@Model.ActiveCount</span>
                     </div>
                     <div class="d-flex justify-content-between align-items-center mb-2">
                         <span class="text-muted">Avg duration</span>
-                        <span class="fw-semibold">@avgDuration min</span>
+                        <span class="fw-semibold">@Model.AvgDuration min</span>
                     </div>
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <span class="text-muted">Avg price</span>
-                        <span class="fw-semibold">€ @avgPrice</span>
+                        <span class="fw-semibold">€ @Model.AvgPrice.ToString("0.00")</span>
                     </div>
 
                     <div class="d-grid gap-2">
@@ -211,38 +200,44 @@
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center mb-2">
                         <span class="text-muted">Active services</span>
-                        <span class="fw-semibold">@activePct%</span>
+                        <span class="fw-semibold">@Model.ActivePercentage%</span>
                     </div>
                     <div class="progress progress-sm mb-3">
-                        <div class="progress-bar bg-success" style="width: @activePct%"></div>
+                        <div class="progress-bar bg-success" style="width: @Model.ActivePercentage%"></div>
                     </div>
 
                     <div class="row g-2 mb-3">
                         <div class="col-6">
                             <div class="border rounded-3 p-2">
                                 <div class="text-muted small">Price range</div>
-                                <div class="fw-semibold">€ @minPrice – € @maxPrice</div>
+                                <div class="fw-semibold">
+                                    € @Model.MinPrice.ToString("0.00") – € @Model.MaxPrice.ToString("0.00")
+                                </div>
                             </div>
                         </div>
                         <div class="col-6">
                             <div class="border rounded-3 p-2">
                                 <div class="text-muted small">Duration range</div>
-                                <div class="fw-semibold">@minDuration – @maxDuration min</div>
+                                <div class="fw-semibold">@Model.MinDuration – @Model.MaxDuration min</div>
                             </div>
                         </div>
                     </div>
 
                     <div class="d-flex justify-content-between align-items-center mb-2">
                         <span class="text-muted">Most expensive</span>
-                        <span class="fw-semibold">@mostExpensive.Name (€ @mostExpensive.Price)</span>
+                        <span class="fw-semibold">
+                            @(string.IsNullOrWhiteSpace(Model.MostExpensiveName) ? "—" : $"{Model.MostExpensiveName} (€ {Model.MostExpensivePrice:0.00})")
+                        </span>
                     </div>
                     <div class="d-flex justify-content-between align-items-center">
                         <span class="text-muted">Longest</span>
-                        <span class="fw-semibold">@longest.Name (@longest.Duration min)</span>
+                        <span class="fw-semibold">
+                            @(string.IsNullOrWhiteSpace(Model.LongestName) ? "—" : $"{Model.LongestName} ({Model.LongestDuration} min)")
+                        </span>
                     </div>
 
                     <div class="mt-3 text-muted small">
-                        Inactive services: <span class="fw-semibold">@inactiveCount</span>
+                        Inactive services: <span class="fw-semibold">@Model.InactiveCount</span>
                     </div>
                 </div>
             </div>
@@ -250,3 +245,9 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        if (window.feather) window.feather.replace();
+    </script>
+}
