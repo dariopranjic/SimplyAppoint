@@ -45,9 +45,7 @@ namespace SimplyAppointWeb.Controllers
 
             var completedChanged = AutoCompletePastConfirmed(allAppts, nowUtc);
             if (completedChanged)
-            {
                 _unitOfWork.Save();
-            }
 
             var filtered = ApplyFilters(allAppts, tz, range, status, q);
             var stats = BuildStats(allAppts, tz);
@@ -146,9 +144,7 @@ namespace SimplyAppointWeb.Controllers
             await PopulateAvailabilityAsync(business, tz, vm);
 
             if (vm.Status != AppointmentStatus.Confirmed)
-            {
                 ModelState.AddModelError(nameof(vm.Status), "New appointments can only be created as Confirmed.");
-            }
 
             if (!ModelState.IsValid)
                 return View(vm);
@@ -244,7 +240,8 @@ namespace SimplyAppointWeb.Controllers
             );
             if (appt == null) return NotFound();
 
-            AutoCompletePastConfirmed(new List<Appointment> { appt }, DateTimeOffset.UtcNow);
+            var changed = AutoCompletePastConfirmed(new List<Appointment> { appt }, DateTimeOffset.UtcNow);
+            if (changed) _unitOfWork.Save();
 
             var startBiz = TimeZoneInfo.ConvertTime(appt.StartUtc, tz);
 
@@ -297,9 +294,13 @@ namespace SimplyAppointWeb.Controllers
             );
             if (appt == null) return NotFound();
 
-            AutoCompletePastConfirmed(new List<Appointment> { appt }, DateTimeOffset.UtcNow);
+            var changedAuto = AutoCompletePastConfirmed(new List<Appointment> { appt }, DateTimeOffset.UtcNow);
+            if (changedAuto) _unitOfWork.Save();
 
-            if (appt.Status == AppointmentStatus.Cancelled || appt.Status == AppointmentStatus.Completed || appt.Status == AppointmentStatus.NoShow)
+            if (appt.Status == AppointmentStatus.Cancelled ||
+                appt.Status == AppointmentStatus.Completed ||
+                appt.Status == AppointmentStatus.NoShow ||
+                appt.Status == AppointmentStatus.Pending)
             {
                 TempData["error"] = "This appointment is locked and cannot be edited.";
                 return RedirectToAction(nameof(Edit), new { id });
@@ -311,9 +312,7 @@ namespace SimplyAppointWeb.Controllers
             var ownerCreated = IsOwnerCreated(appt);
 
             if (vm.Status == AppointmentStatus.Pending || vm.Status == AppointmentStatus.Completed)
-            {
                 ModelState.AddModelError(nameof(vm.Status), "You cannot set Pending or Completed manually.");
-            }
 
             if (!ownerCreated)
             {
@@ -330,18 +329,14 @@ namespace SimplyAppointWeb.Controllers
                 vm.AvailabilityMessage = "This appointment was booked by a customer. Time and price cannot be changed.";
 
                 if (vm.Status != AppointmentStatus.Confirmed && vm.Status != AppointmentStatus.Cancelled)
-                {
                     ModelState.AddModelError(nameof(vm.Status), "For customer bookings you can only Confirm or Cancel.");
-                }
             }
             else
             {
                 await PopulateAvailabilityAsync(business, tz, vm);
 
                 if (vm.Status != AppointmentStatus.Confirmed && vm.Status != AppointmentStatus.Cancelled)
-                {
                     ModelState.AddModelError(nameof(vm.Status), "You can only set Confirmed or Cancelled here.");
-                }
             }
 
             if (!ModelState.IsValid)
@@ -431,7 +426,10 @@ namespace SimplyAppointWeb.Controllers
                 {
                     try
                     {
-                        var apptWithNav = _unitOfWork.Appointment.Get(a => a.Id == appt.Id, includeProperties: "Business,Service");
+                        var apptWithNav = _unitOfWork.Appointment.Get(
+                            a => a.Id == appt.Id,
+                            includeProperties: "Business,Service"
+                        );
                         if (apptWithNav != null)
                             await SendCancelledEmail(apptWithNav, tz);
                     }
@@ -439,11 +437,17 @@ namespace SimplyAppointWeb.Controllers
                 }
             }
 
-            if (ownerCreated && changedTimeOrPriceOrService && appt.Status == AppointmentStatus.Confirmed && !string.IsNullOrWhiteSpace(appt.CustomerEmail))
+            if (ownerCreated &&
+                changedTimeOrPriceOrService &&
+                appt.Status == AppointmentStatus.Confirmed &&
+                !string.IsNullOrWhiteSpace(appt.CustomerEmail))
             {
                 try
                 {
-                    var apptWithNav = _unitOfWork.Appointment.Get(a => a.Id == appt.Id, includeProperties: "Business,Service");
+                    var apptWithNav = _unitOfWork.Appointment.Get(
+                        a => a.Id == appt.Id,
+                        includeProperties: "Business,Service"
+                    );
                     if (apptWithNav != null)
                         await SendChangedEmail(apptWithNav, tz, prevStartUtc, prevEndUtc, prevPrice);
                 }
@@ -476,7 +480,9 @@ namespace SimplyAppointWeb.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            if (appt.Status == AppointmentStatus.NoShow || appt.Status == AppointmentStatus.Completed)
+            if (appt.Status == AppointmentStatus.NoShow ||
+                appt.Status == AppointmentStatus.Completed ||
+                appt.Status == AppointmentStatus.Pending)
             {
                 TempData["error"] = "This appointment is locked and cannot be cancelled.";
                 return RedirectToAction(nameof(Index));
@@ -507,7 +513,7 @@ namespace SimplyAppointWeb.Controllers
 
             var appt = _unitOfWork.Appointment.Get(
                 a => a.BusinessId == business.Id && a.Id == id,
-                includeProperties: "Service"
+                includeProperties: "Business,Service"
             );
             if (appt == null) return NotFound();
 
@@ -516,6 +522,13 @@ namespace SimplyAppointWeb.Controllers
                 TempData["error"] = "Cancelled appointments cannot be marked as No-Show.";
                 return RedirectToAction(nameof(Index));
             }
+
+            if (appt.Status == AppointmentStatus.Pending)
+            {
+                TempData["error"] = "Pending appointments cannot be marked as No-Show.";
+                return RedirectToAction(nameof(Index));
+            }
+
             if (appt.Status == AppointmentStatus.NoShow)
             {
                 TempData["error"] = "This appointment is already marked as No-Show.";
@@ -523,16 +536,12 @@ namespace SimplyAppointWeb.Controllers
             }
 
             var nowUtc = DateTimeOffset.UtcNow;
-            var isCompletedByDefault =
-                appt.Status == AppointmentStatus.Confirmed &&
-                appt.EndUtc <= nowUtc;
+            var changed = AutoCompletePastConfirmed(new List<Appointment> { appt }, nowUtc);
+            if (changed) _unitOfWork.Save();
 
-            
-            var isExplicitCompleted = appt.Status == AppointmentStatus.Completed;
-
-            if (!isCompletedByDefault && !isExplicitCompleted)
+            if (appt.Status != AppointmentStatus.Completed || appt.EndUtc > nowUtc)
             {
-                TempData["error"] = "You can only mark an appointment as No-Show after it has ended.";
+                TempData["error"] = "You can only mark an appointment as No-Show after it has ended (Completed).";
                 return RedirectToAction(nameof(Index));
             }
 
@@ -553,10 +562,16 @@ namespace SimplyAppointWeb.Controllers
             var (business, tz) = await GetBusinessContextAsync();
             if (business == null) return RedirectToAction(nameof(Index));
 
-            var appt = _unitOfWork.Appointment.Get(a => a.BusinessId == business.Id && a.Id == id);
+            var appt = _unitOfWork.Appointment.Get(
+                a => a.BusinessId == business.Id && a.Id == id,
+                includeProperties: "Business,Service"
+            );
             if (appt == null) return NotFound();
 
-            if (appt.Status == AppointmentStatus.Cancelled || appt.Status == AppointmentStatus.Completed || appt.Status == AppointmentStatus.NoShow)
+            if (appt.Status == AppointmentStatus.Cancelled ||
+                appt.Status == AppointmentStatus.Completed ||
+                appt.Status == AppointmentStatus.NoShow ||
+                appt.Status == AppointmentStatus.Pending)
             {
                 TempData["error"] = "This appointment is locked and cannot be deleted.";
                 return RedirectToAction(nameof(Index));
@@ -568,6 +583,11 @@ namespace SimplyAppointWeb.Controllers
             {
                 TempData["error"] = "Past/started appointments cannot be hard deleted.";
                 return RedirectToAction(nameof(Index));
+            }
+
+            if (!string.IsNullOrWhiteSpace(appt.CustomerEmail))
+            {
+                try { await SendCancelledEmail(appt, tz); } catch { }
             }
 
             _unitOfWork.Appointment.Remove(appt);

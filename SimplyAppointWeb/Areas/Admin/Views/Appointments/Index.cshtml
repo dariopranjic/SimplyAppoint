@@ -419,7 +419,8 @@
                                 {
                                     var isLocked = row.Status == AppointmentStatus.Cancelled
                                     || row.Status == AppointmentStatus.Completed
-                                    || row.Status == AppointmentStatus.NoShow;
+                                    || row.Status == AppointmentStatus.NoShow
+                                    || row.Status == AppointmentStatus.Pending;
 
                                     var canMarkNoShow = row.Status == AppointmentStatus.Completed;
 

@@ -9,6 +9,29 @@
     var safeDate = !string.IsNullOrWhiteSpace(Model.Date) ? Model.Date : DateTime.Today.ToString("yyyy-MM-dd");
     var safeStart = !string.IsNullOrWhiteSpace(Model.StartTime) ? Model.StartTime : "";
 
+    var isCustomerBooked = !string.IsNullOrWhiteSpace(Model.AvailabilityMessage)
+                           && Model.AvailabilityMessage.Contains("booked by a customer", StringComparison.OrdinalIgnoreCase);
+
+    var isCancelled = Model.Status == AppointmentStatus.Cancelled;
+    var isNoShow = Model.Status == AppointmentStatus.NoShow;
+    var isCompleted = Model.Status == AppointmentStatus.Completed;
+    var isPending = Model.Status == AppointmentStatus.Pending;
+
+    var isLocked = isCancelled || isCompleted || isNoShow || isPending;
+
+    var canEditSchedule = !isLocked && !isCustomerBooked;
+
+    DateTime localStart;
+    DateTime localEnd;
+    var startOk = DateTime.TryParseExact($"{safeDate} {safeStart}", "yyyy-MM-dd HH:mm",
+        System.Globalization.CultureInfo.InvariantCulture,
+        System.Globalization.DateTimeStyles.None, out localStart);
+
+    var endOk = startOk && (Model.DurationMinutes.HasValue && Model.DurationMinutes.Value > 0);
+    localEnd = endOk ? localStart.AddMinutes(Model.DurationMinutes!.Value) : DateTime.MaxValue;
+
+    var canMarkNoShow = !isLocked && isCompleted && endOk && localEnd <= DateTime.Now.AddMinutes(-1);
+
     string StatusBadgeClass(AppointmentStatus s)
     {
         return s switch
@@ -16,10 +39,17 @@
             AppointmentStatus.Confirmed => "badge-success-light",
             AppointmentStatus.Pending => "badge-warning-light",
             AppointmentStatus.Cancelled => "badge-danger-light",
+            AppointmentStatus.NoShow => "badge-dark-light",
+            AppointmentStatus.Completed => "badge-info-light",
             _ => "badge-primary-light"
         };
     }
-    string StatusLabel(AppointmentStatus s) => s.ToString();
+
+    string StatusLabel(AppointmentStatus s) => s switch
+    {
+        AppointmentStatus.NoShow => "No show",
+        _ => s.ToString()
+    };
 }
 
 <style>
@@ -97,26 +127,172 @@
         color: rgba(255,255,255,.75);
     }
 
-    .list-group-item {
-        background: transparent !important;
-        color: rgba(255,255,255,.92) !important;
-        border-color: rgba(255,255,255,.10) !important;
-    }
-
-    .list-group-item:hover {
-        background: rgba(255,255,255,.04) !important;
-    }
-
-    .list-group-item .text-muted {
-        color: rgba(255,255,255,.60) !important;
-    }
-
     .sa-slot-empty {
         border: 1px dashed rgba(255,255,255,.18);
         border-radius: 12px;
         padding: .8rem;
         color: rgba(255,255,255,.75);
         text-align: center;
+    }
+
+    .sa-slots-toolbar {
+        display: none;
+        align-items: center;
+        justify-content: space-between;
+        gap: .5rem;
+        margin-bottom: .5rem;
+    }
+
+    .sa-slots-toolbar.sa-show {
+        display: flex;
+    }
+
+    .sa-slots-toolbar .btn {
+        border-radius: 10px;
+        padding: .35rem .55rem;
+        line-height: 1.1;
+        border-color: rgba(255,255,255,.25);
+        color: rgba(255,255,255,.75);
+        background: rgba(255,255,255,.04);
+    }
+
+    .sa-slots-toolbar .btn:hover {
+        background: rgba(255,255,255,.10);
+        border-color: rgba(255,255,255,.40);
+        color: rgba(255,255,255,.90);
+    }
+
+    .sa-slots-toolbar .btn:disabled {
+        opacity: .35;
+        cursor: not-allowed;
+    }
+
+    .sa-slots-meta {
+        font-size: .82rem;
+        color: rgba(255,255,255,.65);
+        white-space: nowrap;
+    }
+
+    .sa-lockbox {
+        border: 1px solid rgba(255,255,255,.10);
+        background: rgba(255,255,255,.03);
+        border-radius: 14px;
+        padding: .75rem .85rem;
+        color: rgba(255,255,255,.80);
+    }
+
+    .sa-lockbox .t {
+        font-weight: 800;
+        color: rgba(255,255,255,.92);
+    }
+
+    .sa-actions .btn:disabled {
+        opacity: .35;
+        cursor: not-allowed;
+    }
+
+    .sa-modal {
+        position: fixed;
+        inset: 0;
+        z-index: 1055;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+    }
+
+    .sa-modal.sa-open {
+        display: flex;
+    }
+
+    .sa-modal-backdrop {
+        position: absolute;
+        inset: 0;
+        background: rgba(0,0,0,.55);
+        backdrop-filter: blur(4px);
+    }
+
+    .sa-modal-card {
+        position: relative;
+        width: 100%;
+        max-width: 520px;
+        background: #222e3c;
+        border: 1px solid rgba(255,255,255,.10);
+        border-radius: 18px;
+        box-shadow: 0 18px 55px rgba(0,0,0,.55);
+        overflow: hidden;
+        transform: translateY(6px);
+        animation: saPop .14s ease-out forwards;
+    }
+
+    @@keyframes saPop {
+        to {
+            transform: translateY(0);
+        }
+    }
+
+    .sa-modal-head {
+        padding: 18px 20px;
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+        border-bottom: 1px solid rgba(255,255,255,.08);
+    }
+
+    .sa-modal-title {
+        margin: 0;
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: rgba(255,255,255,.92);
+    }
+
+    .sa-modal-close {
+        background: transparent;
+        border: 0;
+        color: rgba(255,255,255,.75);
+        width: 38px;
+        height: 38px;
+        border-radius: 12px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .sa-modal-close:hover {
+        background: rgba(255,255,255,.06);
+    }
+
+    .sa-modal-body {
+        padding: 18px 20px 6px 20px;
+        color: rgba(255,255,255,.86);
+    }
+
+    .sa-modal-body .text-muted {
+        color: rgba(255,255,255,.60) !important;
+    }
+
+    .sa-modal-foot {
+        padding: 14px 20px 18px 20px;
+        display: flex;
+        justify-content: flex-end;
+        gap: .5rem;
+        border-top: 1px solid rgba(255,255,255,.08);
+        background: rgba(255,255,255,.02);
+    }
+
+    .sa-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: .35rem;
+        padding: .35rem .6rem;
+        border-radius: 999px;
+        font-weight: 700;
+        font-size: .78rem;
+        border: 1px solid rgba(255,255,255,.10);
+        color: rgba(255,255,255,.86);
+        background: rgba(255,255,255,.04);
+        white-space: nowrap;
     }
 </style>
 
@@ -133,7 +309,8 @@
         <a asp-area="Admin" asp-controller="Calendar" asp-action="Index" class="btn btn-light bg-white me-2">
             <i class="align-middle me-1" data-feather="calendar"></i> Calendar
         </a>
-        <button type="submit" form="saEditForm" class="btn btn-primary">
+
+        <button type="submit" form="saEditForm" class="btn btn-primary" disabled="@(isLocked)">
             <i class="align-middle me-1" data-feather="save"></i> Save changes
         </button>
     </div>
@@ -150,13 +327,31 @@
                         <div class="text-muted">ID: #@Model.Id</div>
                     </div>
 
-                    <div>
+                    <div class="d-flex align-items-center gap-2">
                         <span class="badge @StatusBadgeClass(Model.Status)">@StatusLabel(Model.Status)</span>
+                        @if (isCustomerBooked)
+                        {
+                            <span class="badge badge-primary-light">Customer booked</span>
+                        }
+                        else
+                        {
+                            <span class="badge badge-primary-light">Owner created</span>
+                        }
                     </div>
                 </div>
             </div>
 
             <div class="card-body">
+                @if (isLocked)
+                {
+                    <div class="sa-lockbox mb-3">
+                        <div class="t">This appointment is locked.</div>
+                        <div class="text-muted small mt-1">
+                            Pending, Cancelled, Completed and No-show appointments cannot be edited.
+                        </div>
+                    </div>
+                }
+
                 <form id="saEditForm"
                       method="post"
                       asp-area="Admin"
@@ -166,9 +361,7 @@
                       novalidate>
 
                     @Html.AntiForgeryToken()
-
                     <div asp-validation-summary="ModelOnly" class="mb-3"></div>
-
                     <input asp-for="Id" type="hidden" />
 
                     <!-- Customer -->
@@ -177,18 +370,34 @@
                             <label class="form-label">Customer name</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="align-middle" data-feather="user"></i></span>
-                                <input asp-for="CustomerName" class="form-control" placeholder="e.g. Anna K." />
+                                <input asp-for="CustomerName"
+                                       class="form-control"
+                                       placeholder="e.g. Anna K."
+                                       disabled="@(isLocked || isCustomerBooked)" />
                             </div>
                             <span asp-validation-for="CustomerName"></span>
+
+                            @if (isLocked || isCustomerBooked)
+                            {
+                                <input type="hidden" asp-for="CustomerName" />
+                            }
                         </div>
 
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Customer email</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="align-middle" data-feather="mail"></i></span>
-                                <input asp-for="CustomerEmail" class="form-control" placeholder="name@@domain.com" />
+                                <input asp-for="CustomerEmail"
+                                       class="form-control"
+                                       placeholder="name@domain.com"
+                                       disabled="@(isLocked || isCustomerBooked)" />
                             </div>
                             <span asp-validation-for="CustomerEmail"></span>
+
+                            @if (isLocked || isCustomerBooked)
+                            {
+                                <input type="hidden" asp-for="CustomerEmail" />
+                            }
                         </div>
                     </div>
 
@@ -197,19 +406,46 @@
                             <label class="form-label">Phone (optional)</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="align-middle" data-feather="phone"></i></span>
-                                <input asp-for="CustomerPhone" class="form-control" placeholder="+385 ..." />
+                                <input asp-for="CustomerPhone"
+                                       class="form-control"
+                                       placeholder="+385 ..."
+                                       disabled="@(isLocked || isCustomerBooked)" />
                             </div>
                             <span asp-validation-for="CustomerPhone"></span>
+
+                            @if (isLocked || isCustomerBooked)
+                            {
+                                <input type="hidden" asp-for="CustomerPhone" />
+                            }
                         </div>
 
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Status</label>
+
                             <select asp-for="Status"
                                     class="form-select"
-                                    asp-items="Html.GetEnumSelectList<AppointmentStatus>()">
+                                    asp-items="Html.GetEnumSelectList<AppointmentStatus>()"
+                                    id="statusSelect"
+                                    disabled="@(isLocked)">
                             </select>
+
                             <span asp-validation-for="Status"></span>
-                            <div class="form-text">Shown on Calendar & Appointments list.</div>
+
+                            @if (isLocked)
+                            {
+                                <input type="hidden" asp-for="Status" />
+                            }
+
+                            <div class="form-text">
+                                @if (isCustomerBooked)
+                                {
+                                    <span>Customer-booked appointments: only status changes are allowed (controller enforces rules).</span>
+                                }
+                                else
+                                {
+                                    <span>Status is shown on Calendar & Appointments list.</span>
+                                }
+                            </div>
                         </div>
                     </div>
 
@@ -224,7 +460,8 @@
                                 <select asp-for="ServiceId"
                                         class="form-select"
                                         asp-items="Model.ServiceOptions"
-                                        id="svcSelect">
+                                        id="svcSelect"
+                                        disabled="@(!canEditSchedule)">
                                     <option value="">Select service…</option>
                                 </select>
                             </div>
@@ -234,16 +471,32 @@
                             {
                                 <div class="form-text">Current: <strong>@Model.ServiceLabel</strong></div>
                             }
+
+                            @if (!canEditSchedule)
+                            {
+                                <input type="hidden" asp-for="ServiceId" />
+                            }
                         </div>
 
                         <div class="col-md-4 mb-3">
                             <label class="form-label">Price override (optional)</label>
                             <div class="input-group">
                                 <span class="input-group-text">€</span>
-                                <input asp-for="PriceOverride" class="form-control" type="number" step="0.01" min="0" id="priceInput" />
+                                <input asp-for="PriceOverride"
+                                       class="form-control"
+                                       type="number"
+                                       step="0.01"
+                                       min="0"
+                                       id="priceInput"
+                                       disabled="@(!canEditSchedule)" />
                             </div>
                             <span asp-validation-for="PriceOverride"></span>
                             <div class="form-text">Leave empty to use service price.</div>
+
+                            @if (!canEditSchedule)
+                            {
+                                <input type="hidden" asp-for="PriceOverride" />
+                            }
                         </div>
                     </div>
 
@@ -253,29 +506,63 @@
                             <label class="form-label">Date</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="align-middle" data-feather="calendar"></i></span>
-                                <input asp-for="Date" class="form-control" type="date" id="dateInput" value="@safeDate" />
+                                <input asp-for="Date"
+                                       class="form-control"
+                                       type="date"
+                                       id="dateInput"
+                                       value="@safeDate"
+                                       disabled="@(!canEditSchedule)" />
                             </div>
                             <span asp-validation-for="Date"></span>
+
+                            @if (!canEditSchedule)
+                            {
+                                <input type="hidden" asp-for="Date" value="@safeDate" />
+                            }
                         </div>
 
                         <div class="col-md-4 mb-3">
                             <label class="form-label">Start time</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="align-middle" data-feather="clock"></i></span>
-                                <input asp-for="StartTime" class="form-control" type="time" id="startTimeInput" value="@safeStart" />
+                                <input asp-for="StartTime"
+                                       class="form-control"
+                                       type="time"
+                                       id="startTimeInput"
+                                       value="@safeStart"
+                                       disabled="@(!canEditSchedule)" />
                             </div>
                             <span asp-validation-for="StartTime"></span>
-                            <div class="form-text">Click a slot on the right to fill this.</div>
+
+                            <div class="form-text">
+                                @(canEditSchedule ? "Click a slot on the right to fill this." : "Time cannot be changed for this appointment.")
+                            </div>
+
+                            @if (!canEditSchedule)
+                            {
+                                <input type="hidden" asp-for="StartTime" value="@safeStart" />
+                            }
                         </div>
 
                         <div class="col-md-4 mb-3">
                             <label class="form-label">Duration (minutes)</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="align-middle" data-feather="hash"></i></span>
-                                <input asp-for="DurationMinutes" class="form-control" type="number" min="1" max="1440" id="durInput" />
+                                <input asp-for="DurationMinutes"
+                                       class="form-control"
+                                       type="number"
+                                       min="1"
+                                       max="1440"
+                                       id="durInput"
+                                       disabled="@(!canEditSchedule)" />
                             </div>
                             <span asp-validation-for="DurationMinutes"></span>
                             <div class="form-text">If empty, controller will fallback to service duration.</div>
+
+                            @if (!canEditSchedule)
+                            {
+                                <input type="hidden" asp-for="DurationMinutes" />
+                            }
                         </div>
                     </div>
 
@@ -289,23 +576,48 @@
                                       class="form-control"
                                       rows="4"
                                       placeholder="Preferences, warnings, internal notes…"
-                                      id="notesInput"></textarea>
+                                      id="notesInput"
+                                      disabled="@(isLocked)"></textarea>
                             <span asp-validation-for="Notes"></span>
+
+                            @if (isLocked)
+                            {
+                                <input type="hidden" asp-for="Notes" />
+                            }
                         </div>
                     </div>
 
-                    <!-- Action buttons -->
                     <div class="d-flex justify-content-between align-items-center mt-4 flex-wrap gap-2">
                         <a asp-area="Admin" asp-controller="Appointments" asp-action="Index" class="btn btn-outline-light">
-                            Cancel
+                            Back to list
                         </a>
 
                         <div class="d-flex gap-2">
-                            <button type="submit" class="btn btn-primary">
+                            <button type="submit" class="btn btn-primary" disabled="@(isLocked)">
                                 <i class="align-middle me-1" data-feather="save"></i> Save changes
                             </button>
                         </div>
                     </div>
+                </form>
+
+                <form id="saCancelForm-@Model.Id"
+                      class="d-none"
+                      method="post"
+                      asp-area="Admin"
+                      asp-controller="Appointments"
+                      asp-action="Cancel"
+                      asp-route-id="@Model.Id">
+                    @Html.AntiForgeryToken()
+                </form>
+
+                <form id="saNoshowForm-@Model.Id"
+                      class="d-none"
+                      method="post"
+                      asp-area="Admin"
+                      asp-controller="Appointments"
+                      asp-action="MarkNoShow"
+                      asp-route-id="@Model.Id">
+                    @Html.AntiForgeryToken()
                 </form>
             </div>
         </div>
@@ -364,18 +676,41 @@
                 <div class="card-header">
                     <div class="d-flex justify-content-between align-items-center">
                         <h5 class="card-title mb-0">Available Times</h5>
-                        <span class="badge badge-success-light" id="slotsBadge">Select service</span>
+                        <span class="badge badge-success-light" id="slotsBadge">—</span>
                     </div>
                 </div>
 
                 <div class="card-body pt-2">
-                    <div class="text-muted small mb-2">Pick a service + date. Then click a slot to fill Start time.</div>
+                    @if (!canEditSchedule)
+                    {
+                        <div class="sa-slot-empty">
+                            @(!string.IsNullOrWhiteSpace(Model.AvailabilityMessage)
+                                                    ? Model.AvailabilityMessage
+                                                    : "Time selection is not available for this appointment.")
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-muted small mb-2">Pick a service + date. Use arrows to browse slots. Click a slot to fill Start time.</div>
 
-                    <div id="slotsEmpty" class="sa-slot-empty d-none">
-                        No available slots for this date.
-                    </div>
+                        <div class="sa-slots-toolbar" id="slotsToolbar">
+                            <div class="d-flex gap-2">
+                                <button type="button" class="btn btn-outline-light" id="slotsPrev" aria-label="Previous slots">
+                                    <i data-feather="chevron-left"></i>
+                                </button>
+                                <button type="button" class="btn btn-outline-light" id="slotsNext" aria-label="Next slots">
+                                    <i data-feather="chevron-right"></i>
+                                </button>
+                            </div>
+                            <div class="sa-slots-meta" id="slotsMeta">—</div>
+                        </div>
 
-                    <div class="row g-2" id="slotsGrid"></div>
+                        <div id="slotsEmpty" class="sa-slot-empty d-none">
+                            No available slots for this date.
+                        </div>
+
+                        <div class="row g-2" id="slotsGrid"></div>
+                    }
                 </div>
             </div>
 
@@ -384,27 +719,76 @@
                 <div class="card-header">
                     <h5 class="card-title mb-0">Quick Actions</h5>
                 </div>
-                <div class="card-body">
+                <div class="card-body sa-actions">
                     <div class="d-grid gap-2">
-                        <button type="button" class="btn btn-outline-success" data-set-status="Confirmed">
-                            <i class="align-middle me-1" data-feather="check-circle"></i> Mark as Confirmed
+                        <button type="button"
+                                class="btn btn-outline-danger"
+                                id="qaCancel"
+                                disabled="@(isLocked)">
+                            <i class="align-middle me-1" data-feather="x-circle"></i> Cancel appointment
                         </button>
-                        <button type="button" class="btn btn-outline-warning" data-set-status="Pending">
-                            <i class="align-middle me-1" data-feather="alert-triangle"></i> Mark as Pending
-                        </button>
-                        <button type="button" class="btn btn-outline-danger" data-set-status="Cancelled">
-                            <i class="align-middle me-1" data-feather="x-circle"></i> Mark as Cancelled
+
+                        <button type="button"
+                                class="btn btn-outline-warning"
+                                id="qaNoShow"
+                                disabled="@(!canMarkNoShow)">
+                            <i class="align-middle me-1" data-feather="user-x"></i> Mark as No show
                         </button>
                     </div>
 
                     <hr class="my-3" />
 
                     <div class="text-muted small">
-                        Tip: After changing status, click <strong>Save changes</strong>.
+                        @if (!canMarkNoShow)
+                        {
+                            <div>
+                                Tip: <strong>No show</strong> is only allowed after the appointment ended and when status is <strong>Completed</strong>.
+                            </div>
+                        }
                     </div>
                 </div>
             </div>
 
+        </div>
+    </div>
+</div>
+
+<!-- Reusable centered modal -->
+<div class="sa-modal" id="saModal" aria-hidden="true">
+    <div class="sa-modal-backdrop" data-sa-close></div>
+
+    <div class="sa-modal-card" role="dialog" aria-modal="true" aria-labelledby="saModalTitle">
+        <div class="sa-modal-head">
+            <div>
+                <h5 class="sa-modal-title" id="saModalTitle">Confirm</h5>
+                <div class="text-muted small" id="saModalSubtitle">—</div>
+            </div>
+            <button type="button" class="sa-modal-close" data-sa-close aria-label="Close">
+                <i data-feather="x"></i>
+            </button>
+        </div>
+
+        <div class="sa-modal-body">
+            <div id="saModalMessage" class="mb-2">—</div>
+
+            <div class="d-flex flex-wrap gap-2 mt-3">
+                <span class="sa-pill" id="saModalPill">
+                    <i data-feather="alert-triangle"></i>
+                    <span id="saModalPillText">Action</span>
+                </span>
+                <span class="sa-pill">
+                    <i data-feather="hash"></i>
+                    <span>Appointment ID:</span>
+                    <span class="fw-bold" id="saModalId">—</span>
+                </span>
+            </div>
+        </div>
+
+        <div class="sa-modal-foot">
+            <button type="button" class="btn btn-outline-light" data-sa-close>Cancel</button>
+            <button type="button" class="btn btn-danger" id="saModalConfirmBtn">
+                Confirm
+            </button>
         </div>
     </div>
 </div>
@@ -416,14 +800,12 @@
         (function () {
             const customerName = document.getElementById("CustomerName");
             const customerEmail = document.getElementById("CustomerEmail");
-            const customerPhone = document.getElementById("CustomerPhone");
-
-            const statusSelect = document.getElementById("Status");
             const svcSelect = document.getElementById("svcSelect");
             const dateInput = document.getElementById("dateInput");
             const startTimeInput = document.getElementById("startTimeInput");
             const durInput = document.getElementById("durInput");
             const priceInput = document.getElementById("priceInput");
+            const statusSelect = document.getElementById("statusSelect");
 
             const sumCustomer = document.getElementById("sumCustomer");
             const sumService = document.getElementById("sumService");
@@ -432,17 +814,13 @@
             const sumPrice = document.getElementById("sumPrice");
             const sumStatus = document.getElementById("sumStatus");
 
-            const slotsBadge = document.getElementById("slotsBadge");
-            const slotsGrid = document.getElementById("slotsGrid");
-            const slotsEmpty = document.getElementById("slotsEmpty");
-
-            const endpoint = '@Url.Action("GetAvailableSlots", "Home", new { area = "Customer" })';
-
             function statusBadgeClass(statusText) {
                 switch ((statusText || "").toLowerCase()) {
                     case "confirmed": return "badge-success-light";
                     case "pending": return "badge-warning-light";
                     case "cancelled": return "badge-danger-light";
+                    case "noshow": return "badge-dark-light";
+                    case "completed": return "badge-info-light";
                     default: return "badge-primary-light";
                 }
             }
@@ -451,7 +829,7 @@
                 const d = dateInput?.value || "";
                 const t = startTimeInput?.value || "";
                 if (!d && !t) return "—";
-                if (d && t) return d + " @@ " + t;
+                if (d && t) return d + " @@" + t;
                 return d || t;
             }
 
@@ -465,18 +843,20 @@
                 const cname = customerName?.value?.trim() || "";
                 const cemail = customerEmail?.value?.trim() || "";
 
-                if (cname) sumCustomer.textContent = cname;
-                else if (cemail) sumCustomer.textContent = cemail;
-                else sumCustomer.textContent = "—";
+                if (sumCustomer) {
+                    if (cname) sumCustomer.textContent = cname;
+                    else if (cemail) sumCustomer.textContent = cemail;
+                    else sumCustomer.textContent = "—";
+                }
 
-                sumService.textContent = selectedServiceText();
-                sumWhen.textContent = fmtWhenLabel();
+                if (sumService) sumService.textContent = selectedServiceText();
+                if (sumWhen) sumWhen.textContent = fmtWhenLabel();
 
                 const dur = durInput?.value?.trim() || "";
-                sumDuration.textContent = dur ? (dur + " min") : "—";
+                if (sumDuration) sumDuration.textContent = dur ? (dur + " min") : "—";
 
                 const price = priceInput?.value?.trim() || "";
-                sumPrice.textContent = price ? ("€ " + price) : "—";
+                if (sumPrice) sumPrice.textContent = price ? ("€ " + price) : "—";
 
                 const st = statusSelect?.value || "";
                 if (sumStatus) {
@@ -485,22 +865,57 @@
                 }
             }
 
+            const slotsBadge = document.getElementById("slotsBadge");
+            const slotsGrid = document.getElementById("slotsGrid");
+            const slotsEmpty = document.getElementById("slotsEmpty");
+
+            const toolbar = document.getElementById("slotsToolbar");
+            const btnPrev = document.getElementById("slotsPrev");
+            const btnNext = document.getElementById("slotsNext");
+            const meta = document.getElementById("slotsMeta");
+
+            const endpoint = '@Url.Action("GetAvailableSlots", "Appointments", new { area = "Admin" })';
+
+            const PAGE_SIZE = 9;
+            let allTimes = [];
+            let pageIndex = 0;
+
             function setBadge(text) {
                 if (slotsBadge) slotsBadge.textContent = text;
             }
 
-            function renderSlots(times) {
+            function updatePager() {
+                if (!toolbar || !btnPrev || !btnNext || !meta) return;
+
+                const total = allTimes.length;
+                const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+
+                if (total > PAGE_SIZE) toolbar.classList.add("sa-show");
+                else toolbar.classList.remove("sa-show");
+
+                btnPrev.disabled = (pageIndex <= 0);
+                btnNext.disabled = (pageIndex >= pages - 1);
+
+                const from = total === 0 ? 0 : (pageIndex * PAGE_SIZE + 1);
+                const to = Math.min(total, (pageIndex + 1) * PAGE_SIZE);
+
+                meta.textContent = total === 0 ? "—" : `Showing ${from}–${to} of ${total}`;
+            }
+
+            function renderPage() {
                 if (!slotsGrid || !slotsEmpty) return;
 
                 slotsGrid.innerHTML = "";
                 slotsEmpty.classList.add("d-none");
 
-                if (!Array.isArray(times) || times.length === 0) {
+                if (!Array.isArray(allTimes) || allTimes.length === 0) {
                     slotsEmpty.classList.remove("d-none");
+                    updatePager();
                     return;
                 }
 
-                const show = times.slice(0, 9);
+                const start = pageIndex * PAGE_SIZE;
+                const show = allTimes.slice(start, start + PAGE_SIZE);
 
                 for (const t of show) {
                     const col = document.createElement("div");
@@ -527,26 +942,27 @@
                     slotsGrid.appendChild(col);
                 }
 
-                if (times.length > show.length) {
-                    const hint = document.createElement("div");
-                    hint.className = "col-12 text-muted small mt-2";
-                    hint.textContent = `Showing ${show.length} of ${times.length} available slots.`;
-                    slotsGrid.appendChild(hint);
-                }
+                updatePager();
             }
 
             async function loadSlots() {
-                const serviceId = svcSelect?.value;
-                const date = dateInput?.value;
+                if (!slotsGrid || !slotsEmpty || !svcSelect || !dateInput) return;
+
+                const serviceId = svcSelect.value;
+                const date = dateInput.value;
 
                 if (!serviceId) {
                     setBadge("Select service");
-                    renderSlots([]);
+                    allTimes = [];
+                    pageIndex = 0;
+                    renderPage();
                     return;
                 }
                 if (!date) {
                     setBadge("Pick date");
-                    renderSlots([]);
+                    allTimes = [];
+                    pageIndex = 0;
+                    renderPage();
                     return;
                 }
 
@@ -558,42 +974,136 @@
                     if (!res.ok) throw new Error("Failed");
                     const data = await res.json();
 
-                    setBadge("Ready");
-                    renderSlots(data);
+                    allTimes = Array.isArray(data) ? data : [];
+                    pageIndex = 0;
+
+                    setBadge(allTimes.length ? "Ready" : "No slots");
+                    renderPage();
                 } catch (e) {
                     setBadge("Error");
-                    renderSlots([]);
+                    allTimes = [];
+                    pageIndex = 0;
+                    renderPage();
                 }
             }
 
-            document.querySelectorAll("[data-set-status]").forEach(btn => {
-                btn.addEventListener("click", function () {
-                    const val = btn.getAttribute("data-set-status");
-                    if (!val || !statusSelect) return;
-                    statusSelect.value = val;
-                    refreshSummary();
-                });
+            btnPrev?.addEventListener("click", function () {
+                if (pageIndex <= 0) return;
+                pageIndex--;
+                renderPage();
             });
 
-            // hooks
+            btnNext?.addEventListener("click", function () {
+                const pages = Math.max(1, Math.ceil(allTimes.length / PAGE_SIZE));
+                if (pageIndex >= pages - 1) return;
+                pageIndex++;
+                renderPage();
+            });
+
+            const modal = document.getElementById("saModal");
+            const titleEl = document.getElementById("saModalTitle");
+            const subtitleEl = document.getElementById("saModalSubtitle");
+            const msgEl = document.getElementById("saModalMessage");
+            const pillTextEl = document.getElementById("saModalPillText");
+            const idEl = document.getElementById("saModalId");
+            const confirmBtn = document.getElementById("saModalConfirmBtn");
+
+            const qaCancel = document.getElementById("qaCancel");
+            const qaNoShow = document.getElementById("qaNoShow");
+
+            let currentFormId = null;
+
+            const presets = {
+                cancel: {
+                    title: "Cancel appointment?",
+                    subtitle: "This will permanently cancel the booking.",
+                    message: "The customer will be notified by email (if an email exists). You can’t reopen a cancelled appointment.",
+                    pill: "Cancel",
+                    btnClass: "btn-danger",
+                    btnText: "Yes, cancel"
+                },
+                noshow: {
+                    title: "Mark as No show?",
+                    subtitle: "Only do this if the customer did not come.",
+                    message: "No show appointments are excluded from revenue.",
+                    pill: "No show",
+                    btnClass: "btn-warning",
+                    btnText: "Yes, mark No show"
+                }
+            };
+
+            function openModal(kind, id) {
+                const p = presets[kind];
+                if (!p || !modal) return;
+
+                currentFormId = (kind === "cancel")
+                    ? `saCancelForm-${id}`
+                    : `saNoshowForm-${id}`;
+
+                titleEl.textContent = p.title;
+                subtitleEl.textContent = p.subtitle;
+                msgEl.textContent = p.message;
+                pillTextEl.textContent = p.pill;
+                idEl.textContent = id;
+
+                confirmBtn.className = "btn " + p.btnClass;
+                confirmBtn.textContent = p.btnText;
+
+                modal.classList.add("sa-open");
+                modal.setAttribute("aria-hidden", "false");
+
+                setTimeout(() => confirmBtn.focus(), 0);
+                if (window.feather) window.feather.replace();
+            }
+
+            function closeModal() {
+                if (!modal) return;
+                modal.classList.remove("sa-open");
+                modal.setAttribute("aria-hidden", "true");
+                currentFormId = null;
+            }
+
+            qaCancel?.addEventListener("click", function () {
+                if (qaCancel.disabled) return;
+                openModal("cancel", "@Model.Id");
+            });
+
+            qaNoShow?.addEventListener("click", function () {
+                if (qaNoShow.disabled) return;
+                openModal("noshow", "@Model.Id");
+            });
+
+            modal?.querySelectorAll("[data-sa-close]").forEach(x => {
+                x.addEventListener("click", closeModal);
+            });
+
+            confirmBtn?.addEventListener("click", function () {
+                if (!currentFormId) return;
+                const form = document.getElementById(currentFormId);
+                if (form) form.submit();
+            });
+
+            document.addEventListener("keydown", function (e) {
+                if (e.key === "Escape" && modal?.classList.contains("sa-open")) closeModal();
+            });
+
             ["input", "change"].forEach(evt => {
                 customerName?.addEventListener(evt, refreshSummary);
                 customerEmail?.addEventListener(evt, refreshSummary);
-                customerPhone?.addEventListener(evt, refreshSummary);
 
                 statusSelect?.addEventListener(evt, refreshSummary);
+
                 svcSelect?.addEventListener(evt, function () { refreshSummary(); loadSlots(); });
                 dateInput?.addEventListener(evt, function () { refreshSummary(); loadSlots(); });
+
                 startTimeInput?.addEventListener(evt, refreshSummary);
                 durInput?.addEventListener(evt, refreshSummary);
                 priceInput?.addEventListener(evt, refreshSummary);
             });
 
-            // initial
             refreshSummary();
             loadSlots();
 
-            // Feather
             if (window.feather) window.feather.replace();
         })();
     </script>
