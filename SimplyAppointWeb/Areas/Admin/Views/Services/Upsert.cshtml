@@ -1,20 +1,65 @@
-﻿@{
-    ViewData["Title"] = "Create Service";
+﻿@using SimplyAppoint.Models.ViewModels.Services
+@model ServiceUpsertVM
+
+@{
+    var isEdit = Model != null && Model.Id > 0;
+    ViewData["Title"] = isEdit ? "Edit Service" : "Create Service";
     Layout = "_AdminLayout";
 }
 
+<style>
+    .field-validation-error {
+        color: #ffb4b4;
+        font-size: .85rem;
+        font-weight: 600;
+        display: block;
+        margin-top: .35rem;
+    }
+
+    .validation-summary-errors {
+        color: #ffb4b4;
+    }
+
+    .card .form-control,
+    .card .form-select {
+        background-color: rgba(255,255,255,.04);
+        border-color: rgba(255,255,255,.10);
+        color: rgba(255,255,255,.92);
+    }
+
+    .input-group-text {
+        border-color: rgba(255,255,255,.10);
+        background: rgba(255,255,255,.04);
+        color: rgba(255,255,255,.75);
+    }
+
+    .sa-preview-pill {
+        border: 1px solid rgba(255,255,255,.10);
+        background: rgba(255,255,255,.04);
+        border-radius: 14px;
+        padding: .75rem .85rem;
+    }
+
+    .sa-muted {
+        color: rgba(255,255,255,.65);
+    }
+</style>
+
 <div class="row mb-2 mb-xl-3 align-items-center">
     <div class="col-auto d-none d-sm-block">
-        <h3 class="mb-0"><strong>Create Service</strong></h3>
-        <div class="text-muted">Add a new service with duration and price</div>
+        <h3 class="mb-0"><strong>@(isEdit ? "Edit Service" : "Create Service")</strong></h3>
+        <div class="text-muted">
+            @(isEdit ? "Update service duration, price and buffers" : "Add a new service with duration and price")
+        </div>
     </div>
 
     <div class="col-auto ms-auto text-end mt-n1">
         <a asp-area="Admin" asp-controller="Services" asp-action="Index" class="btn btn-light bg-white me-2">
             <i class="align-middle me-1" data-feather="arrow-left"></i> Back to Services
         </a>
-        <button type="submit" form="serviceCreateForm" class="btn btn-primary">
-            <i class="align-middle me-1" data-feather="check"></i> Create Service
+
+        <button type="submit" form="serviceUpsertForm" class="btn btn-primary">
+            <i class="align-middle me-1" data-feather="save"></i> @(isEdit ? "Save changes" : "Create Service")
         </button>
     </div>
 </div>
@@ -28,144 +73,94 @@
             </div>
 
             <div class="card-body">
-                <form asp-area="Admin" asp-controller="Services" asp-action="Create" method="post" novalidate id="serviceCreateForm">
+                <form id="serviceUpsertForm"
+                      method="post"
+                      asp-area="Admin"
+                      asp-controller="Services"
+                      asp-action="Upsert"
+                      novalidate>
 
-                    <!-- Basics -->
-                    <div class="mb-4">
-                        <h6 class="text-muted mb-3">Basics</h6>
+                    @Html.AntiForgeryToken()
+                    <div asp-validation-summary="ModelOnly" class="mb-3"></div>
 
-                        <div class="mb-3">
-                            <label class="form-label">Service name</label>
-                            <input name="Name" type="text" class="form-control" placeholder="e.g. Haircut" required />
-                            <div class="form-text">Shown to customers when booking.</div>
-                        </div>
+                    <input asp-for="Id" type="hidden" />
 
-                        <div class="row">
-                            <div class="col-12 col-md-6 mb-3">
-                                <label class="form-label">Category</label>
-                                <select name="Category" class="form-select">
-                                    <option value="" selected>Select category</option>
-                                    <option>Hair</option>
-                                    <option>Beard</option>
-                                    <option>Beauty</option>
-                                    <option>Pets</option>
-                                    <option>Other</option>
-                                </select>
-                                <div class="form-text">Optional but helps organize your list.</div>
-                            </div>
+                    <!-- Name -->
+                    <div class="mb-3">
+                        <label asp-for="Name" class="form-label">Service name</label>
+                        <input asp-for="Name" class="form-control" placeholder="e.g. Haircut" maxlength="200" />
+                        <span asp-validation-for="Name"></span>
+                        <div class="form-text">Shown to customers when booking.</div>
+                    </div>
 
-                            <div class="col-12 col-md-6 mb-3">
-                                <label class="form-label">Status</label>
-                                <select name="IsActive" class="form-select">
-                                    <option value="true" selected>Active</option>
-                                    <option value="false">Inactive</option>
-                                </select>
-                                <div class="form-text">Inactive services won’t appear in booking.</div>
-                            </div>
-                        </div>
-
-                        <div class="mb-0">
-                            <label class="form-label">Description</label>
-                            <textarea name="Description" class="form-control" rows="3" placeholder="Short description (optional)"></textarea>
-                        </div>
+                    <!-- Active -->
+                    <div class="mb-3">
+                        <label asp-for="IsActive" class="form-label">Status</label>
+                        <select asp-for="IsActive" class="form-select">
+                            <option value="true">Active</option>
+                            <option value="false">Inactive</option>
+                        </select>
+                        <span asp-validation-for="IsActive"></span>
+                        <div class="form-text">Inactive services won’t appear in booking.</div>
                     </div>
 
                     <hr class="my-4" />
 
-                    <!-- Pricing & Duration -->
-                    <div class="mb-4">
-                        <h6 class="text-muted mb-3">Pricing & Duration</h6>
-
-                        <div class="row">
-                            <div class="col-12 col-md-6 mb-3">
-                                <label class="form-label">Duration (minutes)</label>
-                                <select name="DurationMinutes" class="form-select" required>
-                                    <option value="15">15</option>
-                                    <option value="20">20</option>
-                                    <option value="30">30</option>
-                                    <option value="45" selected>45</option>
-                                    <option value="60">60</option>
-                                    <option value="75">75</option>
-                                    <option value="90">90</option>
-                                    <option value="120">120</option>
-                                </select>
-                                <div class="form-text">Used to block time in your calendar.</div>
-                            </div>
-
-                            <div class="col-12 col-md-6 mb-3">
-                                <label class="form-label">Price (€)</label>
-                                <div class="input-group">
-                                    <span class="input-group-text">€</span>
-                                    <input name="Price" type="number" step="0.01" min="0" class="form-control" placeholder="e.g. 25" required />
-                                </div>
-                                <div class="form-text">Set to 0 if free.</div>
-                            </div>
+                    <!-- Duration + Price -->
+                    <div class="row">
+                        <div class="col-12 col-md-6 mb-3">
+                            <label asp-for="DurationMinutes" class="form-label">Duration (minutes)</label>
+                            <input asp-for="DurationMinutes"
+                                   class="form-control"
+                                   type="number"
+                                   min="1"
+                                   max="1440"
+                                   step="1" />
+                            <span asp-validation-for="DurationMinutes"></span>
+                            <div class="form-text">Used to block time in your calendar.</div>
                         </div>
 
-                        <div class="row">
-                            <div class="col-12 col-md-6 mb-3">
-                                <label class="form-label">Buffer before (minutes)</label>
-                                <select name="BufferBeforeMinutes" class="form-select">
-                                    <option value="0" selected>0</option>
-                                    <option value="5">5</option>
-                                    <option value="10">10</option>
-                                    <option value="15">15</option>
-                                </select>
-                                <div class="form-text">Optional setup time before appointment.</div>
+                        <div class="col-12 col-md-6 mb-3">
+                            <label asp-for="Price" class="form-label">Price (€)</label>
+                            <div class="input-group">
+                                <span class="input-group-text">€</span>
+                                <input asp-for="Price"
+                                       class="form-control"
+                                       type="number"
+                                       step="0.01"
+                                       min="0.01"
+                                       max="1000000" />
                             </div>
-
-                            <div class="col-12 col-md-6 mb-3">
-                                <label class="form-label">Buffer after (minutes)</label>
-                                <select name="BufferAfterMinutes" class="form-select">
-                                    <option value="0" selected>0</option>
-                                    <option value="5">5</option>
-                                    <option value="10">10</option>
-                                    <option value="15">15</option>
-                                </select>
-                                <div class="form-text">Optional cleanup time after appointment.</div>
-                            </div>
+                            <span asp-validation-for="Price"></span>
+                            <div class="form-text">Must be at least €0.01 (per model validation).</div>
                         </div>
                     </div>
 
-                    <hr class="my-4" />
-
-                    <!-- Booking Rules -->
-                    <div class="mb-0">
-                        <h6 class="text-muted mb-3">Booking Rules</h6>
-
-                        <div class="row">
-                            <div class="col-12 col-md-6 mb-3">
-                                <label class="form-label">Minimum notice</label>
-                                <select name="MinNoticeHours" class="form-select">
-                                    <option value="0" selected>No minimum</option>
-                                    <option value="1">1 hour</option>
-                                    <option value="2">2 hours</option>
-                                    <option value="6">6 hours</option>
-                                    <option value="12">12 hours</option>
-                                    <option value="24">24 hours</option>
-                                </select>
-                                <div class="form-text">How early customers must book.</div>
-                            </div>
-
-                            <div class="col-12 col-md-6 mb-3">
-                                <label class="form-label">Color</label>
-                                <select name="Color" class="form-select">
-                                    <option value="primary" selected>Blue</option>
-                                    <option value="success">Green</option>
-                                    <option value="warning">Orange</option>
-                                    <option value="danger">Red</option>
-                                    <option value="info">Teal</option>
-                                    <option value="secondary">Gray</option>
-                                </select>
-                                <div class="form-text">Used in calendar for quick recognition.</div>
-                            </div>
+                    <!-- Buffers -->
+                    <div class="row">
+                        <div class="col-12 col-md-6 mb-3">
+                            <label asp-for="BufferBefore" class="form-label">Buffer before (minutes)</label>
+                            <input asp-for="BufferBefore"
+                                   class="form-control"
+                                   type="number"
+                                   min="0"
+                                   max="1440"
+                                   step="1" />
+                            <span asp-validation-for="BufferBefore"></span>
+                            <div class="form-text">Optional setup time before appointment.</div>
                         </div>
 
-                        <div class="form-check form-switch mb-0">
-                            <input class="form-check-input" type="checkbox" name="AllowOnlineBooking" checked>
-                            <label class="form-check-label">Allow online booking</label>
+                        <div class="col-12 col-md-6 mb-3">
+                            <label asp-for="BufferAfter" class="form-label">Buffer after (minutes)</label>
+                            <input asp-for="BufferAfter"
+                                   class="form-control"
+                                   type="number"
+                                   min="0"
+                                   max="1440"
+                                   step="1" />
+                            <span asp-validation-for="BufferAfter"></span>
+                            <div class="form-text">Optional cleanup time after appointment.</div>
                         </div>
-                        <div class="form-text">Turn off if this service is only booked manually.</div>
                     </div>
 
                 </form>
@@ -175,8 +170,8 @@
                 <a asp-area="Admin" asp-controller="Services" asp-action="Index" class="btn btn-light bg-white">
                     Cancel
                 </a>
-                <button type="submit" form="serviceCreateForm" class="btn btn-primary">
-                    <i class="align-middle me-1" data-feather="check"></i> Create Service
+                <button type="submit" form="serviceUpsertForm" class="btn btn-primary">
+                    <i class="align-middle me-1" data-feather="save"></i> @(isEdit ? "Save changes" : "Create Service")
                 </button>
             </div>
         </div>
@@ -186,94 +181,41 @@
     <div class="col-12 col-lg-4 d-flex">
         <div class="d-flex flex-column w-100">
 
-            <!-- Preview (static until backend) -->
+            <!-- Preview -->
             <div class="card flex-fill">
                 <div class="card-header">
                     <h5 class="card-title mb-0">Preview</h5>
                 </div>
+
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-start">
                         <div class="d-flex gap-2 align-items-center">
-                            <span class="badge bg-primary">Category</span>
-                            <span class="badge badge-success-light">Active</span>
+                            <span class="badge badge-primary-light">Service</span>
+                            <span id="pvActiveBadge" class="badge badge-success-light">Active</span>
                         </div>
                         <i class="align-middle text-muted" data-feather="eye"></i>
                     </div>
 
-                    <h4 class="mt-3 mb-1">New service</h4>
-                    <div class="text-muted">Short description will appear here.</div>
+                    <h4 class="mt-3 mb-1" id="pvName">@(string.IsNullOrWhiteSpace(Model?.Name) ? "New service" : Model!.Name)</h4>
 
-                    <hr class="my-3" />
-
-                    <div class="row">
-                        <div class="col-6">
-                            <div class="text-muted small">Duration</div>
-                            <div class="fw-semibold">45 min</div>
+                    <div class="sa-preview-pill mt-3">
+                        <div class="d-flex justify-content-between">
+                            <span class="sa-muted">Duration</span>
+                            <span class="fw-semibold" id="pvDuration">@(Model?.DurationMinutes > 0 ? $"{Model.DurationMinutes} min" : "—")</span>
                         </div>
-                        <div class="col-6 text-end">
-                            <div class="text-muted small">Price</div>
-                            <div class="fw-semibold">€ 0</div>
-                        </div>
-                    </div>
-
-                    <div class="mt-3">
-                        <div class="text-muted small mb-1">Total block (incl. buffers)</div>
-                        <div class="fw-semibold">45 min</div>
-                    </div>
-
-                    <div class="mt-3 d-grid">
-                        <button type="button" class="btn btn-light bg-white" disabled>
-                            <i class="align-middle me-2" data-feather="calendar"></i> Example booking button
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Service checklist (static until backend) -->
-            <div class="card flex-fill">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">Service Checklist</h5>
-                </div>
-                <div class="card-body">
-                    <div class="list-group">
-                        <div class="list-group-item d-flex align-items-center justify-content-between">
-                            <div class="d-flex align-items-center gap-2">
-                                <i class="align-middle text-muted" data-feather="type"></i>
-                                <span>Name set</span>
-                            </div>
-                            <span class="badge badge-warning-light">Check</span>
+                        <div class="d-flex justify-content-between mt-2">
+                            <span class="sa-muted">Price</span>
+                            <span class="fw-semibold" id="pvPrice">@(Model?.Price > 0 ? $"€ {Model.Price:0.00}" : "—")</span>
                         </div>
 
-                        <div class="list-group-item d-flex align-items-center justify-content-between">
-                            <div class="d-flex align-items-center gap-2">
-                                <i class="align-middle text-muted" data-feather="clock"></i>
-                                <span>Duration</span>
-                            </div>
-                            <span class="badge badge-success-light">OK</span>
-                        </div>
-
-                        <div class="list-group-item d-flex align-items-center justify-content-between">
-                            <div class="d-flex align-items-center gap-2">
-                                <i class="align-middle text-muted" data-feather="credit-card"></i>
-                                <span>Price</span>
-                            </div>
-                            <span class="badge badge-warning-light">Check</span>
-                        </div>
-
-                        <div class="list-group-item d-flex align-items-center justify-content-between">
-                            <div class="d-flex align-items-center gap-2">
-                                <i class="align-middle text-muted" data-feather="globe"></i>
-                                <span>Online booking</span>
-                            </div>
-                            <span class="badge badge-success-light">On</span>
+                        <div class="d-flex justify-content-between mt-2">
+                            <span class="sa-muted">Total block</span>
+                            <span class="fw-semibold" id="pvTotal">—</span>
                         </div>
                     </div>
 
-                    <hr class="my-3" />
-
-                    <div class="text-muted fw-semibold mb-2">Potential conflicts</div>
-                    <div class="text-muted small">
-                        No issues detected.
+                    <div class="mt-3 sa-muted small">
+                        Total block = Duration + Buffer before + Buffer after
                     </div>
                 </div>
             </div>
@@ -281,3 +223,62 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        (function () {
+            const nameEl = document.getElementById("Name");
+            const activeEl = document.getElementById("IsActive");
+            const durEl = document.getElementById("DurationMinutes");
+            const priceEl = document.getElementById("Price");
+            const bufBeforeEl = document.getElementById("BufferBefore");
+            const bufAfterEl = document.getElementById("BufferAfter");
+
+            const pvName = document.getElementById("pvName");
+            const pvActiveBadge = document.getElementById("pvActiveBadge");
+            const pvDuration = document.getElementById("pvDuration");
+            const pvPrice = document.getElementById("pvPrice");
+            const pvTotal = document.getElementById("pvTotal");
+
+            function n(v) {
+                const x = parseFloat(v);
+                return Number.isFinite(x) ? x : 0;
+            }
+
+            function refresh() {
+                const nm = (nameEl?.value || "").trim();
+                pvName.textContent = nm || "New service";
+
+                const isActive = (activeEl?.value || "true") === "true";
+                pvActiveBadge.textContent = isActive ? "Active" : "Inactive";
+                pvActiveBadge.className = "badge " + (isActive ? "badge-success-light" : "badge-danger-light");
+
+                const dur = n(durEl?.value);
+                pvDuration.textContent = dur > 0 ? (dur + " min") : "—";
+
+                const price = n(priceEl?.value);
+                pvPrice.textContent = price > 0 ? ("€ " + price.toFixed(2)) : "—";
+
+                const bb = n(bufBeforeEl?.value);
+                const ba = n(bufAfterEl?.value);
+                const total = dur + bb + ba;
+
+                pvTotal.textContent = total > 0 ? (total + " min") : "—";
+            }
+
+            ["input", "change"].forEach(evt => {
+                nameEl?.addEventListener(evt, refresh);
+                activeEl?.addEventListener(evt, refresh);
+                durEl?.addEventListener(evt, refresh);
+                priceEl?.addEventListener(evt, refresh);
+                bufBeforeEl?.addEventListener(evt, refresh);
+                bufAfterEl?.addEventListener(evt, refresh);
+            });
+
+            refresh();
+            if (window.feather) window.feather.replace();
+        })();
+    </script>
+}
